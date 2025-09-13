@@ -7,8 +7,8 @@ Devs: Aaron Anders Jaani, Mark Riispapp, Caroline Markov, Sebastian Mais
 Customer: MTÜ Tartu Kassikaitse, contact (hanna.pook@gmail.com)
 
 ## Links
-- Wiki: (see left sidebar → Wiki)
-- Issue Board: (left sidebar → Issues → Boards)
+- Wiki: (see left sidebar → Plan → Wiki)
+- Issue Board: (left sidebar → Plan →Issue boards)
 
 ## Structure
 - backend/  — (to be added later)
