@@ -3,6 +3,7 @@
 Web app to track cats, managers, foster homes, vet visits and so on
 
 Devs: Aaron Anders Jaani, Mark Riispapp, Caroline Markov, Sebastian Mais
+
 Customer: MTÜ Tartu Kassikaitse, contact (hanna.pook@gmail.com)
 
 ## Links
