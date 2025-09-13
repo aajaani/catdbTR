@@ -7,8 +7,8 @@ Devs: Aaron Anders Jaani, Mark Riispapp, Caroline Markov, Sebastian Mais
 Customer: MTÜ Tartu Kassikaitse, contact (hanna.pook@gmail.com)
 
 ## Links
-- Wiki: (see left sidebar → Plan → Wiki)
-- Issue Board: (left sidebar → Plan →Issue boards)
+- [Wiki](https://gitlab.cs.ut.ee/aajaani/catdb/-/wikis/home)
+- [Issue Board](https://gitlab.cs.ut.ee/aajaani/catdb/-/boards)
 
 ## Structure
 - backend/  — (to be added later)
