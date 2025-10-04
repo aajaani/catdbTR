@@ -1,5 +1,5 @@
 from .common import ORMBase
-# allows nested models (cats can nest ManagerRef and FosterHomeRef)
+# allows nested models (cats can nest ManagerRef and FosterHomeRef, might be pointless)
 
 class ManagerRef(ORMBase):
     id: int
