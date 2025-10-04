@@ -101,5 +101,12 @@ http://127.0.0.1:8000/
 
 * `get /image/{object_name}` - stream an object (image/file) by object key
 
+## 5) Tests
+
+To run tests 
+``` 
+cd backend
+python -m pytest
+```
 
 
