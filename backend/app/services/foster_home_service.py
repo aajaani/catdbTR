@@ -8,8 +8,9 @@ class FosterHomeService:
 
     def create(self, name: str, phone: str | None, email: str | None, address: str | None, comments: str | None) -> FosterHome:
         f = FosterHome(name=name.strip(), phone=phone, email=email, address=address, comments=comments)
-        log_action(self.repo.db, "foster_home", f.id, "CREATE")
-        return self.repo.create(f)
+        s = self.repo.create(f)
+        log_action(self.repo.db, "foster_home", s.id, "CREATE")
+        return s
 
     def list_all(self) -> list[FosterHome]:
         return list(self.repo.list_all())

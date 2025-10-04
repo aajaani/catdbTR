@@ -8,8 +8,9 @@ class ManagerService:
 
     def create(self, display_name: str, phone: str | None, email: str | None) -> Manager:
         m = Manager(display_name=display_name.strip(), phone=phone, email=email)
-        log_action(self.repo.db, "manager", m.id, "CREATE")
-        return self.repo.create(m)
+        s = self.repo.create(m)
+        log_action(self.repo.db, "manager", s.id, "CREATE")
+        return s
 
     def list_all(self) -> list[Manager]:
         return list(self.repo.list_all())

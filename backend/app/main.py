@@ -8,7 +8,7 @@ from minio import Minio
 
 from app.db.base import Base
 from app.db.session import engine, get_db
-from app.schemas.cats import CatCreate, CatRead
+from app.schemas.cats import CatCreate, CatRead, CatUpdate
 
 from app.schemas.manager import ManagerCreate, ManagerRead
 from app.schemas.foster_home import FosterHomeCreate, FosterHomeRead
@@ -95,7 +95,7 @@ def update_cat(
 ):
     # try to parse the JSON payload to pydantic model (as defined in schemas/cats.py)
     try:
-        data = CatCreate.model_validate_json(payload)
+        data = CatUpdate.model_validate_json(payload)
     except ValidationError as e:
         raise HTTPException(status_code=422, detail=str(e))
 
@@ -115,7 +115,7 @@ def delete_cat(cat_id: int, db = Depends(get_db)):
 @app.post("/managers", response_model=ManagerRead, status_code=201)
 def create_manager(payload: ManagerCreate, db = Depends(get_db)):
     svc = ManagerService(ManagerRepository(db))
-    m = svc.create(payload.name, payload.phone, payload.email)
+    m = svc.create(payload.display_name, payload.phone, payload.email)
     return m  # ORM to ManagerRead (maps the raw db data to json (as defined in schema))
 
 @app.get("/managers", response_model=list[ManagerRead])
@@ -140,9 +140,9 @@ def list_foster_homes(db = Depends(get_db)):
 @app.get("/image/{object_name}")
 def get_image(object_name: str, request: Request):
     try:
-        # võtab objekti MinIO-st
+        # takes object from MinIO
         obj = request.app.state.minio.get_object(MINIO_BUCKET, object_name)
-        # arvutab faililaiendist content-type
+        # gets content-type from file extension
         content_type = mimetypes.guess_type(object_name)[0] or "application/octet-stream"
         return StreamingResponse(obj, media_type=content_type)
     except Exception:
