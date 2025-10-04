@@ -6,3 +6,4 @@ pydantic-core
 python-multipart
 psycopg[binary]
 minio
+pytest

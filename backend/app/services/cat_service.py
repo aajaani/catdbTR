@@ -1,8 +1,10 @@
 from fastapi import HTTPException, UploadFile
 from app.repositories.cat_repository import CatRepository
-from app.schemas.cats import CatCreate
+from app.schemas.cats import CatCreate, CatUpdate
 from app.models.cat import Cat
 from app.services.file_utils import upload_to_minio
+from app.utils.audit import log_action
+
 
 class CatService:
     def __init__(self, repo: CatRepository, minio_client):
@@ -15,34 +17,17 @@ class CatService:
 
         primary_obj = None
         if primary_image is not None:
-            # Upload to MinIO, get object key
             primary_obj = upload_to_minio(self.minio, primary_image)
 
-        cat = Cat(
-            name=data.name.strip(),
-            sex=data.sex,
-            chip_number=data.chip_number,
-            status=data.status,
-            manager_id=data.manager_id,
-            foster_home_id=data.foster_home_id,
-            colony_id=data.colony_id,
-            kk_alates=data.kk_alates,
-            birth_date=data.birth_date,
-            foster_end=data.foster_end,
-            location_text=data.location_text,
-            notes=data.notes,
-            ussitableti_nimi=data.ussitableti_nimi,
-            ussitablett=data.ussitablett,
-            ussit_kordus=data.ussit_kordus,
-            turjatilga_nimi=data.turjatilga_nimi,
-            turjatilk=data.turjatilk,
-            turj_kordus=data.turj_kordus,
-            i_vaktsiin=data.i_vaktsiin,
-            kordusvax=data.kordusvax,
-            ster_kastr=data.ster_kastr,
-            primary_photo_object=primary_obj,
-        )
-        return self.repo.create(cat)
+        cat = Cat(**data.model_dump(exclude_unset=True))
+        cat.name = cat.name.strip()  
+        if primary_obj:
+            cat.primary_photo_object = primary_obj
+
+        cat = self.repo.create(cat)
+        log_action(self.repo.db, "cat", cat.id, "CREATE")
+        return cat
+
 
     def get(self, cat_id: int) -> Cat:
         cat = self.repo.get_with_related(cat_id)
@@ -52,3 +37,22 @@ class CatService:
 
     def list_all(self) -> list[Cat]:
         return list(self.repo.list_all_with_related())
+    
+    def update_from_payload(self, cat_id: int, payload: CatUpdate, new_primary_image) -> Cat | None:
+        # cat id is target row, payload uses the fields defined in schema to build a patch dict
+        object_key = None
+        if new_primary_image is not None:
+            object_key = upload_to_minio(self.minio, new_primary_image)
+
+        data = payload.model_dump(exclude_unset=True)
+        if object_key:
+            data["primary_photo_object"] = object_key
+
+        updated_cat = self.repo.update(cat_id, data)
+        if updated_cat:
+            log_action(self.repo.db, "cat", cat_id, "UPDATE") 
+        return updated_cat
+    
+    def delete(self, cat: Cat) -> None:
+        self.repo.delete(cat)
+        log_action(self.repo.db, "cat", cat.id, "DELETE")

@@ -5,13 +5,13 @@ from app.models.manager import Manager
 
 class ManagerRepository(BaseRepository):
     def create(self, m: Manager) -> Manager:
-        # SQL: INSERT INTO managers (display_name, phone, email) VALUES (...) RETURNING *
+        # SQL: insert new manager and return it
         self.db.add(m)
         self.db.commit()
         self.db.refresh(m)
         return m
 
     def list_all(self) -> Sequence[Manager]:
-        # SQL: SELECT * FROM managers ORDER BY id ASC
+        # SQL: select all managers ordered by id
         stmt = select(Manager).order_by(Manager.id.asc())
         return self.db.execute(stmt).scalars().all()

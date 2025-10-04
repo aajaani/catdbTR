@@ -1,5 +1,5 @@
 from .common import ORMBase
-# Viited teistele objektidele, nt kassile, varjupaigale, hooldajale
+# allows nested models (cats can nest ManagerRef and FosterHomeRef)
 
 class ManagerRef(ORMBase):
     id: int
