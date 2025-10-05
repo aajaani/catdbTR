@@ -62,7 +62,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 
 
-# 4) start the server
+# 3) start the server
 uvicorn app.main:app --reload
 ```
 
