@@ -16,7 +16,9 @@ build-job:
 test-job1:
   stage: test
   script:
+    - cd frontend/vue-project
     - npm run build
+    
 
 
 deploy-prod:
