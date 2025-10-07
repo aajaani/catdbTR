@@ -11,15 +11,15 @@ build-job:
     - cd frontend/vue-project
     - npm install
     - npm run build
-    - echo "Hello, $GITLAB_USER_LOGIN!"
-
-test-job1:
+  
+backend-test:
+  image: python:3.11
   stage: test
   script:
-    - cd frontend/vue-project
-    - npm run build
-    
-
+    - cd backend
+    - python -m venv .venv
+    - pip install -r requirements.txt
+    - python -m pytest
 
 deploy-prod:
   stage: deploy
