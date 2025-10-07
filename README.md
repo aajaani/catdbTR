@@ -19,6 +19,8 @@ Customer: MTÜ Tartu Kassikaitse, contact (hanna.pook@gmail.com)
 
 * **Docker** & **Docker Compose**
 * **Python** 3.11+ 
+* **Node.js** 
+* **npm (comes with Node)** 
 
 
 ## 2) Start dependencies (Postgres, MinIO, Adminer)
@@ -107,6 +109,23 @@ To run tests
 ``` 
 cd backend
 python -m pytest
+
+```
+## 6) Install dependencies
+
+From the `frontend/vue-project`
+
+```
+npm install
 ```
 
+## 7) Start Development Server
+
+```
+npm run dev
+```
+
+## 8) Open the site
+
+Visit ``http://localhost:8081`` in your browser
 
