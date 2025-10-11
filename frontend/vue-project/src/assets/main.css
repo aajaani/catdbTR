@@ -19,4 +19,9 @@
     /* mobiles have "dynamic" view height due to their navbar hiding/showing */
     /* if dvh doesnt work, we automatically fallback to vh */
     height: 100dvh;
+
+    /* 2nd child is the view content, we dont want to scroll with sidebar */
+    & :nth-child( 2 ) {
+        overflow: scroll;
+    }
 }

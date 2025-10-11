@@ -7,7 +7,7 @@
 </template>
 
 <script setup>
-import BreadCrumbs from '@/components/BreadCrumbs.vue';
+import BreadCrumbs from '@/components/organisms/BreadCrumbs.vue';
 </script>
 
 <style lang="css" scoped>

@@ -16,6 +16,13 @@ export default {
 		  'nav-li-selected-text': '#000000',
 		  'nav-li-selected-icon': '#000000',
 		  'main-bg': '#F8F9FA',
+		  'table-normal': '#343A40',
+		  'table-secondary': '#6C757D',
+		  'table-border': '#E9ECEF',
+
+		  'neutral': {
+			400: '#CED4DA',
+		  }
 	  }
 	},
   },

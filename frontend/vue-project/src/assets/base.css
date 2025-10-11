@@ -17,6 +17,11 @@
     --nav-li-selected-icon: #000000;
 
     --main-bg: #F8F9FA;
+
+    /* table colors */
+    --table-normal: #343A40;
+    --table-secondary: #6C757D;
+    --table-border: #E9ECEF;
 }
 
 /* exports from https://fonts.google.com/ */

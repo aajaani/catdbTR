@@ -11,7 +11,7 @@ interface BreadCrumbEntry {
 }
 
 const route = useRoute( );
-console.log( route.meta?.breadcrumbs );
+
 // typescript is so boss
 const entries = computed< BreadCrumbEntry[ ] >(( ) => {
   // no breadcrumbs defined for this route, nothing to show

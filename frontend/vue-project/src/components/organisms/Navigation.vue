@@ -5,7 +5,6 @@ import { useRoute } from 'vue-router';
 // reactive route
 const route = useRoute( );
 
-
 // todo: add translations, idk if i18n exists for vue3
 const sidebar_links = {
   "/": {
