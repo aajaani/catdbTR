@@ -81,6 +81,7 @@ td {
 }
 
 td > div {
+    display: flex;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 75ch;
@@ -89,6 +90,10 @@ td > div {
 
 td[data-centered=true] {
     text-align: center;
+
+    & > div {
+        justify-content: center;
+    }
 }
 
 td[data-fit-text=true] {
