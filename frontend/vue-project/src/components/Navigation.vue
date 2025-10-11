@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { MdFeed, MdOutlinePets, MdCatchingPokemon, MdPersonAdd, MdPeople, MdArrowBack } from 'vue-icons-plus/md'
-import router from "@/router/index.js";
+import { useRoute } from 'vue-router';
 
-const active_route = router.currentRoute.value.path;
+// reactive route
+const route = useRoute( );
+
 
 // todo: add translations, idk if i18n exists for vue3
 const sidebar_links = {
@@ -49,13 +51,26 @@ const sidebar_links = {
       <p class="poppins-regular text-[11px]">Admin</p>
     </div>
   </div>
+
   <nav>
     <ul class="flex flex-col color-nav-li-text pl-14">
       <!-- link items come from script setup -->
-      <li v-for="(link, path) in sidebar_links" :key="path" :data-active="active_route === path ? '' : null" class="nav-item pr-5 rounded-l-3xl">
-        <router-link :to="path" class="nav-li flex items-center gap-4 pr-4 pl-6 py-2">
-          <component :is="link.icon" size="36" class="fill-inherit" />
-          <span class="poppins-medium text-[14px] color-inherit">{{ link.title }}</span>
+      <li
+        v-for="(link, path) in sidebar_links"
+        :key="path"
+        :data-active="route.path === path ? 'true' : 'false'"
+        class="nav-item"
+      >
+        <router-link :to="path" class="nav-link grid pr-9 rounded-l-3xl pl-6 py-2">
+          <span class="flex gap-4 inactive">
+            <component :is="link.icon" size="36" class="fill-inherit" />
+            <span class="poppins-medium text-[14px] color-inherit">{{ link.title }}</span>
+          </span>
+
+          <span class="flex gap-4 active">
+            <component :is="link.icon" size="36" class="fill-inherit" />
+            <span class="poppins-medium text-[14px] color-inherit">{{ link.title }}</span>
+          </span>
         </router-link>
       </li>
     </ul>
@@ -67,19 +82,101 @@ const sidebar_links = {
 aside {
   background: var( --nav-li-bg );
 
-  /* would have global padding but list items wouldn't be able to "connect" with the page */
+  /* would have global x padding but list items wouldn't be able to "connect" with the page */
 }
 
 li.nav-item {
-  @apply my-3;
-  transition: background 0.3s, color 0.3s;
-  background: var( --nav-li-bg );
+  @apply py-3;
   color: var( --nav-li-text );
   fill: var( --nav-li-icon );
-  &[data-active=""] {
+
+  --transition-duration: 200ms;
+
+  /* new stacking context for pseudoel */
+  position: relative;
+  z-index: 0;
+
+  /* hide pseudoelements when out of view */
+  overflow: hidden;
+
+
+  /* place children ontop of eachother */
+  & .nav-link > * {
+    grid-row: 1;
+    grid-column: 1;
+  }
+
+  /* active/inactive */
+  & .nav-link > span {
+    &:is( .inactive ) {
+      color: var( --nav-li-text );
+      fill: var( --nav-li-icon );
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    }
+
+    &:is( .active ) {
+      color: var( --nav-li-selected-text );
+      fill: var( --nav-li-selected-icon );
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    }
+
+    transition: clip-path var( --transition-duration ) ease;
+    align-items: center;
+  }
+
+  /* right now the selected text
+     is the same as normal and blends
+     in with the background
+     
+     because we use an absolute pseudoelement
+     we cant set <a>'s blending mode to
+     difference as it would use the
+     navbar background as a reference (i think)
+
+     another idea would be to use clip,
+     then stack link inner text on top
+     (would mean we have to duplicate link text)
+     and then we can animate a clip kind of
+     the same way as we animate ::before's bg
+  */
+
+  & a {
+    position: relative;
+    z-index: 0;
+  }
+
+  & a::before {
+    content: "";
+    position: absolute;
     background: var( --nav-li-selected );
-    color: var( --nav-li-selected-text );
-    fill: var( --nav-li-selected-icon );
+    transition: translate var( --transition-duration ) ease;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform: 0 0;
+    border-top-left-radius: 20px;
+    border-bottom-left-radius: 20px;
+
+    /* move behind parent */
+    z-index: -1;
+  }
+
+  /* move next bg to active */
+  &[data-active="true"] ~ .nav-item a::before {
+    translate: 0 -150%;
+  }
+
+  &[data-active="true"] ~ .nav-item .nav-link .active {
+      clip-path: polygon( 0 -100%, 100% -100%, 100% 0%, 0 0% );
+  }
+
+  /* move top link to active */
+  &:has( ~ .nav-item[data-active="true"] ) a::before {
+    translate: 0 150%;
+  }
+
+  &:has( ~ .nav-item[data-active="true"] ) .nav-link .active {
+    clip-path: polygon( 0 100%, 100% 100%, 100% 200%, 0 200% );
   }
 }
 
