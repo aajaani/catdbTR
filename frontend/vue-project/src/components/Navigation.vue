@@ -162,6 +162,10 @@ li.nav-item {
   }
 
   /* move next bg to active */
+  /* todo: background has to be relative to li's, otherwise
+           animating between multiple children will introduce
+           artifacts behind inbetween children
+  */
   &[data-active="true"] ~ .nav-item a::before {
     translate: 0 -150%;
   }
