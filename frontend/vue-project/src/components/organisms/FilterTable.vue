@@ -42,7 +42,7 @@
     >
         <Button
             :disabled="currentPage === 0"
-            class="disabled:bg-neutral-200 disabled:border-0 disabled:fill-text-disabled"
+            class="disabled:bg-neutral-200 disabled:border-transparent transition-colors disabled:fill-text-disabled"
             @click="( ) => {
                 currentPage -= 1
             }"
@@ -51,7 +51,7 @@
         </Button>
 
         <Button
-            class="w-[40px] [&[data-selected=true]]:border-primary-normal [&[data-selected=true]]:text-primary-normal"
+            class="w-[40px] [&[data-selected=true]]:border-primary-normal [&[data-selected=true]]:text-primary-normal transition-colors"
             v-for="pageIdx in pageData.pageCountTotal"
             :data-selected="currentPage === ( pageIdx - 1 )"
             @click=" ( ) => {
@@ -63,7 +63,7 @@
 
         <Button
             :disabled="currentPage === pageData.pageCountTotal - 1"
-            class="disabled:bg-neutral-200 disabled:border-0 disabled:fill-text-disabled"
+            class="disabled:bg-neutral-200 disabled:border-transparent transition-colors disabled:fill-text-disabled"
             @click="( ) => {
                 currentPage += 1
             }"
