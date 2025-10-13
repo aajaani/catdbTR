@@ -21,7 +21,7 @@
             >
                 <td
                     v-for="field, _name in props.fields"
-                    class="px-6 w-fit"
+                    class="px-6 w-fit py-2"
                     :data-centered="field.centerEntries"
                     :data-fit-text="field.fitContent"
                 >
