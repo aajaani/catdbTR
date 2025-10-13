@@ -23,10 +23,14 @@ export default {
 		  "neutral": {
 			200: "#E9ECEF",
 			400: "#CED4DA",
+			"white": "#FFFFFF",
 		  },
 
 		  "text": {
-			"disabled": "#ADB5BD"
+			"disabled": "#ADB5BD",
+			"normal": "#343A40",
+			"heading": "#212529",
+			"button": "#FFFFFF"
 		  },
 
 		  "primary": {
