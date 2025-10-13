@@ -229,7 +229,7 @@ const { fields, entries } = defineTable({
 
     <div class="flex flex-col gap-4 pt-2">
       <div class="flex flex-row justify-between">
-        <Button class="border-primary-normal border-0.5 text-primary-normal fill-primary-normal abril-fatface-regular uppercase">
+        <Button class="border-primary-normal border-0.5 text-primary-normal fill-primary-normal abril-fatface-regular uppercase text-[14px]">
             <AiOutlinePlus size="20" class="fill-inherit"></AiOutlinePlus>
             Lisa kass
         </Button>

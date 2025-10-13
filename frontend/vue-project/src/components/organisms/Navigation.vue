@@ -32,12 +32,13 @@ const sidebar_links = {
 
 <template>
 <aside class="flex flex-col gap-6 pt-4">
-  <div class="pl-4 flex flex-row justify-between">
-    <h1 class="poppins-medium text-[18px] text-nav-li-text">Kassid Koju</h1>
+  <div class="pl-4 flex flex-row justify-between relative h-min w-full">
+    <h1 class="poppins-medium text-[18px] text-nav-li-text" id="logo-name">Kassid Koju</h1>
 
     <!-- todo: figure out if this is back or collapse -->
-    <span id="collapse" class="relative translate-x-[50%] w-[40px] aspect-square h-auto left-0 p-2 bg-nav-li-text self-end justify-self-end flex place-items-center justify-center rounded-[8px]">
-      <MdArrowBack size="20" class="fill-nav-bg bg-main-bg"/>
+    <span id="collapse" class="absolute right-0 top-3 translate-x-[50%] w-[40px] aspect-square h-auto left-0 p-2 bg-nav-li-text self-end justify-self-end flex place-items-center justify-center rounded-[8px]">
+      <MdArrowBack size="20" class="fill-nav-bg bg-main-bg transition-all transition-[300ms]"/>
+      <input type="checkbox" id="collapseCheckbox" class="absolute inset-0 opacity-0 cursor-pointer"></input>
     </span>
   </div>
   <div class="profile-container flex gap-4 px-4">
@@ -204,5 +205,40 @@ li.nav-item {
   border-radius: 50%;
   border: 2px solid var( --nav-li-bg );
   background-color: var( --status-color );
+}
+
+/* collapsed styles */
+
+aside:has( #collapseCheckbox:checked ) {
+  nav > ul {
+    padding: 0 0 0 5px;
+
+    li.nav-item a {
+      padding: 8px;
+    }
+
+    li.nav-item a > span {
+      display: flex;
+      justify-content: center;
+    }
+
+    li.nav-item span :is( svg + span ) {
+      display: none;
+    }
+  }
+
+  #logo-name {
+    opacity: 0;
+  }
+
+  .profile-container {
+    margin-bottom: 8px;
+    margin-top: auto;
+    order: 10;
+    padding: 0 8px;
+    & > div {
+      display: none;
+    }
+  }
 }
 </style>

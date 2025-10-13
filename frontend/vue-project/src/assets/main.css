@@ -26,6 +26,15 @@
     }
 }
 
+#app:has( #collapseCheckbox:checked ) {
+    grid-template-columns: 60px 1fr;
+    & #collapse {
+        svg {
+            rotate: 180deg;
+        }
+    }
+}
+
 button:disabled {
     cursor: not-allowed;
 }
