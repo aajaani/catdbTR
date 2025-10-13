@@ -20,8 +20,17 @@ export default {
 		  'table-secondary': '#6C757D',
 		  'table-border': '#E9ECEF',
 
-		  'neutral': {
-			400: '#CED4DA',
+		  "neutral": {
+			200: "#E9ECEF",
+			400: "#CED4DA",
+		  },
+
+		  "text": {
+			"disabled": "#ADB5BD"
+		  },
+
+		  "primary": {
+			"normal": "#0057FC"
 		  }
 	  }
 	},

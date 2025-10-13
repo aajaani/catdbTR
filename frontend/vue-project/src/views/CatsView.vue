@@ -1,5 +1,4 @@
 <script setup lang="ts">
-
 import BreadCrumbs from "@/components/organisms/BreadCrumbs.vue";
 import FilterTable from "@/components/organisms/FilterTable.vue";
 
@@ -13,8 +12,34 @@ import TableText from "@/components/atoms/filter-table/Text.vue"
 import TableStatus from "@/components/atoms/filter-table/Status.vue"
 
 import Actions from "@/components/molecules/filter-table/Actions.vue";
+import router from "@/router";
+import { computed, ref, watch } from "vue";
 
-import { ref, computed } from "vue";
+const getQueryParam = ( name: string, def: string ) => {
+  const queryParam = router.currentRoute.value.query[ name ];
+  if ( !queryParam ) return def;
+  return queryParam.toString( );
+}
+
+const tableQueryParams = ref<{
+  page: number,
+  perPage: number
+}>({
+  page: parseInt( getQueryParam( "page", "1" ) ),
+  perPage: parseInt( getQueryParam( "perPage", "10" ) ),
+});
+
+// router.replace({ name: router.currentRoute.value.name, query: { page } })
+watch(
+  ( ) => tableQueryParams.value,
+  ( newParams ) => {
+    console.log( newParams )
+    router.replace({ name: router.currentRoute.value.name, query: { ...newParams } })
+  },
+  {
+    deep: true
+  }
+);
 
 const searchQuery = ref("");
 
@@ -155,26 +180,26 @@ const { fields, entries } = defineTable({
   mock_cats.map( ( cat: Cat ) => ({
     "cat-id": {
       text: cat.id.toString( )
-    },
+    } as const,
     "cat-name": {
       text: cat.name
-    },
+    } as const,
     "cat-status": {
       color: status_to_color[ cat.status ],
       label: status_to_readable[ cat.status ],
-    },
+    } as const,
     "cat-manager-name": {
       text: cat.manager_name,
-    },
+    } as const,
     "cat-colony": {
       text: cat.original_colony
-    },
+    } as const,
     "cat-details": {
       text: cat.details
-    },
+    } as const,
     "cat-on-homepage": {
       color: cat.on_homepage ? "green" : "red"
-    },
+    } as const,
     "cat-actions": {
       actions: [{
         icon: MdArrowOutward,
@@ -209,6 +234,14 @@ const { fields, entries } = defineTable({
     <FilterTable
       :fields="fields"
       :entries="filteredEntries"
+      :per-page="tableQueryParams.perPage"
+      :selected-page="tableQueryParams.page - 1"
+      @page-change="( page ) => {
+        tableQueryParams.page = page + 1;
+      }"
+      @per-page-change="( perPage ) => {
+        tableQueryParams.perPage = perPage;
+      }"
     />
   </div>
 </template>

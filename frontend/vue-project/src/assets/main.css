@@ -25,3 +25,7 @@
         overflow: hidden; /*if show then everything has a sidebar */
     }
 }
+
+button:disabled {
+    cursor: not-allowed;
+}
