@@ -22,7 +22,7 @@
 
     /* 2nd child is the view content, we dont want to scroll with sidebar */
     & :nth-child( 2 ) {
-        overflow: hidden; /*if show then everything has a sidebar */
+        overflow: true;
     }
 }
 
