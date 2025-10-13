@@ -5,8 +5,11 @@ import FilterTable from "@/components/organisms/FilterTable.vue";
 import { MdArrowOutward } from "vue-icons-plus/md";
 import { FiEdit3 } from "vue-icons-plus/fi";
 import { HiOutlineTrash } from "vue-icons-plus/hi";
+import { AiOutlinePlus } from "vue-icons-plus/ai";
 
 import { defineTable, field, type RowEntry } from "@/components/FilterTable";
+
+import Button from "@/components/atoms/Button.vue";
 
 import TableText from "@/components/atoms/filter-table/Text.vue"
 import TableStatus from "@/components/atoms/filter-table/Status.vue"
@@ -217,32 +220,41 @@ const { fields, entries } = defineTable({
 </script>
 
 <template>
-  <div class="flex flex-col bg-main-bg px-8 pt-4">
-    <!-- todo: kinda overlaps with collapse/back button -->
-    <h1 class="abril-fatface-regular text-[46px]">Kassid</h1>
-    <BreadCrumbs />
+  <div class="flex flex-col bg-main-bg px-8 py-4 gap-8">
+    <div class="flex flex-col">
+      <!-- todo: kinda overlaps with collapse/back button -->
+      <h1 class="abril-fatface-regular text-[46px]">Kassid</h1>
+      <BreadCrumbs />
+    </div>
 
-  <div class="flex ml-auto mb-4 mr-[175px]">  <!-- temp solution to have it aligned with the table -->
-  <input
-    v-model="searchQuery"
-    type="text"
-    placeholder="Otsi"
-    class="border border-gray-300 rounded-lg p-2 w-40 focus:outline-none focus:ring-2 focus:ring-gray-400"
-  />
+    <div class="flex flex-col gap-4 pt-2">
+      <div class="flex flex-row justify-between">
+        <Button class="border-primary-normal border-0.5 text-primary-normal fill-primary-normal abril-fatface-regular uppercase">
+            <AiOutlinePlus size="20" class="fill-inherit"></AiOutlinePlus>
+            Lisa kass
+        </Button>
+        <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Otsi"
+            class="border border-gray-300 rounded-lg p-2 w-80 max-w-80 focus:outline-none focus:ring-2 focus:ring-gray-400"
+          />
+      </div>
+      
 
-  </div>
-    <FilterTable
-      :fields="fields"
-      :entries="filteredEntries"
-      :per-page="tableQueryParams.perPage"
-      :selected-page="tableQueryParams.page - 1"
-      @page-change="( page ) => {
-        tableQueryParams.page = page + 1;
-      }"
-      @per-page-change="( perPage ) => {
-        tableQueryParams.perPage = perPage;
-      }"
-    />
+      <FilterTable
+        :fields="fields"
+        :entries="filteredEntries"
+        :per-page="tableQueryParams.perPage"
+        :selected-page="tableQueryParams.page - 1"
+        @page-change="( page ) => {
+          tableQueryParams.page = page + 1;
+        }"
+        @per-page-change="( perPage ) => {
+          tableQueryParams.perPage = perPage;
+        }"
+      />
+    </div>
   </div>
 </template>
 
