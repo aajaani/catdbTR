@@ -14,6 +14,27 @@ import TableStatus from "@/components/atoms/filter-table/Status.vue"
 
 import Actions from "@/components/molecules/filter-table/Actions.vue";
 
+import { ref, computed } from "vue";
+
+const searchQuery = ref("");
+
+const filteredEntries = computed(() => {
+  if (!searchQuery.value.trim()) return entries; // if search is empty, show all cats
+
+  const search = searchQuery.value.toLowerCase();
+
+  return entries.filter(entry => { // check each row
+    return Object.values(entry).some(cell => { // check for each cell in row and if at least one match, include it
+      if (typeof cell === "object" && cell !== null) { //if its an object, check the values. Right now the mock data has objects
+        return Object.values(cell).some(v =>
+          typeof v === "string" && v.toLowerCase().includes(search) //check for strings inside objects that match search
+        );
+      }
+      return typeof cell === "string" && cell.toLowerCase().includes(search); //if already strings, check if they match search
+    });
+  });
+});
+
 type CatStatus = "looking-for-home" | "in-new-home" | "reserved" | "lost" | ":(";
 interface Cat {
   id: number,
@@ -176,9 +197,18 @@ const { fields, entries } = defineTable({
     <h1 class="abril-fatface-regular text-[46px]">Kassid</h1>
     <BreadCrumbs />
 
+  <div class="flex ml-auto mb-4 mr-[175px]">  <!-- temp solution to have it aligned with the table -->
+  <input
+    v-model="searchQuery"
+    type="text"
+    placeholder="Otsi"
+    class="border border-gray-300 rounded-lg p-2 w-40 focus:outline-none focus:ring-2 focus:ring-gray-400"
+  />
+
+  </div>
     <FilterTable
       :fields="fields"
-      :entries="entries"
+      :entries="filteredEntries"
     />
   </div>
 </template>
