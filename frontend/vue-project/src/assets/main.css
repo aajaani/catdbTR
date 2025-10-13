@@ -21,8 +21,8 @@
     height: 100dvh;
 
     /* 2nd child is the view content, we dont want to scroll with sidebar */
-    & :nth-child( 2 ) {
-        overflow: true;
+    & > :nth-child( 2 ) {
+        overflow: scroll;
     }
 }
 

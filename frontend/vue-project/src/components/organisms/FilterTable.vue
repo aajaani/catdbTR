@@ -38,7 +38,7 @@
         </tbody>
     </table>
     <div
-        class="flex gap-2 pagination"
+        class="flex gap-2 pagination min-h-fit"
     >
         <Button
             :disabled="currentPage === 0"
