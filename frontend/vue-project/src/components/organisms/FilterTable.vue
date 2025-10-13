@@ -206,6 +206,10 @@ td > div {
     max-height: 6ch;
 }
 
+tr:nth-child( 2n ) {
+    background: #f4f4f5;
+}
+
 td[data-centered=true] {
     text-align: center;
 
