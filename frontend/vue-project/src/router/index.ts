@@ -4,7 +4,7 @@ const routes: RouteRecordRaw[] = [
 	{
 		path: "/",
 		name: "Dashboard",
-		component: import( "@/views/DashboardView.vue" ),
+		component: ( ) => import( "@/views/DashboardView.vue" ),
 		meta: {
 			breadcrumbs: [
 				{ name: "Ulevaade", link: "/" }
@@ -14,7 +14,7 @@ const routes: RouteRecordRaw[] = [
 	{
 		path: "/cats",
 		name: "CatsList",
-		component: () => import( "@/views/CatsView.vue" ),
+		component: ( ) => import( "@/views/CatsView.vue" ),
 		meta: {
 			breadcrumbs: [
 				{ name: "Ulevaade", link: "/" },

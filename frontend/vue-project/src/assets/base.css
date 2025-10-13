@@ -22,6 +22,9 @@
     --table-normal: #343A40;
     --table-secondary: #6C757D;
     --table-border: #E9ECEF;
+
+    /* table pagination */
+    --table-pagination-selected-border: #0057FC; 
 }
 
 /* exports from https://fonts.google.com/ */

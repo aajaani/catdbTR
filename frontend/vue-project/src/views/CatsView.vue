@@ -1,5 +1,4 @@
 <script setup lang="ts">
-
 import BreadCrumbs from "@/components/organisms/BreadCrumbs.vue";
 import FilterTable from "@/components/organisms/FilterTable.vue";
 
@@ -13,6 +12,34 @@ import TableText from "@/components/atoms/filter-table/Text.vue"
 import TableStatus from "@/components/atoms/filter-table/Status.vue"
 
 import Actions from "@/components/molecules/filter-table/Actions.vue";
+import router from "@/router";
+import { ref, watch } from "vue";
+
+const getQueryParam = ( name: string, def: string ) => {
+  const queryParam = router.currentRoute.value.query[ name ];
+  if ( !queryParam ) return def;
+  return queryParam.toString( );
+}
+
+const tableQueryParams = ref<{
+  page: number,
+  perPage: number
+}>({
+  page: parseInt( getQueryParam( "page", "1" ) ),
+  perPage: parseInt( getQueryParam( "perPage", "10" ) ),
+});
+
+// router.replace({ name: router.currentRoute.value.name, query: { page } })
+watch(
+  ( ) => tableQueryParams.value,
+  ( newParams ) => {
+    console.log( newParams )
+    router.replace({ name: router.currentRoute.value.name, query: { ...newParams } })
+  },
+  {
+    deep: true
+  }
+);
 
 type CatStatus = "looking-for-home" | "in-new-home" | "reserved" | "lost" | ":(";
 interface Cat {
@@ -179,6 +206,14 @@ const { fields, entries } = defineTable({
     <FilterTable
       :fields="fields"
       :entries="entries"
+      :per-page="tableQueryParams.perPage"
+      :selected-page="tableQueryParams.page - 1"
+      @page-change="( page ) => {
+        tableQueryParams.page = page + 1;
+      }"
+      @per-page-change="( perPage ) => {
+        tableQueryParams.perPage = perPage;
+      }"
     />
   </div>
 </template>

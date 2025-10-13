@@ -25,3 +25,7 @@
         overflow: scroll;
     }
 }
+
+button:disabled {
+    cursor: not-allowed;
+}
