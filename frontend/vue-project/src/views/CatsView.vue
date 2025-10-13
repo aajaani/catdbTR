@@ -161,26 +161,26 @@ const { fields, entries } = defineTable({
   mock_cats.map( ( cat: Cat ) => ({
     "cat-id": {
       text: cat.id.toString( )
-    },
+    } as const,
     "cat-name": {
       text: cat.name
-    },
+    } as const,
     "cat-status": {
       color: status_to_color[ cat.status ],
       label: status_to_readable[ cat.status ],
-    },
+    } as const,
     "cat-manager-name": {
       text: cat.manager_name,
-    },
+    } as const,
     "cat-colony": {
       text: cat.original_colony
-    },
+    } as const,
     "cat-details": {
       text: cat.details
-    },
+    } as const,
     "cat-on-homepage": {
       color: cat.on_homepage ? "green" : "red"
-    },
+    } as const,
     "cat-actions": {
       actions: [{
         icon: MdArrowOutward,
