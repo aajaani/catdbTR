@@ -4,11 +4,38 @@
         <thead>
             <tr>
                 <th
-                    v-for="field, _name in props.fields"
+                    v-for="field, name in props.fields"
                     class="text-nowrap text-[12px] text-table-secondary text-left px-5 h-[40px]"
                 >
-                    <span class="flex place-items-center h-full w-fit">
+                    <span class="flex place-items-center h-full w-full gap-1 fill-text-secondary">
                         {{ field.title }}
+
+                        <!-- sort controls later -->
+                        <span class="ml-auto mr-0 flex gap-1">
+                            <BsSortDown
+                                v-if="sorting[ name ] === 'asc'"
+                                size="16"
+                                class="fill-inherit"
+                                @click="sorting[ name ] = 'desc'"
+                            />
+                            <BsSortUp
+                                v-else-if="sorting[ name ] === 'desc'"
+                                size="16"
+                                class="fill-inherit"
+                                @click="delete sorting[ name ]"
+                            />
+                            <BsSortDown
+                                v-else
+                                size="16"
+                                class="fill-inherit unsorted"
+                                @click="sorting[ name ] = 'asc'"
+                            />
+
+                            <BiFilterAlt
+                                size="16"
+                                class="fill-inherit"
+                            />
+                        </span>
                     </span>
                 </th>
             </tr>
@@ -26,10 +53,12 @@
                     :data-fit-text="field.fitContent"
                 >
                     <div>
+                        <!-- should be able to be 100% sure entry exists, can let typescript know we know so -->
+                        <!-- fix: Spread types may only be created from object types.ts-plugin(2698) -->
                         <component
-                            v-if="getEntry( entryIndex - 1 )[ _name ]"
+                            v-if="getEntry( entryIndex - 1 )![ _name ]"
                             :is="field.component"
-                            v-bind="getEntry( entryIndex - 1 )[ _name ]"
+                            v-bind="getEntry( entryIndex - 1 )![ _name ]"
                             class="text-table-normal text-sm"
                         />
                     </div>
@@ -102,7 +131,8 @@ table has to be passed
 import { computed, ref, watch } from 'vue';
 import type { FieldsMap, RowEntry } from '../FilterTable';
 import Button from '../atoms/Button.vue';
-import { BiChevronLeft, BiChevronRight } from 'vue-icons-plus/bi';
+import { BiChevronLeft, BiChevronRight, BiFilterAlt } from 'vue-icons-plus/bi';
+import { BsSortDown, BsSortUp } from 'vue-icons-plus/bs';
 import Select from '../atoms/Select.vue';
 
 const emit = defineEmits<{
@@ -128,8 +158,39 @@ const pageAmountSelection = [ 10, 20, 30, 40 ];
 const currentPage = ref( props.selectedPage );
 const perPage = ref( props.perPage );
 
-console.log( `table init: perPage: ${ props.perPage } (${ perPage.value }) selectedPage: ${ props.selectedPage } (${ currentPage.value })` )
+type SortBy = "asc" | "desc";
+type FieldSortMap = {
+    [ K in keyof FieldsMap ]: SortBy
+};
 
+const sorting = ref< FieldSortMap >({ });
+
+
+// todo: add filtering
+// what do I call this? filtering and sorting would be done here
+const mutatedEntries = computed( ( ) => {
+    console.log( Object.entries( sorting.value ) )
+    return props.entries.slice( ).sort( ( row1, row2 ) => {
+        for ( const field in sorting.value ) {
+            // sanity check
+            if ( !props.fields[ field ] ) continue;
+
+            // sort based on func or alphabetical
+            let sortRes = 0;
+            if ( props.fields[ field ].sortFn )
+                sortRes = props.fields[ field ].sortFn( row1[ field ], row2[ field ] );
+            else
+                sortRes = Object.values( row1[ field ] ).join( " " ).localeCompare( Object.values( row2[ field ] ).join( " " ) )
+
+            // same value, go to next sorted column
+            if ( sortRes === 0 ) continue;
+            return sorting.value[ field ] === "asc" ? sortRes : -sortRes;
+        }
+        return 0;
+    } );
+} );
+
+// pagination effects
 watch(
     ( ) => perPage.value,
     ( newPerPage ) => emit( "perPageChange", newPerPage ) );
@@ -147,17 +208,20 @@ const pageData = computed<{
     hasFullLastPage: boolean,
     isLastPage: boolean
 }>( ( ) => {
+    // todo: should we use props entries or queried entries?
+    const entries = mutatedEntries.value;
+
     // get page count, eg 40 items, 10 per page -> 4.0 (-> 4.0)
     // 40 items, 30 per page -> 1.33... -> 1.0
-    const pageBaseCount = Math.floor( props.entries.length / perPage.value );
+    const pageBaseCount = Math.floor( entries.length / perPage.value );
 
     // 40 items, if pagecount base (above) is eg 4.0 (10 per page), last page is full (4.0 * 10 = 40 -> 40 - 40 = 0)
     // 40 items, pagecount 1.33... (30 per page), last page is 1.0 * 30 = 30 -> 40 - 30 = 10, last page is not full 
-    const hasFullLastPage = ( props.entries.length - pageBaseCount * perPage.value ) === 0;
+    const hasFullLastPage = ( entries.length - pageBaseCount * perPage.value ) === 0;
 
     // page diff === 0 -> last page has pageCountBase items (aka max there can be on one page)
     // 40 items, page diff !== 0, 40 - 1.0 * 30 = 10 items on last page 
-    const entriesLastPage = hasFullLastPage ? perPage.value : props.entries.length - pageBaseCount* perPage.value;
+    const entriesLastPage = hasFullLastPage ? perPage.value : entries.length - pageBaseCount* perPage.value;
 
     // total page count, if we dont have a full last page, just return base page count (since no remainder items)
     // else, add 1 page,, since there's a page witth <basecount items
@@ -179,8 +243,8 @@ currentPage.value = Math.max( 0, Math.min( pageData.value.pageCountTotal - 1, cu
 // also sanity check perpage
 perPage.value = pageAmountSelection.includes( perPage.value ) ? perPage.value : pageAmountSelection[ 0 ]!;
 
-const getEntry = ( index: number ) => {
-    return props.entries[ currentPage.value * perPage.value + index ]
+const getEntry = ( index: number ): RowEntry< FieldsMap > => {
+    return mutatedEntries.value[ currentPage.value * perPage.value + index ] as RowEntry< FieldsMap >;
 }
 
 </script>
@@ -224,5 +288,16 @@ td[data-fit-text=true] {
     & * {
         text-wrap: nowrap;
     }
+}
+
+/* clip out the arrow from sort icon, since bs icon kit doesnt have an non-sorted
+    might want to change icons later, they dont looks so good :(
+*/
+.unsorted {
+    --sort-arrow: 35%;
+
+    mask-clip: border-box;
+    mask-composite: add;
+    mask-image: linear-gradient( to right, #fff0, #fff0 var( --sort-arrow ), #ffff 0% );
 }
 </style>

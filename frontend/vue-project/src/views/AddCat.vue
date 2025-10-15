@@ -5,6 +5,7 @@
 
     <!-- todo: convert to hidden file input, codepen might have some ideas on how to detect file hovering -->
     <div class="w-full h-full grid mb-8 place-content-center text-center gap-8">
+      <!-- todo: if a file is uploaded (and it fails), this image is replaced with an error container -->
       <img src="/public/assets/fileUploadImage.svg" alt="upload_img" height="200px" class="mx-auto"></img>
       
       <div class="flex flex-col abyssinica-sil-regular text-2xl text-text-normal">

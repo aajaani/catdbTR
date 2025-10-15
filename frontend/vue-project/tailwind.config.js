@@ -30,7 +30,8 @@ export default {
 			"disabled": "#ADB5BD",
 			"normal": "#343A40",
 			"heading": "#212529",
-			"button": "#FFFFFF"
+			"button": "#FFFFFF",
+			"secondary": "#6C757D"
 		  },
 
 		  "primary": {

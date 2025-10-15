@@ -13,15 +13,26 @@ export interface TableField<
     // component of table entry, table entry passes props to this component to render it with
     // would be cool if we can get the proptype from this component and apply it to the corresponding entry
     component: ComponentType,
-    // idk if we can even have a sort function of alphabetic by default
-    // since we expect a function which gets passed props of compared components 
-    // HTMLElement should suffice to pass as proptypoe when dealing with html els (not supported atm)
-    // filter returns true/false based on if it matches the query
-    // q: do props update here when our component is reactive?
-    // todo: arguments in these are type of unknown
-    filterFn?: ( props1: ComponentProps< ComponentType > ) => boolean;
+
     // -1 0 1, toLocaleCompare on strings for example, same result type
     sortFn?: ( props1: ComponentProps< ComponentType >, props2: ComponentProps< ComponentType > ) => number;
+
+    // what should be filterable?
+    //  unique: creates unique groups from given values OR custom values to show in filter input 
+    //  search: just a keyword to filter with
+    //  toggle: buttongroup input based on unique groups from given values OR custom values to show in input 
+    filterMode?: "unique" | "search" | "toggle",
+    // unique -> status, manager name
+    // search -> cat name, status
+    // toggle -> on homepage
+    // todo: have to think of a way to support searching by colonies, would use unique but how would we account for
+
+    // only exists on filterMode=unique, groups to show in search
+    filterInputOptions?: string[ ],
+    
+    // todo: rethink if we need this, would be useful for filtering for "on homepage"
+    //       "yes" / "no" -> mapped visible in this fn based on selected opt
+    filterFn?: ( fieldValues: string[ ] ) => boolean,
 
     // styling vars
     centerEntries?: boolean,
