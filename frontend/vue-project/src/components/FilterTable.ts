@@ -20,20 +20,21 @@ export interface TableField<
 
     // what should be filterable?
     //  unique: creates unique groups from given values OR custom values to show in filter input 
-    //  search: just a keyword to filter with
+    //  search: just a keyword to filter
     //  toggle: buttongroup input based on unique groups from given values OR custom values to show in input 
     filterMode?: "unique" | "search" | "toggle",
     // unique -> status, manager name
     // search -> cat name, status
     // toggle -> on homepage
-    // todo: have to think of a way to support searching by colonies, would use unique but how would we account for
+    // todo: have to think of a way to support searching by colonies, would use unique
 
-    // only exists on filterMode=unique, groups to show in search
-    filterInputOptions?: string[ ],
+    // only exists on filterMode=unique & toggle, groups to show in search
+    // todo: type strictness
+    filterInputOptions?: string[ ] | any,
     
     // todo: rethink if we need this, would be useful for filtering for "on homepage"
     //       "yes" / "no" -> mapped visible in this fn based on selected opt
-    filterFn?: ( fieldValues: string[ ] ) => boolean,
+    filterFn?: ( props: ComponentProps< ComponentType >, keywords: string[ ] ) => boolean,
 
     // styling vars
     centerEntries?: boolean,

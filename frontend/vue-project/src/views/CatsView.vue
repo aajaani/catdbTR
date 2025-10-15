@@ -154,12 +154,23 @@ const { fields, entries } = defineTable({
     "cat-status": ({
       title: "Staatus",
       component: TableStatus,
-      fitContent: true
+      fitContent: true,
+      filterMode: "unique",
+      filterInputOptions: ( [ "looking-for-home", "in-new-home", "reserved", "lost", ":(" ] as CatStatus[ ] ).map( s => ({
+        component: TableStatus,
+          props: {
+            color: status_to_color[ s ],
+            label: status_to_readable[ s ]
+          },
+          searchName: status_to_readable[ s ]
+      }))
     }),
     "cat-manager-name": field({
       title: "Hooldaja nimi",
       component: TableText,
-      fitContent: true
+      fitContent: true,
+      filterMode: "unique",
+      filterInputOptions: [ "aaaa", "bbbb", "cccc" ]
     }),
     "cat-colony": field({
       title: "Originaalne koloonia",

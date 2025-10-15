@@ -4,11 +4,11 @@
         <thead>
             <tr>
                 <th
-                    v-for="field, name in props.fields"
+                    v-for="field, fieldName in props.fields"
                     class="text-nowrap text-[12px] text-table-secondary text-left px-5 h-[40px]"
                     :data-centered="field.centerTitle"
                 >
-                    <span class="flex place-items-center h-full w-full gap-1 fill-text-secondary">
+                    <span class="flex place-items-center h-full w-full gap-1 fill-text-secondary stroke-text-secondary">
                         {{ field.title }}
 
                         <!-- sort controls later -->
@@ -17,29 +17,57 @@
                             class="ml-auto mr-0 flex gap-1"
                         >
                             <BsSortDown
-                                v-if="!field.disableSorting && sorting[ name ] === 'asc'"
+                                v-if="!field.disableSorting && sorting[ fieldName ] === 'asc'"
                                 size="16"
                                 class="fill-inherit"
-                                @click="sorting[ name ] = 'desc'"
+                                @click="sorting[ fieldName ] = 'desc'"
                             />
                             <BsSortUp
-                                v-else-if="!field.disableSorting && sorting[ name ] === 'desc'"
+                                v-else-if="!field.disableSorting && sorting[ fieldName ] === 'desc'"
                                 size="16"
                                 class="fill-inherit"
-                                @click="delete sorting[ name ]"
+                                @click="delete sorting[ fieldName ]"
                             />
                             <BsSortDown
                                 v-else-if="!field.disableSorting"
                                 size="16"
                                 class="fill-inherit unsorted"
-                                @click="sorting[ name ] = 'asc'"
+                                @click="sorting[ fieldName ] = 'asc'"
                             />
 
-                            <BiFilterAlt
+                            <div
+                                class="filter-container relative flex"
                                 v-if="field.filterMode"
-                                size="16"
-                                class="fill-inherit"
-                            />
+                            >
+                                <TbFilter
+                                    size="16"
+                                    class="filter-inactive stroke-inherit"
+                                />
+
+                                <TbFilterFilled
+                                    size="16"
+                                    class="fill-inherit filter-active"
+                                />
+
+                                <!-- TbFilterCheck if filter applied -->
+
+                                <input
+                                    class="absolute w-fit inset-0 opacity-0 cursor-pointer"
+                                    type="checkbox"
+                                ></input>
+
+                                <!-- todo: dynamic unique items -->
+                                <InputUniqueOptions
+                                    class="absolute top-full right-0 my-1 filter-input"
+                                    v-if="field.filterMode === 'unique'"
+                                    :options="field.filterInputOptions || [ 'none' ]"
+                                    @select="( opts ) => {
+                                        if ( opts.length === 0 ) delete filters[ fieldName ];
+                                        else filters[ fieldName ] = opts;
+                                    }"
+                                />
+                            </div>
+
                         </span>
                     </span>
                 </th>
@@ -61,9 +89,9 @@
                         <!-- should be able to be 100% sure entry exists, can let typescript know we know so -->
                         <!-- fix: Spread types may only be created from object types.ts-plugin(2698) -->
                         <component
-                            v-if="getEntry( entryIndex - 1 )![ _name ]"
+                            v-if="getEntry( entryIndex - 1 ) && getEntry( entryIndex - 1 )[ _name ]"
                             :is="field.component"
-                            v-bind="getEntry( entryIndex - 1 )![ _name ]"
+                            v-bind="getEntry( entryIndex - 1 )[ _name ]"
                             class="text-table-normal text-sm"
                         />
                     </div>
@@ -136,9 +164,11 @@ table has to be passed
 import { computed, ref, watch } from 'vue';
 import type { FieldsMap, RowEntry } from '../FilterTable';
 import Button from '../atoms/Button.vue';
-import { BiChevronLeft, BiChevronRight, BiFilterAlt } from 'vue-icons-plus/bi';
+import { BiChevronLeft, BiChevronRight } from 'vue-icons-plus/bi';
+import { TbFilter, TbFilterFilled, TbFilterCheck } from 'vue-icons-plus/tb';
 import { BsSortDown, BsSortUp } from 'vue-icons-plus/bs';
 import Select from '../atoms/Select.vue';
+import InputUniqueOptions from '../atoms/filter-table/InputUniqueOptions.vue';
 
 const emit = defineEmits<{
     "perPageChange": [ number ],
@@ -171,12 +201,59 @@ type FieldSortMap = {
 const sorting = ref< FieldSortMap >({ });
 
 
+type FilterMap = {
+    [ K in keyof FieldsMap ]: string[ ]
+}
+
+const filters = ref< FilterMap >({ })
+
 // todo: add filtering
 // ps: never a ref reactive to props, dont want a stateful component, we can use "effects" :)
 // what do I call this? filtering and sorting would be done here
 const mutatedEntries = computed( ( ) => {
-    
-    return props.entries.slice( ).sort( ( row1, row2 ) => {
+    return props.entries.slice( ).filter( ( row, i ) => {
+        // we look through each row on given filter
+        // and check if any element of filters is inside of props
+        
+        // conjuction or disjunction
+        // since theyre columns should be conjuction right
+        // so if one fails, fail all
+        // let failsAny = false;
+        // nvm no need we can return early
+
+        // this could be simplified a lot but I'm not going to do any more weird
+        // type casts and risk obfuscating readability
+        let filterEntries = Object.entries( filters.value );
+        for ( const filterEntryIndex in filterEntries ) {
+            // cant deconstruct in loop
+            const filterEntry = filterEntries[ filterEntryIndex ];
+            const [ fieldName, fieldFilters ] = filterEntry as never as [ string, string[ ] ];
+
+            const fieldProps = props.fields[ fieldName ];
+            if ( !fieldProps || !fieldFilters || !row[ fieldName ] ) continue;
+
+            if ( fieldProps.filterFn ) {
+                let passed = fieldProps.filterFn( fieldProps, fieldFilters );
+
+                if ( !passed ) return false;
+            } else {
+                let matchedAny = false;
+                // check if is substring or of substring for each prop
+                for ( const prop of Object.values( row[ fieldName ] ) ) {
+                    // inlay hints, tostring might not exist
+                    const propAsStr = `${ prop }`;
+                    if ( fieldFilters.some( f => propAsStr.includes( f ) || f.includes( propAsStr ) ) )
+                        matchedAny = true;
+                }
+
+                if ( i == 1 ) console.log( fieldFilters, Object.entries( row[ fieldName ]  ) )
+
+                if ( !matchedAny ) return false;
+            }
+        }
+
+        return true;
+    } ).sort( ( row1, row2 ) => {
         for ( const field in sorting.value ) {
             // sanity check
             if ( !props.fields[ field ] ) continue;
@@ -310,5 +387,32 @@ td[data-fit-text=true] {
     mask-clip: border-box;
     mask-composite: add;
     mask-image: linear-gradient( to right, #fff0, #fff0 var( --sort-arrow ), #ffff 0% );
+}
+
+.filter-active {
+    display: none;
+}
+.filter-inactive {
+    display: block;
+}
+
+.filter-container:has( input:checked ) {
+    & .filter-input  {
+        display: flex;
+    }
+
+    & .filter-active {
+        display: block;
+    }
+
+    & .filter-inactive {
+        display: none;
+    }
+}
+
+.filter-input {
+    display: none;
+    border: 1px solid theme( "colors.text.disabled" );
+    background: theme( "colors.main-bg" );
 }
 </style>
