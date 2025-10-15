@@ -12,7 +12,7 @@ Customer: MTÜ Tartu Kassikaitse, contact (hanna.pook@gmail.com)
 
 ## Structure
 - backend/  
-- frontend/ — (to be added later)
+- frontend/ 
 
 
 ## 1) Prerequisites
