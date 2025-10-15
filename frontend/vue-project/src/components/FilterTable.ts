@@ -16,6 +16,7 @@ export interface TableField<
 
     // -1 0 1, toLocaleCompare on strings for example, same result type
     sortFn?: ( props1: ComponentProps< ComponentType >, props2: ComponentProps< ComponentType > ) => number;
+    disableSorting?: boolean,
 
     // what should be filterable?
     //  unique: creates unique groups from given values OR custom values to show in filter input 
@@ -38,6 +39,7 @@ export interface TableField<
     centerEntries?: boolean,
     // should min width be content length
     fitContent?: boolean,
+    centerTitle?: boolean
 }
 
 export type FieldsMap = Record< string, TableField< any > >;

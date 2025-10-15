@@ -143,9 +143,9 @@ const { fields, entries } = defineTable({
     "cat-id": field({
       title: "#",
       component: TableText,
-      sortFn: ( p1, p2 ) => {
-        return 0;
-      }
+      disableSorting: true,
+      centerEntries: true,
+      centerTitle: true
     }),
     "cat-name": field({
       title: "Kassi nimi",
@@ -175,7 +175,8 @@ const { fields, entries } = defineTable({
     }),
     "cat-actions": field({
       title: "Tegevused",
-      component: Actions
+      component: Actions,
+      disableSorting: true
     })
   },
   // uhm linter is very unhappy

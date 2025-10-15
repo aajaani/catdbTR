@@ -6,32 +6,37 @@
                 <th
                     v-for="field, name in props.fields"
                     class="text-nowrap text-[12px] text-table-secondary text-left px-5 h-[40px]"
+                    :data-centered="field.centerTitle"
                 >
                     <span class="flex place-items-center h-full w-full gap-1 fill-text-secondary">
                         {{ field.title }}
 
                         <!-- sort controls later -->
-                        <span class="ml-auto mr-0 flex gap-1">
+                        <span
+                            v-if="!field.disableSorting || field.filterMode"
+                            class="ml-auto mr-0 flex gap-1"
+                        >
                             <BsSortDown
-                                v-if="sorting[ name ] === 'asc'"
+                                v-if="!field.disableSorting && sorting[ name ] === 'asc'"
                                 size="16"
                                 class="fill-inherit"
                                 @click="sorting[ name ] = 'desc'"
                             />
                             <BsSortUp
-                                v-else-if="sorting[ name ] === 'desc'"
+                                v-else-if="!field.disableSorting && sorting[ name ] === 'desc'"
                                 size="16"
                                 class="fill-inherit"
                                 @click="delete sorting[ name ]"
                             />
                             <BsSortDown
-                                v-else
+                                v-else-if="!field.disableSorting"
                                 size="16"
                                 class="fill-inherit unsorted"
                                 @click="sorting[ name ] = 'asc'"
                             />
 
                             <BiFilterAlt
+                                v-if="field.filterMode"
                                 size="16"
                                 class="fill-inherit"
                             />
@@ -167,9 +172,10 @@ const sorting = ref< FieldSortMap >({ });
 
 
 // todo: add filtering
+// ps: never a ref reactive to props, dont want a stateful component, we can use "effects" :)
 // what do I call this? filtering and sorting would be done here
 const mutatedEntries = computed( ( ) => {
-    console.log( Object.entries( sorting.value ) )
+    
     return props.entries.slice( ).sort( ( row1, row2 ) => {
         for ( const field in sorting.value ) {
             // sanity check
@@ -280,6 +286,11 @@ td[data-centered=true] {
     & > div {
         justify-content: center;
     }
+}
+
+th[data-centered=true] span {
+    margin: auto auto;
+    width: fit-content;
 }
 
 td[data-fit-text=true] {
