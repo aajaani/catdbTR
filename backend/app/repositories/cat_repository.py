@@ -60,3 +60,8 @@ class CatRepository(BaseRepository):
     def delete(self, cat: Cat) -> None:
         self.db.delete(cat)
         self.db.commit()
+
+    # is the name already taken by another cat?
+    def get_by_name(self, name: str) -> Cat | None:
+        stmt = select(Cat).where(Cat.name == name)
+        return self.db.execute(stmt).scalars().first()

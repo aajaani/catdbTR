@@ -1,4 +1,3 @@
-# schemas/foster_home.py
 from .common import ORMBase
 from pydantic import BaseModel
 

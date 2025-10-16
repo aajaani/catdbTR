@@ -1,3 +1,4 @@
+from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException, UploadFile
 from app.repositories.cat_repository import CatRepository
 from app.schemas.cats import CatCreate, CatUpdate
@@ -15,16 +16,26 @@ class CatService:
         if not data.name or not data.name.strip():
             raise HTTPException(status_code=422, detail="name is required")
 
+        # name must be unique (case-sensitive)
+        name_trim = data.name.strip()
+        if self.repo.get_by_name(name_trim):
+            raise HTTPException(status_code=409, detail="cat name must be unique")
+
         primary_obj = None
         if primary_image is not None:
             primary_obj = upload_to_minio(self.minio, primary_image)
 
         cat = Cat(**data.model_dump(exclude_unset=True))
-        cat.name = cat.name.strip()  
+        cat.name = name_trim  
         if primary_obj:
             cat.primary_photo_object = primary_obj
 
-        cat = self.repo.create(cat)
+        try:
+            cat = self.repo.create(cat)
+        except IntegrityError:
+            # topelt-kaitse, kui paralleelselt lisatakse sama nimega
+            raise HTTPException(status_code=409, detail="cat name must be unique")
+
         log_action(self.repo.db, "cat", cat.id, "CREATE")
         return cat
 

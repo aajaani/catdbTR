@@ -1,4 +1,3 @@
-# app/schemas/cats.py
 from datetime import date
 from typing import Literal
 from pydantic import BaseModel, Field
@@ -23,20 +22,7 @@ class CatCreate(BaseModel):
     birth_date: date | None = None
     foster_end_date: date | None = None
 
-    location_text: str | None = None
     notes: str | None = None
-
-    # medical 
-    dewormer_name: str | None = None
-    dewormed_at: date | None = None
-    deworm_repeat_at: date | None = None
-
-    spot_on_name: str | None = None
-    spot_on_at: date | None = None
-    spot_on_repeat_at: date | None = None
-
-    first_vaccine_at: date | None = None
-    booster_vaccine_at: date | None = None
 
     is_neutered: bool | None = None
 
@@ -56,19 +42,8 @@ class CatRead(ORMBase):
     birth_date: date | None = None
     foster_end_date: date | None = None
 
-    location_text: str | None = None
     notes: str | None = None
 
-    dewormer_name: str | None = None
-    dewormed_at: date | None = None
-    deworm_repeat_at: date | None = None
-
-    spot_on_name: str | None = None
-    spot_on_at: date | None = None
-    spot_on_repeat_at: date | None = None
-
-    first_vaccine_at: date | None = None
-    booster_vaccine_at: date | None = None
 
     is_neutered: bool | None = None
 
@@ -90,18 +65,6 @@ class CatUpdate(BaseModel):
     birth_date: date | None = None
     foster_end_date: date | None = None
 
-    location_text: str | None = None
     notes: str | None = None
-
-    dewormer_name: str | None = None
-    dewormed_at: date | None = None
-    deworm_repeat_at: date | None = None
-
-    spot_on_name: str | None = None
-    spot_on_at: date | None = None
-    spot_on_repeat_at: date | None = None
-
-    first_vaccine_at: date | None = None
-    booster_vaccine_at: date | None = None
 
     is_neutered: bool | None = None

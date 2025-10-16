@@ -14,46 +14,34 @@ class StatusEnum(str, enum.Enum):
     FOSTER = "FOSTER"
     ADOPTED = "ADOPTED"
     ARCHIVED = "ARCHIVED"
-    MISSING = "MISSING"  
+    MISSING = "MISSING"
     RESERVED = "RESERVED"
 
 class Cat(Base):
     __tablename__ = "cats"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(String(200), index=True, nullable=False)
+    # unikaalne nimi, et FE saaks turvaliselt autocomplete teha
+    name: Mapped[str] = mapped_column(String(200), index=True, unique=True, nullable=False)
 
     sex: Mapped[SexEnum | None] = mapped_column(Enum(SexEnum), default=SexEnum.unknown)
     chip_number: Mapped[str | None] = mapped_column(String(30))
-
     status: Mapped[StatusEnum] = mapped_column(Enum(StatusEnum), default=StatusEnum.ACTIVE)
 
-    # links 
+    # links
     manager_id: Mapped[int | None] = mapped_column(ForeignKey("managers.id", ondelete="SET NULL"))
     foster_home_id: Mapped[int | None] = mapped_column(ForeignKey("foster_homes.id", ondelete="SET NULL"))
     colony_id: Mapped[int | None] = mapped_column(ForeignKey("colonies.id", ondelete="SET NULL"))
 
     # dates
-    intake_date: Mapped[date | None] = mapped_column(Date)      
+    intake_date: Mapped[date | None] = mapped_column(Date)
     birth_date: Mapped[date | None] = mapped_column(Date)
-    foster_end_date: Mapped[date | None] = mapped_column(Date)   
+    foster_end_date: Mapped[date | None] = mapped_column(Date)
 
-    # text/notes
-    location_text: Mapped[str | None] = mapped_column(String(200))
+    # notes
     notes: Mapped[str | None] = mapped_column(Text)
 
-    # medical (English)
-    dewormer_name: Mapped[str | None] = mapped_column(String(200))  
-    dewormed_at: Mapped[date | None] = mapped_column(Date)  
-    deworm_repeat_at: Mapped[date | None] = mapped_column(Date)     
-
-    spot_on_name: Mapped[str | None] = mapped_column(String(200))
-    spot_on_at: Mapped[date | None] = mapped_column(Date)   
-    spot_on_repeat_at: Mapped[date | None] = mapped_column(Date)   
-
-    first_vaccine_at: Mapped[date | None] = mapped_column(Date)     
-    booster_vaccine_at: Mapped[date | None] = mapped_column(Date) 
-
+    # medical (ülejäänud on cat procedures tabelis)
     is_neutered: Mapped[bool | None] = mapped_column(Boolean)
 
     # media
@@ -63,3 +51,5 @@ class Cat(Base):
     manager = relationship("Manager")
     foster_home = relationship("FosterHome")
     colony = relationship("Colony", back_populates="cats")
+    procedures = relationship("CatProcedure", back_populates="cat", cascade="all, delete-orphan")
+    tasks = relationship("Task", back_populates="cat", cascade="all, delete-orphan")
