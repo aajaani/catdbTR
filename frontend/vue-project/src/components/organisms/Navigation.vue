@@ -6,6 +6,7 @@ import { useRoute } from 'vue-router';
 const route = useRoute( );
 
 // todo: add translations, idk if i18n exists for vue3
+// links derived from router config @/sec/router/index.ts
 const sidebar_links = {
   "/": {
     title: "Ulevaade",
@@ -19,14 +20,15 @@ const sidebar_links = {
     title: "Lisa kass",
     icon: MdCatchingPokemon,
   },
+  "/managers": {
+    title: "Vabatahtlikud",
+    icon: MdPeople,
+  },
   "/add-manager": {
-    title: "Lisa hooldaja",
+    title: "Lisa vabatahtlik",
     icon: MdPersonAdd,
   },
-  "/personal": {
-    title: "Personal",
-    icon: MdPeople,
-  }
+
 }
 </script>
 

@@ -22,7 +22,7 @@ const entries = computed< BreadCrumbEntry[ ] >(( ) => {
 
 <template>
   <nav aria-label="Breadcrumb" v-if="entries.length > 0 && entries">
-    <ol class="flex items-center gap-2">
+    <ol class="flex items-center gap-2" id="breadcrumbs">
       <li v-for="( entry, i ) in entries" :key="i" class="flex items-center gap-2 breadcrumb abril-fatface-regular">
         <!-- first entries are less opaque than the last one -->
         <router-link
@@ -53,7 +53,6 @@ const entries = computed< BreadCrumbEntry[ ] >(( ) => {
   &:has( > a ):hover {
     text-decoration: underline;
   }
-  opacity: 0.6;
 
   /* absolute, otherwise gets underlined on link hover */
   &::before {
@@ -62,5 +61,16 @@ const entries = computed< BreadCrumbEntry[ ] >(( ) => {
     right: 0;
     color: var( --text-muted );
   }
+
+  a {
+    color: var( --color-breadcrumbs-inactive );
+    text-decoration: none;
+  }
 }
+
+.breadcrumb:last-child > * {
+  color: var( --color-breadcrumbs-active );
+}
+
+
 </style>

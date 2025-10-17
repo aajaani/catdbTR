@@ -36,7 +36,6 @@ const tableQueryParams = ref<{
 watch(
   ( ) => tableQueryParams.value,
   ( newParams ) => {
-    console.log( newParams )
     router.replace({ name: router.currentRoute.value.name, query: { ...newParams } })
   },
   {
@@ -190,8 +189,6 @@ const { fields, entries } = defineTable({
       disableSorting: true
     })
   },
-  // uhm linter is very unhappy
-  // todo: rework table component structure
   mock_cats.map( ( cat: Cat ) => ({
     "cat-id": {
       text: cat.id.toString( )

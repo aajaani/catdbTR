@@ -29,19 +29,19 @@ const routes: RouteRecordRaw[] = [
 		meta: {
 			breadcrumbs: [
 				{ name: "Ulevaade", link: "/" },
-				{ name: "Personal", link: "/personal" },
+				{ name: "Vabatahtlikud", link: "/managers" },
 				{ name: "Lisa Hooldaja" },
 			]
 		}
 	},
 		{
-		path: "/personal",
-		name: "PersonalList",
-		component: ( ) => import( "@/views/Personal.vue" ),
+		path: "/managers",
+		name: "ManagerLsist",
+		component: ( ) => import( "@/views/Managers.vue" ),
 		meta: {
 			breadcrumbs: [
 				{ name: "Ulevaade", link: "/" },
-				{ name: "Personal" },
+				{ name: "Vabatahtlikud" },
 			]
 		}
 	},

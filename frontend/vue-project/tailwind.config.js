@@ -26,6 +26,11 @@ export default {
 			"white": "#FFFFFF",
 		  },
 
+		  "breadcrumbs": {
+			"inactive": "#6C757D",
+			"active": "#212529"
+		  },
+
 		  "text": {
 			"disabled": "#ADB5BD",
 			"normal": "#343A40",
@@ -36,6 +41,11 @@ export default {
 
 		  "primary": {
 			"normal": "#0057FC"
+		  },
+
+		  "sex": {
+			"male": "#6aa2f7",
+			"female": "#f990c7"
 		  }
 	  }
 	},

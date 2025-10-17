@@ -76,7 +76,7 @@
         <tbody>
             <!-- one row for each perPage count -->
             <tr
-                v-for="entryIndex in ( pageData.isLastPage ? pageData.entriesLastPage : perPage )"
+                v-for="entryIndex in ( Math.min( props.entries.length, pageData.isLastPage ? pageData.entriesLastPage : perPage ) )"
                 class="text-center"
             >
                 <td
@@ -99,6 +99,16 @@
             </tr>
         </tbody>
     </table>
+
+    <div
+        v-if="props.entries.length === 0"
+        class="py-2.5 w-full"
+    >
+        <p
+            class="mx-auto w-fit"
+        >Pole andmeid mida naidata</p>
+    </div>
+
     <div
         class="flex gap-2 pagination min-h-fit"
     >
@@ -308,7 +318,10 @@ const pageData = computed<{
 
     // total page count, if we dont have a full last page, just return base page count (since no remainder items)
     // else, add 1 page,, since there's a page witth <basecount items
-    const pageCountTotal = pageBaseCount + ( hasFullLastPage ? 0 : 1 );
+    let pageCountTotal = pageBaseCount + ( hasFullLastPage ? 0 : 1 );
+    // in case we have no entries, clamp to a minimum 0f 1 page
+    pageCountTotal = Math.max( 1, pageCountTotal );
+
 
     const isLastPage = pageCountTotal - 1 === currentPage.value;
 

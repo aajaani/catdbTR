@@ -3,42 +3,176 @@
     <h1 class="abril-fatface-regular text-[46px]">Kassid</h1>
     <BreadCrumbs />
 
-    <!-- todo: convert to hidden file input, codepen might have some ideas on how to detect file hovering -->
-    <div class="w-full h-full grid mb-8 place-content-center text-center gap-8">
-      <!-- todo: if a file is uploaded (and it fails), this image is replaced with an error container -->
-      <img src="/public/assets/fileUploadImage.svg" alt="upload_img" height="200px" class="mx-auto"></img>
-      
-      <div class="flex flex-col abyssinica-sil-regular text-2xl text-text-normal">
-        <h1 class="abyssinica-sil-regular text-[38px] text-text-heading">Lohista ja aseta oma fail siia!</h1>
-        <p>Lae üles PDF, DOCX, DOC or XLSX faile</p>
-        <p>Faili maksimum suurus on 5 MB</p>
-      </div>
+    <!-- todo: file list on the right, different layout on smaller screens -->
+    <form
+      class="flex flex-col gap-8 abyssinica-sil-regular mt-8"
+    >
+      <AccordionWithTitle
+        title="Uldine"
+        :default-opened="true"
+        :lock="true"
+        class="bg-neutral-white rounded-lg px-4 py-4"
+      >
+        <div class="grid grid-cols-6 gap-5 ">
+          <div class="flex flex-col col-start-1 col-span-3 row-end-1">
+            <label for="cat-name">Kassi nimi</label>
+            <input id="cat-name" class="input" name="cat-name" required></input>
+          </div>
 
-      <div class="flex gap-2 justify-center">
-        <Button
-          class="bg-primary-normal text-text-button abyssinica-sil-regular uppercase text-[14px] w-[200px] min-h-12"
-        >
-          <HiOutlineUpload size="20"></HiOutlineUpload>
-          Lae üles
-        </Button>
+          <div class="flex flex-col col-start-4 col-span-3 row-end-1">
+            <label for="cat-colony">Originaalne koloonia</label>
+            <input id="cat-colony" class="input" name="cat-colony"></input>
+          </div>
 
-        <Button
-          class="bg-neutral-white text-primary-normal border-primary-normal border-0.5 abyssinica-sil-regular uppercase text-[14px] w-[200px] min-h-12"
-        >
-          Sisesta manuaalselt
-        </Button>
-      </div>
-    </div>
+          <div class="flex flex-col col-start-1 col-span-3 row-end-2">
+            <label for="cat-sex">Sugu</label>
+            <HorizontalSingleSelection
+              id="cat-sex"
+              class="col-start-1 col-span-2 "
+              group-name="cat-sex"
+              :items="{
+                'male': {
+                  component: BiMaleSign,
+                  props: { size: 20 }
+                },
+                'female': {
+                  component: BiFemaleSign,
+                  props: { size: 20 }
+                }
+              }"
+            />
+          </div>
+
+          <div class="flex flex-col col-start-4 col-span-3 row-end-2">
+            <label for="cat-sex">Kiibi number</label>
+            <NumberInput
+              :numbers="15"
+              class="input"
+            />
+            <p class="text-[12px] text-text-secondary">Kiibi number peaks olema 15 numbrit</p>
+          </div>
+
+          <div class="grid grid-rows-[auto_1fr] col-start-1 col-span-6 row-end-3 gap-2">
+            <h1 class="col-start-1 col-span-3 text-2xl h-fit">KK alates</h1>
+            <div class="col-start-1 col-span-3 flex flex-row gap-5">
+              <div class="flex flex-col basis-1/3">
+                <label for="cat-home-since">Kuupaev</label>
+                <input id="cat-home-since" name="cat-home-since" type="date" class="input"></input>
+              </div>
+              <div class="flex flex-col basis-2/3">
+                <label for="cat-manager">Haldur</label>
+                <input id="cat-manager" name="cat-manager" type="text" class="input"></input>
+              </div>
+            </div>
+          </div>
+        </div>
+      </AccordionWithTitle>
+
+      <AccordionWithTitle
+        title="Hoiukodu info"
+        :default-opened="false"
+        class="bg-neutral-white rounded-lg"
+      >
+        <div class="grid grid-cols-2 gap-5">
+          <div class="flex flex-col col-start-1 col-span-1">
+            <label for="foster-home-name">Hoiukodu nimi</label>
+            <input id="foster-home-name" name="foster-home-name" class="input col-start-1 col-span-1"></input>
+          </div>
+
+          <div class="flex flex-col col-start-2 col-span-1">
+            <label for="foster-home-tel">Hoiukodu telefoninumber</label>
+            <input id="foster-home-tel" name="foster-home-tel" class="input col-start-2 col-span-1" type="tel"></input>
+          </div>
+
+          <div class="flex flex-col col-start-1 col-span-2 row-start-2">
+            <label for="foster-home-address">Hoiukodu aadress</label>
+            <input id="foster-home-address" name="foster-home-address" class="input col-start-2 col-span-1" type="tel"></input>
+          </div>
+        </div>
+      </AccordionWithTitle>
+
+      <AccordionWithTitle
+        title="Meditsiiniline info"
+        :default-opened="false"
+        :lock="false"
+        class="bg-neutral-white rounded-lg"
+      >
+        <div class="grid grid-cols-1">
+          <TabSelection
+            :tabs="[ 'Ussitablett', 'Turjatilk', 'Vaktsiin' ]"
+          >
+            <template v-slot:Ussitablett>
+              <div class="grid grid-cols-2 px-4 py-4 gap-5">
+                <div class="flex flex-col col-start-1 col-span-1">
+                  <label for="deworm-tablet-given-date">Andmise kuupaev</label>
+                  <input id="deworm-tablet-given-date" name="deworm-tablet-given-date" type="date" class="input"></input>
+                </div>
+
+                <div class="flex flex-col col-start-2 col-span-1">
+                  <label for="deworm-tablet-next-date">Jargmise votmise kuupaev</label>
+                  <input id="deworm-tablet-next-date" name="deworm-tablet-next-date" type="date" class="input"></input>
+                </div>
+              </div>
+            </template>
+
+            <template v-slot:Turjatilk>
+              <div class="grid grid-cols-2 px-4 py-4 gap-5">
+                <div class="flex flex-col col-start-1 col-span-1">
+                  <label for="flea-drop-given-date">Andmise kuupaev</label>
+                  <input id="flea-drop-given-date" name="flea-drop-given-date" type="date" class="input"></input>
+                </div>
+
+                <div class="flex flex-col col-start-2 col-span-1">
+                  <label for="flea-drop-next-date">Jargmise votmise kuupaev</label>
+                  <input id="flea-drop-next-date" name="flea-drop-next-date" type="date" class="input"></input>
+                </div>
+              </div>
+            </template>
+
+            <template v-slot:Vaktsiin>
+              <div class="grid grid-cols-2 px-4 py-4 gap-5">
+                <div class="flex flex-col col-start-1 col-span-1">
+                  <label for="vaccine-given-date">Andmise kuupaev</label>
+                  <input id="vaccine-given-date" name="vaccine-given-date" type="date" class="input"></input>
+                </div>
+
+                <div class="flex flex-col col-start-2 col-span-1">
+                  <label for="vaccine-next-date">Jargmise votmise kuupaev</label>
+                  <input id="vaccine-next-date" name="vaccine-next-date" type="date" class="input"></input>
+                </div>
+              </div>
+            </template>
+          </TabSelection>
+        </div>
+      </AccordionWithTitle>
+    </form>
   </div>
 </template>
 
 <script setup>
-import Button from '@/components/atoms/Button.vue';
+import HorizontalSingleSelection from '@/components/atoms/HorizontalSingleSelection.vue';
+import NumberInput from '@/components/atoms/NumberInput.vue';
+import AccordionWithTitle from '@/components/molecules/AccordionWithTitle.vue';
 import BreadCrumbs from '@/components/organisms/BreadCrumbs.vue';
+import TabSelection from '@/components/organisms/TabSelection.vue';
 
-import { HiOutlineUpload } from 'vue-icons-plus/hi';
+import { BiMaleSign, BiFemaleSign } from 'vue-icons-plus/bi';
 </script>
 
 <style lang="css" scoped>
+#cat-sex:deep( .item-container ) {
+    &:first-child:has( input:checked ) {
+      @apply bg-sex-male border-sex-male border-[color-mix(in_srgb,theme(colors.sex.male)_90%,black)];
+    }
+    
+    /* female selected */
+    &:last-child:has( input:checked ) {
+      @apply bg-sex-female border-[color-mix(in_srgb,theme(colors.sex.female)_90%,black)];
+    }
+    /* need to apply right border for male and set it as it is above */
+    &:first-child:not( :has( input:checked ) ) {
+      @apply border-r-[color-mix(in_srgb,theme(colors.sex.female)_90%,black)]
+    }
 
+}
 </style>

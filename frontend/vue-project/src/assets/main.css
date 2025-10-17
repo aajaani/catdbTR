@@ -1,5 +1,6 @@
 @import './base.css';
 @import "./reset.css";
+@import "./generic-styles/input.css";
 
 /* tailwindcss directives */
 @tailwind base;

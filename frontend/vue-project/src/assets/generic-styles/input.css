@@ -1,0 +1,19 @@
+/* needs body due to reset selector specifity */
+body .input {
+    @apply border-neutral-400 border-[1px] bg-neutral-white;
+    border-radius: 8px;
+    padding-left: 12px;
+    min-height: 40px;
+}
+
+body :is( .input, label ) {
+    font-family: "Abyssinica SIL", serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+label:has( + .input:required )::after {
+    content: "*";
+    padding-left: 6px;
+    color: #e16666;
+}
