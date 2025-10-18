@@ -10,6 +10,7 @@ Customer: MTÜ Tartu Kassikaitse, contact (hanna.pook@gmail.com)
 - [Wiki](https://gitlab.cs.ut.ee/aajaani/catdb/-/wikis/home)
 - [Issue Board](https://gitlab.cs.ut.ee/aajaani/catdb/-/boards)
 
+
 ## Structure
 - backend/  
 - frontend/ 
@@ -82,6 +83,7 @@ http://127.0.0.1:8000/
 
 
 ## 4) API endpoints 
+- [Schemas and Endpoints in more detail](https://gitlab.cs.ut.ee/aajaani/catdb/-/wikis/Schemas&Endpoints)
 
 ### Cats
 
