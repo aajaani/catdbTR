@@ -1,9 +1,13 @@
 /* needs body due to reset selector specifity */
 body .input {
-    @apply border-neutral-400 border-[1px] bg-neutral-white;
+    @apply border-neutral-400 text-gray-950 border-[1px] bg-neutral-white;
     border-radius: 8px;
     padding-left: 12px;
     min-height: 40px;
+
+    &:disabled {
+        @apply border-opacity-70 text-opacity-20 cursor-not-allowed;
+    }
 }
 
 body :is( .input, label ) {

@@ -6,6 +6,7 @@
             type="button"
             v-for="( item, idx ) in props.tabs"
             @click="selected = idx"
+            class="px-2"
             :data-active="selected === idx"
         >{{  item  }}</button>
     </div>
@@ -46,11 +47,11 @@ const selected = ref( 0 );
 <style lang="css" scoped>
 .tabs-header {
     & button {
-        @apply border-b border-neutral-400;
+        @apply border-[1px] border-transparent border-b-neutral-400 border-solid;
         flex: 1;
     
         &[ data-active=true ] {
-            @apply bg-neutral-white border-r border-l border-t border-b-transparent  rounded-t-md;
+            @apply bg-neutral-white border-neutral-400 border-b-transparent  rounded-t-md;
         }
     }
 }

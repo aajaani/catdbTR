@@ -48,8 +48,8 @@ interface ItemAsComponent {
     props: ComponentProps< Component >
 }
 
-type ItemsAsComponents = { [ name: string ]: ItemAsComponent }
-type PropItemsType = ItemsAsComponents | string[ ]
+type ItemsAsComponents = { [ key: string ]: ItemAsComponent };
+type PropItemsType = ItemsAsComponents | readonly string[ ];
 
 const props = defineProps<{
     groupName: string,
@@ -63,15 +63,16 @@ const emit = defineEmits<{
     "change": [ string ]
 }>( );
 
-const selected = ref( props.defaultSelected ??
+// aha, ?? is more specific that ?
+// if we have defaultSelected from props, use that as selected
+// if not, pick first from passed items
+const selected = ref( props.defaultSelected ?? (
     // objects don't have length
     props.items.length
         ? ( props.items as string[ ] )[ 0 ]
         // no length => dealing with object, use first key of object
-        : Object.keys( props.items )[ 0 ] 
+        : Object.keys( props.items )[ 0 ]  )
 );
-
-console.log( selected.value )
 </script>
 
 <style lang="css" scoped>
