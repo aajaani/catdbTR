@@ -1,78 +1,84 @@
 <template>
-  <div
-    class="flex flex-row bg-neutral-white min-h-10 border-neutral-400"
-  >
-  <!-- container for each entry as radio is invisible and takes all space -->
-    <div
-        v-for="( item, key ) in props.items"
-        class="relative item-container flex flex-1 justify-center items-center border-t-[1px] border-b-[1px] border-neutral-400 border-solid"
-        @click="( ) => {
-            // items passed as string
-            if ( typeof item === 'string' ) {
-                emit( 'change', item );
-                selected = item;
-            } else {
-                // items passed as individual components
-                selected = ( key as string );
-            }
-        }"
-    >
-        <span
-            v-if="typeof item === 'string'"
-        >{{ item }}</span>
-
-        <component
-            v-else
-            :is="( item as ItemAsComponent ).component"
-            v-bind="( item as ItemAsComponent ).props"
-        ></component>
-
+    <div class="flex flex-row w-full">
         <input
-            class="absolute inset-0 opacity-0 cursor-pointer"
-            type="radio"
-            :value="typeof item === 'string' ? item : key"
+            v-if="!!props.fallback"
+            class="w-0 h-0 absolute"
             :name="groupName"
-            :defaultChecked="selected === ( typeof item === 'string' ? item : key )"
+            :value="fallback"
+            ref="fallback"
+            v-model="model"
         ></input>
-    </div>
+
+        <div
+            class="flex flex-row w-full bg-neutral-white min-h-10 border-neutral-400"
+        >
+
+        <!-- container for each entry as radio is invisible and takes all space -->
+            <div
+                v-for="( item, key ) in props.items"
+                class="relative item-container flex flex-1 justify-center items-center border-t-[1px] border-b-[1px] border-neutral-400 border-solid"
+            >
+                <span
+                    v-if="typeof item === 'string'"
+                >{{ item }}</span>
+
+                <component
+                    :is="( item as ItemAsComponent ).component"
+                    v-bind="( item as ItemAsComponent ).props"
+                ></component>
+
+                <input
+                    class="absolute inset-0 opacity-0 cursor-pointer"
+                    type="radio"
+                    :value="getRadioValue( item as ( string | ItemAsComponent ), key as string)"
+                    :name="groupName"
+                    v-model="model"
+                    :title="props.fallback && `Paremklikk, et tuhistada sisestus`"
+                    @click.right.prevent="( ) => {
+                        if ( !props.fallback ) return;
+                        let selected = props.fallback;
+                        if ( fallbackInput ) fallbackInput.click( );
+                        $emit( 'update:modelValue', selected );
+                    }"
+                ></input>
+            </div>
+        </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { useTemplateRef } from 'vue';
 import type { Component } from 'vue';
 import type { ComponentProps } from 'vue-component-type-helpers';
 
-interface ItemAsComponent {
+type ItemAsComponent = {
     component: Component,
     props: ComponentProps< Component >
-}
+};
 
-type ItemsAsComponents = { [ key: string ]: ItemAsComponent };
+type ItemsAsComponents = { [ key: string ]: ItemAsComponent | string };
 type PropItemsType = ItemsAsComponents | readonly string[ ];
+
+const fallbackInput = useTemplateRef< HTMLInputElement | null >( "fallback" );
 
 const props = defineProps<{
     groupName: string,
     items: PropItemsType,
-    defaultSelected?: string
+    fallback?: string
 }>( );
 
-// todo: check if defaultSelected exists in items
+// todo: check if default mdoel value exists in items
 
-const emit = defineEmits<{
-    "change": [ string ]
-}>( );
+const model = defineModel({ required: true });
 
-// aha, ?? is more specific that ?
-// if we have defaultSelected from props, use that as selected
-// if not, pick first from passed items
-const selected = ref( props.defaultSelected ?? (
-    // objects don't have length
-    props.items.length
-        ? ( props.items as string[ ] )[ 0 ]
-        // no length => dealing with object, use first key of object
-        : Object.keys( props.items )[ 0 ]  )
-);
+const getRadioValue = ( item: string | ItemAsComponent, key: string ) => {
+    if ( Array.isArray( props.items ) )
+        return item;
+
+    // const items = ( props.items as ItemsAsComponents );
+    // if ( typeof item === "string" )
+    return key; // Object.entries( items ).find( ([ v ]) => v === item )?.[ 0 ]
+}
 </script>
 
 <style lang="css" scoped>

@@ -5,7 +5,6 @@
     :maxlength="props.numbers"
     :data-numbers="filled"
     v-model="filled"
-    title="15 numbri pikkune kiibi number"
   ></input>
 </template>
 
@@ -19,7 +18,7 @@ const props = withDefaults( defineProps<{
     default: ""
 } )
 
-const filled = ref( props.default.length );
+const filled = ref( props.default );
 </script>
 
 <style lang="css" scoped>

@@ -6,6 +6,7 @@
     <!-- todo: file list on the right, different layout on smaller screens -->
     <form
       class="flex flex-col gap-8 abyssinica-sil-regular mt-8 flex-1"
+      @submit.prevent="onSubmit"
     >
       <AccordionWithTitle
         title="Uldine"
@@ -16,25 +17,27 @@
         <div class="grid grid-cols-12 gap-5 ">
           <div class="flex flex-col col-start-1 col-span-4 row-end-1">
             <label for="cat-name">Kassi nimi</label>
-            <input id="cat-name" class="input" name="cat-name" required></input>
+            <input id="cat-name" name="cat-name" class="input" v-model="catData.name" required></input>
           </div>
 
           <div class="flex flex-col col-start-5 col-span-4 row-end-1">
             <label for="cat-colony">Originaalne koloonia</label>
-            <input id="cat-colony" class="input" name="cat-colony"></input>
+            <input id="cat-colony" name="cat-colony" class="input" v-model="catData.colony"></input>
           </div>
 
           <div class="flex flex-col col-start-9 col-span-4 row-end-1">
             <label for="cat-birth-date">Sunnikuupaev</label>
-            <input id="cat-birth-date" type="date" class="input" name="cat-birth-date"></input>
+            <input id="cat-birth-date" name="cat-birth-date" type="date" class="input" v-model="catData.birthDate"></input>
           </div>
 
           <div class="flex flex-col col-start-1 col-span-3 row-end-2">
             <label for="cat-sex">Sugu</label>
             <HorizontalSingleSelection
               id="cat-sex"
-              class="col-start-1 col-span-2 "
               group-name="cat-sex"
+              class="col-start-1 col-span-2 "
+              fallback="unknown"
+              v-model="catData.sex"
               :items="{
                 'male': {
                   component: BiMaleSign,
@@ -52,14 +55,15 @@
             <label for="cat-on-homepage">Kodukal</label>
             <HorizontalSingleSelection
               id="cat-on-homepage"
-              class="col-start-1 col-span-2 "
               group-name="cat-on-homepage"
+              class="col-start-1 col-span-2"
+              v-model="catData.onHomepage"
               :items="{
-                'Jah': {
+                true: {
                   component: CgCheck,
                   props: { size: 24 }
                 },
-                'Ei': {
+                false: {
                   component: CgClose,
                   props: { size: 20 }
                 }
@@ -68,10 +72,15 @@
           </div>
 
           <div class="flex flex-col col-start-7 col-span-6 row-end-2">
-            <label for="cat-sex">Kiibi number</label>
+            <label for="cat-chip-id">Kiibi number</label>
             <NumberInput
+              id="cat-chip-id"
+              name="cat-chip-id"
+              default=""
               :numbers="15"
               class="input"
+              title="15 numbri pikkune kiibi number"
+              v-model="catData.chipID"
             />
             <p class="text-[12px] text-text-secondary">Kiibi number peaks olema 15 numbrit</p>
           </div>
@@ -81,8 +90,9 @@
             <div class="col-start-1 col-span-3 flex flex-row gap-5">
               <div class="flex flex-col basis-1/3">
                 <label for="cat-home-since">Kuupaev</label>
-                <input id="cat-home-since" name="cat-home-since" type="date" class="input"></input>
+                <input id="cat-home-since" name="cat-home-since" type="date" class="input" v-model="catData.intake_date"></input>
               </div>
+              <!-- todo: manager dropdown -->
               <div class="flex flex-col basis-2/3">
                 <label for="cat-manager">Haldur</label>
                 <input id="cat-manager" name="cat-manager" type="text" class="input"></input>
@@ -92,6 +102,8 @@
         </div>
       </AccordionWithTitle>
 
+      <!-- todo: could be that we have an existing foster home -->
+      <!-- overall have to redo this part -->
       <AccordionWithTitle
         title="Hoiukodu info"
         :default-opened="true"
@@ -169,16 +181,19 @@
 
             <template v-slot:Steriliseeritud>
               <div class="grid grid-cols-2 px-4 py-4 gap-5">
+                <!-- todo: yes/no is mapped to isNeutered (bool|string now, only bool would be cool) -->
                 <HorizontalSingleSelection
                   id="cat-sterilized"
                   group-name="cat-sterilized"
-                  :items="[ 'Jah', 'Ei' ]"
-                  defaultSelected="Ei"
-                  @change="( sel ) => isSterilized = sel === 'Jah' "
+                  :items="{
+                    true: 'Jah',
+                    false: 'Ei'
+                  }"
+                  v-model="catData.isNeutered"
                   class="col-start-1 col-span-1"
                 />
 
-                <input type="date" class="input" :disabled="!isSterilized"></input>
+                <input type="date" class="input" :disabled="!catData.isNeutered"></input>
               </div>
             </template>
           </TabSelection>
@@ -192,8 +207,10 @@
         class="bg-neutral-white rounded-lg"
       >
         <textarea
+          id="cat-details"
           name="cat-details"
-          class="w-full resize-y input min-w-[20ch]"
+          class="w-full resize-y input min-h-10"
+          v-model="catData.notes"
         ></textarea>
 
       </AccordionWithTitle>
@@ -216,13 +233,57 @@ import AccordionWithTitle from '@/components/molecules/AccordionWithTitle.vue';
 import BreadCrumbs from '@/components/organisms/BreadCrumbs.vue';
 import TabSelection from '@/components/organisms/TabSelection.vue';
 import Button from '@/components/atoms/Button.vue';
-import { ref } from 'vue';
+import { ref, reactive } from 'vue';
 
 import { BiMaleSign, BiFemaleSign } from 'vue-icons-plus/bi';
 import { CgCheck, CgClose } from 'vue-icons-plus/cg';
 
 // todo: maybe add localStorage so when page is switched, form data isnt lost
-const isSterilized = ref( false );
+const catData = reactive({
+  name: "",
+  // todo: colony_id: "",
+  birthDate: null,
+  sex: "unknown",
+  onHomepage: "true", // can't do booleans due to how HorizontalSingleSelection works
+  chipID: "",
+  intake_date: "",
+  // todo: manager_id
+  // todo: status
+  // todo: foster_home_id (name, id, address)
+  // todo: foster_end_date
+  notes: "",
+  isNeutered: "false",
+});
+
+const onSubmit = ( e: SubmitEvent ) => {
+  if ( !e.target ) return;
+
+  const data = new FormData( e.target as HTMLFormElement );
+  console.log( data )
+
+  console.log( typeof catData.isNeutered )
+  /*
+    "cat-name" → "asd"​​
+    "cat-colony" → ""
+    "cat-birth-date" → ""
+    "cat-sex" → "male"
+    "cat-on-homepage" → "Jah"
+    "cat-chip-id" → ""
+    "cat-home-since" → ""
+    "cat-manager" → ""
+    "foster-home-name" → ""​​
+    "foster-home-tel" → ""
+    "foster-home-address" → ""
+    "deworm-tablet-given-date" → ""
+    "deworm-tablet-next-date" → ""
+    "flea-drop-given-date" → ""
+    "flea-drop-next-date" → ""
+    "vaccine-given-date" → ""
+    "vaccine-next-date" → ""
+    "cat-sterilized" → "Ei"​​
+    "cat-details" → ""
+*/
+}
 </script>
 
 <style lang="css" scoped>
@@ -236,8 +297,8 @@ const isSterilized = ref( false );
       @apply bg-sex-female border-[color-mix(in_srgb,theme(colors.sex.female)_90%,black)];
     }
     /* need to apply right border for male and set it as it is above */
-    &:first-child:not( :has( input:checked ) ) {
-      @apply border-r-[color-mix(in_srgb,theme(colors.sex.female)_90%,black)]
+    &:first-child:has( + & input:checked ) {
+      @apply border-r-[color-mix(in_srgb,theme(colors.sex.female)_90%,black)];
     }
 }
 
@@ -252,8 +313,8 @@ const isSterilized = ref( false );
     @apply bg-[#fd35357e] border-[color-mix(in_srgb,#fd3535_90%,black)];
   }
   /* need to apply right border for male and set it as it is above */
-  &:first-child:not( :has( input:checked ) ) {
-    @apply border-r-[color-mix(in_srgb,#e16666_90%,black)]
+  &:first-child:has( + & input:checked ) {
+    @apply border-r-[color-mix(in_srgb,#fd3535_90%,black)]
   }
 }
 
@@ -267,7 +328,7 @@ const isSterilized = ref( false );
     @apply bg-[#fd35357e] border-[color-mix(in_srgb,#fd3535_90%,black)];
   }
   /* need to apply right border for male and set it as it is above */
-  &:first-child:not( :has( input:checked ) ) {
+  &:first-child:has( + & input:checked ) {
     @apply border-r-[color-mix(in_srgb,#e16666_90%,black)]
   }
 }
