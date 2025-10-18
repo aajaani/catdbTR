@@ -1,3 +1,9 @@
+from app.repositories.cat_procedure_repository import CatProcedureRepository
+from app.repositories.task_repository import TaskRepository
+from app.schemas.procedure import ProcedureCreate, ProcedureRead
+from app.schemas.task import TaskCreate, TaskRead
+from app.services.procedure_service import ProcedureService
+from app.services.task_service import TaskService
 from fastapi import FastAPI, Depends, UploadFile, File, Form, Request, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import ValidationError
@@ -21,6 +27,7 @@ from app.services.manager_service import ManagerService
 from app.services.foster_home_service import FosterHomeService
 from app.models.manager import Manager
 from app.models.foster_home import FosterHome
+from app.models.cat_procedure import CatProcedure
 
 # MinIO 
 MINIO_ENDPOINT = "localhost:9000"
@@ -147,3 +154,60 @@ def get_image(object_name: str, request: Request):
         return StreamingResponse(obj, media_type=content_type)
     except Exception:
         raise HTTPException(status_code=404, detail="Object not found or not accessible")
+    
+
+# PROCEDURES
+
+@app.post("/cats/{cat_id}/procedures", response_model=ProcedureRead, status_code=201)
+def add_procedure(
+    cat_id: int,
+    request: Request,
+    db = Depends(get_db),
+    payload: str = Form(...),
+    file: UploadFile | None = File(None),
+):
+    # pydantic validation
+    try:
+        data = ProcedureCreate.model_validate_json(payload)
+    except ValidationError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+    svc = ProcedureService(CatProcedureRepository(db), CatRepository(db), request.app.state.minio)
+    return svc.add(
+        cat_id=cat_id,
+        type_=data.type,
+        is_repeat=data.is_repeat,
+        at_date=data.at_date,
+        notes=data.notes,
+        payment=data.payment,
+        file=file,
+    )
+
+@app.get("/cats/{cat_id}/procedures", response_model=list[ProcedureRead])
+def list_procedures(cat_id: int, db = Depends(get_db)):
+    svc = ProcedureService(CatProcedureRepository(db), CatRepository(db), None)
+    return svc.list_for_cat(cat_id)
+
+
+# TASKS (for calendar)
+@app.post("/tasks", response_model=TaskRead, status_code=201)
+def create_task(payload: TaskCreate, db = Depends(get_db)):
+    
+    svc = TaskService(TaskRepository(db), CatRepository(db))
+    return svc.add(
+        cat_id=payload.cat_id,
+        type_=payload.type,
+        due_date=payload.due_date,
+        notes=payload.notes,
+    )
+
+@app.get("/tasks", response_model=list[TaskRead])
+def list_tasks(db = Depends(get_db)):
+    # gives all tasks
+    svc = TaskService(TaskRepository(db), CatRepository(db))
+    return svc.list_all()
+
+@app.get("/cats/{cat_id}/tasks", response_model=list[TaskRead])
+def list_tasks_for_cat(cat_id: int, db = Depends(get_db)):
+    svc = TaskService(TaskRepository(db), CatRepository(db))
+    return svc.list_by_cat(cat_id)

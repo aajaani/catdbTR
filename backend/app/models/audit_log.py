@@ -1,4 +1,3 @@
-# app/models/audit_log.py
 from sqlalchemy import Integer, String, DateTime, JSON, ForeignKey, func
 from sqlalchemy.orm import Mapped, mapped_column
 from app.db.base import Base
