@@ -6,6 +6,7 @@ from app.services.procedure_service import ProcedureService
 from app.services.task_service import TaskService
 from fastapi import FastAPI, Depends, UploadFile, File, Form, Request, HTTPException
 from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import ValidationError
 from typing import List
 from contextlib import asynccontextmanager
@@ -56,6 +57,19 @@ async def lifespan(app: FastAPI):
 
 # FastAPI app
 app = FastAPI(lifespan=lifespan)
+
+# allow fron to communicate with backend
+# https://fastapi.tiangolo.com/tutorial/cors/?h=cors#use-corsmiddleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:8081",
+        "http://127.0.0.1:8081"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # test

@@ -31,3 +31,4 @@ coverage
 
 # Generated sources
 package-lock.json
+src/gen_types

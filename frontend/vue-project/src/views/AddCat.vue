@@ -90,7 +90,7 @@
             <div class="col-start-1 col-span-3 flex flex-row gap-5">
               <div class="flex flex-col basis-1/3">
                 <label for="cat-home-since">Kuupaev</label>
-                <input id="cat-home-since" name="cat-home-since" type="date" class="input" v-model="catData.intake_date"></input>
+                <input id="cat-home-since" name="cat-home-since" type="date" class="input" v-model="catData.intakeDate"></input>
               </div>
               <!-- todo: manager dropdown -->
               <div class="flex flex-col basis-2/3">
@@ -237,16 +237,20 @@ import { ref, reactive } from 'vue';
 
 import { BiMaleSign, BiFemaleSign } from 'vue-icons-plus/bi';
 import { CgCheck, CgClose } from 'vue-icons-plus/cg';
+import useVuelidate from '@vuelidate/core';
+import { required, helpers, minLength } from '@vuelidate/validators';
+
+import { createCatCatsPost } from "@/gen_types/sdk.gen"
 
 // todo: maybe add localStorage so when page is switched, form data isnt lost
 const catData = reactive({
   name: "",
   // todo: colony_id: "",
-  birthDate: null,
+  birthDate: undefined,
   sex: "unknown",
   onHomepage: "true", // can't do booleans due to how HorizontalSingleSelection works
   chipID: "",
-  intake_date: "",
+  intakeDate: undefined,
   // todo: manager_id
   // todo: status
   // todo: foster_home_id (name, id, address)
@@ -255,34 +259,59 @@ const catData = reactive({
   isNeutered: "false",
 });
 
-const onSubmit = ( e: SubmitEvent ) => {
+// https://vuelidate-next.netlify.app/#alternative-syntax-composition-api
+const validationRules = {
+  name: { required: helpers.withMessage( "Name is required.", required ) },
+  birthDate: {
+    required: helpers.withMessage(
+      "Date or empty",
+      ( date: string ) => !date || !Number.isNaN( Date.parse( date ) )
+    )
+  },
+  sex: { },
+  onHomepage: { },
+  chipID: { required: helpers.withMessage(
+    "Chip ID must be unset or a 15 number string.",
+    ( id: string ) => !id || /^\d{15}$/.test( id ) )
+  },
+  intakeDate: { },
+  notes: { },
+  isNeutered: { }
+}
+
+const v$ = useVuelidate( validationRules, catData );
+
+
+const onSubmit = async ( e: SubmitEvent ) => {
   if ( !e.target ) return;
 
-  const data = new FormData( e.target as HTMLFormElement );
-  console.log( data )
+  const isFormValid = await v$.value.$validate( );
 
-  console.log( typeof catData.isNeutered )
-  /*
-    "cat-name" → "asd"​​
-    "cat-colony" → ""
-    "cat-birth-date" → ""
-    "cat-sex" → "male"
-    "cat-on-homepage" → "Jah"
-    "cat-chip-id" → ""
-    "cat-home-since" → ""
-    "cat-manager" → ""
-    "foster-home-name" → ""​​
-    "foster-home-tel" → ""
-    "foster-home-address" → ""
-    "deworm-tablet-given-date" → ""
-    "deworm-tablet-next-date" → ""
-    "flea-drop-given-date" → ""
-    "flea-drop-next-date" → ""
-    "vaccine-given-date" → ""
-    "vaccine-next-date" → ""
-    "cat-sterilized" → "Ei"​​
-    "cat-details" → ""
-*/
+  console.log( v$.value )
+  if ( !isFormValid ) return;
+
+  const sendData = {
+    name: catData.name,              // • string (unique)
+    sex: catData.sex,             // string enum: male | female | unknown (default unknown)
+    chip_number: catData.chipID,             // string?
+    status: "ACTIVE",              // enum: ACTIVE | FOSTER | ADOPTED | ARCHIVED | MISSING | RESERVED (default ACTIVE)
+    manager_id: null,              // int?
+    foster_home_id: null,              // int?
+    colony_id: null,             // int?
+    intake_date: catData.intakeDate,             // date?
+    birth_date: catData.birthDate,              // date?
+    foster_end_date: null,             // date?
+    notes: catData.notes,             // string?
+    is_neutered: catData.isNeutered === "true",             // bool?
+  }
+
+
+  const formData = new FormData( );
+  formData.append( "payload", JSON.stringify( sendData ) );
+
+  createCatCatsPost({
+    body: { payload: JSON.stringify( sendData ) }
+  });
 }
 </script>
 

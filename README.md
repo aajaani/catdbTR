@@ -155,13 +155,19 @@ From the `frontend/vue-project`
 npm install
 ```
 
-## 8) Start Development Server
+## 8) Set up client types from backend
+
+```
+npx @hey-api/openapi-ts -i http://localhost:8000/openapi.json -o src/gen_types
+```
+
+## 9) Start Development Server
 
 ```
 npm run dev
 ```
 
-## 9) Open the site
+## 10) Open the site
 
 Visit ``http://localhost:8081`` in your browser
 

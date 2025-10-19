@@ -18,6 +18,9 @@ import Actions from "@/components/molecules/filter-table/Actions.vue";
 import router from "@/router";
 import { computed, ref, watch } from "vue";
 
+import { listCatsCatsGet } from "@/gen_types/sdk.gen";
+import type { CatRead } from "@/gen_types/types.gen";
+
 const getQueryParam = ( name: string, def: string ) => {
   const queryParam = router.currentRoute.value.query[ name ];
   if ( !queryParam ) return def;
@@ -46,11 +49,11 @@ watch(
 const searchQuery = ref("");
 
 const filteredEntries = computed(() => {
-  if (!searchQuery.value.trim()) return entries; // if search is empty, show all cats
+  if (!searchQuery.value.trim()) return tableDefinition.value.entries; // if search is empty, show all cats
 
   const search = searchQuery.value.toLowerCase();
 
-  return entries.filter(entry => { // check each row
+  return tableDefinition.value.entries.filter(entry => { // check each row
     return Object.values(entry).some(cell => { // check for each cell in row and if at least one match, include it
       if (typeof cell === "object" && cell !== null) { //if its an object, check the values. Right now the mock data has objects
         return Object.values(cell).some(v =>
@@ -62,83 +65,33 @@ const filteredEntries = computed(() => {
   });
 });
 
-type CatStatus = "looking-for-home" | "in-new-home" | "reserved" | "lost" | ":(";
-interface Cat {
-  id: number,
-  name: string,
-  status: CatStatus,
-  manager_name: string,
-  original_colony: string,
-  details: string,
-  on_homepage: boolean
-}
-const status_to_color: { [ key in CatStatus ]: "green" | "yellow" | "red" | "black" | "gray" } = {
-  "looking-for-home": "yellow",
-  "in-new-home": "green",
-  ":(": "black",
-  "lost": "red",
-  "reserved": "gray"
+const status_to_color: { [ key in CatRead[ "status" ] ]: "green" | "yellow" | "red" | "black" | "gray" } = {
+  "ACTIVE": "yellow",
+  "FOSTER": "yellow",
+  "ADOPTED": "green",
+  "ARCHIVED": "black",
+  "MISSING": "red",
+  "RESERVED": "gray"
 }
 
-const status_to_readable: { [ key in CatStatus ]: string } = {
-  "looking-for-home": "Otsib kodu",
-  "in-new-home": "Uues kodus",
-  ":(": "Kiisudemaal",
-  "lost": "Kadunud",
-  "reserved": "Broneeritud"
+const status_to_readable: { [ key in CatRead[ "status" ] ]: string } = {
+  "ACTIVE": "Otsib kodu",
+  "FOSTER": "Ajutises kodus",
+  "ADOPTED": "Uues kodus",
+  "ARCHIVED": "Kiisudemaal",
+  "MISSING": "Kadunud",
+  "RESERVED": "Broneeritud"
 } 
 
-const createMockCat = ( id: number, name: string, status: CatStatus, manager_name: string, original_colony: string, details: string, on_homepage: boolean ): Cat => {
-  return {
-    id, name, status, manager_name, original_colony, details, on_homepage
-  }
-}
+const cats = ref< CatRead[ ] >([ ]);
 
-const mock_cats: Cat[ ] = [
-  // gpt generated mock data
-  createMockCat(1, "Milo", "looking-for-home", "Sarah Bennett", "Riverside Colony", "Gentle young male, neutered, enjoys sunbathing and chasing feathers.", true),
-  createMockCat(2, "Luna", "in-new-home", "Tom Richardson", "Elm Street Colony", "Playful female kitten, loves climbing curtains.", false),
-  createMockCat(3, "Oliver", "reserved", "Clara Wu", "Seaside Colony", "Calm and affectionate, good with other cats.", true),
-  createMockCat(4, "Leo", "lost", "Jack Dempsey", "Old Mill Colony", "Went missing two weeks ago, last seen near the park.", false),
-  createMockCat(5, "Bella", ":(", "Alicia Ford", "Hilltop Colony", "Sickly kitten under treatment for respiratory infection.", false),
-  createMockCat(6, "Charlie", "looking-for-home", "Nina Patel", "Maple Grove Colony", "Sociable tomcat, enjoys people and attention.", true),
-  createMockCat(7, "Chloe", "reserved", "George Silva", "Pinewood Colony", "Sweet natured, shy at first but warms up quickly.", false),
-  createMockCat(8, "Simba", "in-new-home", "Helen Brooks", "Garden Lane Colony", "Now adopted, adjusting well to new family.", false),
-  createMockCat(9, "Lucy", "lost", "Mark Green", "Harbor Colony", "Microchipped female, reward offered for return.", false),
-  createMockCat(10, "Max", "looking-for-home", "Rachel Yang", "Cedar Grove Colony", "Energetic young cat, loves laser toys.", true),
-  createMockCat(11, "Daisy", "looking-for-home", "Patrick O'Neil", "Riverside Colony", "Very gentle with children, purrs constantly.", true),
-  createMockCat(12, "Toby", ":(", "Sophia Turner", "Elm Street Colony", "Senior cat recovering from injury, needs calm home.", false),
-  createMockCat(13, "Cleo", "reserved", "Mason Kim", "Seaside Colony", "Loves company of other cats, medium-haired beauty.", false),
-  createMockCat(14, "Nala", "in-new-home", "Charlotte Lewis", "Old Mill Colony", "Adopted last week, thriving in her new home.", false),
-  createMockCat(15, "Misty", "lost", "Daniel Scott", "Hilltop Colony", "White cat with one blue eye, last seen near forest road.", false),
-  createMockCat(16, "Oscar", "looking-for-home", "Emma Johnson", "Maple Grove Colony", "Curious and vocal, great companion cat.", true),
-  createMockCat(17, "Willow", "reserved", "James Brown", "Pinewood Colony", "Calm and gentle, ideal for quiet households.", false),
-  createMockCat(18, "Smokey", "looking-for-home", "Lara Singh", "Garden Lane Colony", "Older male, loves naps and head scratches.", true),
-  createMockCat(19, "Loki", ":(", "Oliver Hart", "Harbor Colony", "Undergoing treatment for minor skin condition.", false),
-  createMockCat(20, "Mabel", "in-new-home", "Grace Reed", "Cedar Grove Colony", "Adopted by a family with kids; doing very well.", false),
-  createMockCat(21, "Pumpkin", "looking-for-home", "Tom Richardson", "Riverside Colony", "Orange tabby with big personality, very playful.", true),
-  createMockCat(22, "Mochi", "reserved", "Sarah Bennett", "Elm Street Colony", "Gentle cat that bonds quickly with people.", false),
-  createMockCat(23, "Finn", "in-new-home", "Alicia Ford", "Seaside Colony", "Happy in a large rural home with other cats.", false),
-  createMockCat(24, "Socks", "lost", "Jack Dempsey", "Old Mill Colony", "Black-and-white cat with unique markings.", false),
-  createMockCat(25, "Hazel", ":(", "Helen Brooks", "Hilltop Colony", "Recovering from eye infection, doing better daily.", false),
-  createMockCat(26, "Ruby", "looking-for-home", "Clara Wu", "Maple Grove Colony", "Loves attention, perfect lap cat.", true),
-  createMockCat(27, "Archie", "reserved", "Mark Green", "Pinewood Colony", "Good temperament, fine with dogs.", false),
-  createMockCat(28, "Pearl", "looking-for-home", "Lara Singh", "Garden Lane Colony", "Soft-spoken and affectionate.", true),
-  createMockCat(29, "Zeus", "in-new-home", "Nina Patel", "Harbor Colony", "Strong and playful male cat, thriving indoors.", false),
-  createMockCat(30, "Minnie", "lost", "George Silva", "Cedar Grove Colony", "Wearing a pink collar with bell.", false),
-  createMockCat(31, "Hazel", "looking-for-home", "Patrick O'Neil", "Riverside Colony", "Enjoys cuddles, quiet and kind.", true),
-  createMockCat(32, "Milo Jr.", "reserved", "Charlotte Lewis", "Elm Street Colony", "Tiny kitten, reserved by local family.", false),
-  createMockCat(33, "Whiskers", "looking-for-home", "Emma Johnson", "Seaside Colony", "Curious explorer, loves outdoor time.", true),
-  createMockCat(34, "Zara", ":(", "Mason Kim", "Old Mill Colony", "Feral background, slowly socializing with humans.", false),
-  createMockCat(35, "Pepper", "in-new-home", "Grace Reed", "Hilltop Colony", "Recently adopted, very attached to new owner.", false),
-  createMockCat(36, "Cinnamon", "looking-for-home", "Lara Singh", "Maple Grove Colony", "Beautiful tortoiseshell with calm demeanor.", true),
-  createMockCat(37, "Felix", "reserved", "James Brown", "Pinewood Colony", "Loves treats and gentle brushing.", false),
-  createMockCat(38, "Snowball", "lost", "Oliver Hart", "Garden Lane Colony", "Pure white cat, likely hiding nearby.", false),
-  createMockCat(39, "Raven", ":(", "Sarah Bennett", "Harbor Colony", "Older cat under hospice care, very gentle.", false),
-  createMockCat(40, "Mocha", "looking-for-home", "Tom Richardson", "Cedar Grove Colony", "Playful and affectionate, great with families.", true),
-]
+// todo: refactor to something similiar to tanstack query
+listCatsCatsGet( ).then( res => {
+  console.log( res.data );
+  cats.value = res.data;
+} )
 
-const { fields, entries } = defineTable({
+const tableDefinition = computed( ( ) => defineTable({
     "cat-id": field({
       title: "#",
       component: TableText,
@@ -155,7 +108,7 @@ const { fields, entries } = defineTable({
       component: TableStatus,
       fitContent: true,
       filterMode: "unique",
-      filterInputOptions: ( [ "looking-for-home", "in-new-home", "reserved", "lost", ":(" ] as CatStatus[ ] ).map( s => ({
+      filterInputOptions: ( [ "ACTIVE", "FOSTER", "ADOPTED", "ARCHIVED", "MISSING", "RESERVED" ] as CatRead[ "status" ][ ] ).map( s => ({
         component: TableStatus,
           props: {
             color: status_to_color[ s ],
@@ -189,7 +142,7 @@ const { fields, entries } = defineTable({
       disableSorting: true
     })
   },
-  mock_cats.map( ( cat: Cat ) => ({
+  cats.value.map( ( cat: CatRead ) => ({
     "cat-id": {
       text: cat.id.toString( )
     } as const,
@@ -201,16 +154,16 @@ const { fields, entries } = defineTable({
       label: status_to_readable[ cat.status ],
     } as const,
     "cat-manager-name": {
-      text: cat.manager_name,
+      text: cat.manager?.display_name || "-",
     } as const,
     "cat-colony": {
-      text: cat.original_colony
+      text: `${ cat.colony_id }` || "-"
     } as const,
     "cat-details": {
-      text: cat.details
+      text: cat.notes ?? "-"
     } as const,
     "cat-on-homepage": {
-      color: cat.on_homepage ? "green" : "red"
+      color: Math.random( ) > .5 ? "green" : "red"
     } as const,
     "cat-actions": {
       actions: [{
@@ -225,7 +178,7 @@ const { fields, entries } = defineTable({
       }]
     }
   }))
-);
+) );
 </script>
 
 <template>
@@ -252,7 +205,7 @@ const { fields, entries } = defineTable({
       
 
       <FilterTable
-        :fields="fields"
+        :fields="tableDefinition.fields"
         :entries="filteredEntries"
         :per-page="tableQueryParams.perPage"
         :selected-page="tableQueryParams.page - 1"
