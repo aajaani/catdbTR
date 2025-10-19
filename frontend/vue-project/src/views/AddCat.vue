@@ -20,9 +20,10 @@
             <input id="cat-name" name="cat-name" class="input" v-model="catData.name" required></input>
           </div>
 
+          <!-- todo: implement colonies -->
           <div class="flex flex-col col-start-5 col-span-4 row-end-1">
             <label for="cat-colony">Originaalne koloonia</label>
-            <input id="cat-colony" name="cat-colony" class="input" v-model="catData.colony"></input>
+            <input id="cat-colony" name="cat-colony" class="input" disabled></input>
           </div>
 
           <div class="flex flex-col col-start-9 col-span-4 row-end-1">
@@ -30,7 +31,7 @@
             <input id="cat-birth-date" name="cat-birth-date" type="date" class="input" v-model="catData.birthDate"></input>
           </div>
 
-          <div class="flex flex-col col-start-1 col-span-3 row-end-2">
+          <div class="flex flex-col col-start-1 col-span-2 row-end-2">
             <label for="cat-sex">Sugu</label>
             <HorizontalSingleSelection
               id="cat-sex"
@@ -51,7 +52,7 @@
             />
           </div>
 
-          <div class="flex flex-col col-start-4 col-span-3 row-end-2">
+          <div class="flex flex-col col-start-3 col-span-2 row-end-2">
             <label for="cat-on-homepage">Kodukal</label>
             <HorizontalSingleSelection
               id="cat-on-homepage"
@@ -71,7 +72,26 @@
             />
           </div>
 
-          <div class="flex flex-col col-start-7 col-span-6 row-end-2">
+          <div class="flex flex-col col-start-5 col-span-4 row-end-2">
+            <label for="cat-status">Staatus</label>
+            <select id="cat-status" name="cat-status" class="input" @change="( e ) => {
+                if ( !e.target ) return;
+                const sel: CatRead[ 'status' ] | string = ( e.target as HTMLSelectElement ).value;
+                if ( sel in catStatuses ) {
+                  catData.status = sel as CatRead[ 'status' ];               
+                } else {
+                  console.error( `'${ sel }' not in cat statuses` );
+                };
+            }">
+              <option
+                v-for="( visualName, value ) in catStatuses"
+                :value="value"
+                :key="visualName"
+              >{{ visualName }}</option>
+            </select>
+          </div>
+
+          <div class="flex flex-col col-start-9 col-span-4 row-end-2">
             <label for="cat-chip-id">Kiibi number</label>
             <NumberInput
               id="cat-chip-id"
@@ -95,7 +115,31 @@
               <!-- todo: manager dropdown -->
               <div class="flex flex-col basis-2/3">
                 <label for="cat-manager">Haldur</label>
-                <input id="cat-manager" name="cat-manager" type="text" class="input"></input>
+                <select id="cat-manager" name="cat-manager"
+                  class="input"
+                  @change="( e ) => {
+                    if ( !e.target ) return;
+                    const sel = ( e.target as HTMLSelectElement ).value;
+
+                    try {
+                      const selNum = parseInt( sel );
+                      catData.managerId = selNum;
+                    } catch ( _ ) {
+                      console.error( `'${ sel }' not in managers (parseInt failure or wv)` );
+                    };
+                }">
+                >
+                  <option
+                    key="manager-unassigned"
+                    :value="-1"
+                  >-</option>
+
+                  <option
+                      v-for="manager in managers"
+                      :key="manager.id"
+                      :value="manager.id"
+                  >{{ manager.display_name }}</option>
+                </select>
               </div>
             </div>
           </div>
@@ -110,19 +154,73 @@
         class="bg-neutral-white rounded-lg"
       >
         <div class="grid grid-cols-2 gap-5">
-          <div class="flex flex-col col-start-1 col-span-1">
+          <div class="flex flex-col col-start-1 col-span-2">
+            <label for="foster-home-selection">Hoiukodu valik</label>
+            <select id="foster-home-selection" name="foster-home-selection"
+              class="input"
+              @change="( e ) => {
+                if ( !e.target ) return;
+                const sel = ( e.target as HTMLSelectElement ).value;
+
+                try {
+                  const selNum = parseInt( sel );
+                  catData.fosterHomeId = selNum;
+                } catch ( _ ) {
+                  console.error( `'${ sel }' not in cat statuses` );
+                };
+            }">
+            >
+              <option
+                key="new-home"
+                :value="-1"
+              >Uus hoiukodu</option>
+
+              <option
+                  v-for="fosterHome in fosterHomes"
+                  :key="fosterHome.id"
+                  :value="fosterHome.id"
+              >{{ fosterHome.name || `Hoiukodu ${ fosterHome.id }` }}</option>
+            </select>
+          </div>
+
+          <div
+            v-if="catData.fosterHomeId === -1"
+            class="flex flex-col col-start-1 col-span-1"
+          >
             <label for="foster-home-name">Hoiukodu nimi</label>
-            <input id="foster-home-name" name="foster-home-name" class="input col-start-1 col-span-1"></input>
+            <input id="foster-home-name" name="foster-home-name" class="input" v-model="newFosterHomeData.name" required></input>
           </div>
 
-          <div class="flex flex-col col-start-2 col-span-1">
+          <div
+            v-if="catData.fosterHomeId === -1"
+            class="flex flex-col col-start-2 col-span-1"
+          >
             <label for="foster-home-tel">Hoiukodu telefoninumber</label>
-            <input id="foster-home-tel" name="foster-home-tel" class="input col-start-2 col-span-1" type="tel"></input>
+            <input id="foster-home-tel" name="foster-home-tel" class="input" type="tel" v-model="newFosterHomeData.phone"></input>
           </div>
 
-          <div class="flex flex-col col-start-1 col-span-2 row-start-2">
+          <div
+            v-if="catData.fosterHomeId === -1"
+            class="flex flex-col col-start-1 col-span-1"
+          >
             <label for="foster-home-address">Hoiukodu aadress</label>
-            <input id="foster-home-address" name="foster-home-address" class="input col-start-2 col-span-1" type="tel"></input>
+            <input id="foster-home-address" name="foster-home-address" class="input" v-model="newFosterHomeData.address"></input>
+          </div>
+
+          <div
+            v-if="catData.fosterHomeId === -1"
+            class="flex flex-col col-start-2 col-span-1"
+          >
+            <label for="foster-home-email">Hoiukodu e-mail</label>
+            <input id="foster-home-email" name="foster-home-email" class="input" type="email" v-model="newFosterHomeData.email"></input>
+          </div>
+
+          <div
+            v-if="catData.fosterHomeId === -1"
+            class="flex flex-col col-start-1 col-span-2"
+          >
+            <label for="foster-home-address">Hoiukodu markused</label>
+            <textarea id="foster-home-details" name="foster-home-details" class="input" v-model="newFosterHomeData.notes"></textarea>
           </div>
         </div>
       </AccordionWithTitle>
@@ -238,25 +336,60 @@ import { ref, reactive } from 'vue';
 import { BiMaleSign, BiFemaleSign } from 'vue-icons-plus/bi';
 import { CgCheck, CgClose } from 'vue-icons-plus/cg';
 import useVuelidate from '@vuelidate/core';
-import { required, helpers, minLength } from '@vuelidate/validators';
+import { required, helpers } from '@vuelidate/validators';
 
-import { createCatCatsPost } from "@/gen_types/sdk.gen"
+import { createCatCatsPost, createFosterHomeFosterHomesPost, listFosterHomesFosterHomesGet, listManagersManagersGet } from "@/gen_types/sdk.gen"
+import { type ManagerRead, type CatRead, type FosterHomeRead } from '@/gen_types/types.gen';
+
+const catStatuses: { [ key: CatRead[ "status" ] ]: string } = {
+  "ACTIVE": "Otsib kodu",
+  "FOSTER": "Ajutises kodus",
+  "ADOPTED": "Uues kodus",
+  "ARCHIVED": "Kiisudemaal",
+  "MISSING": "Kadunud",
+  "RESERVED": "Broneeritud"
+};
+
+const fosterHomes = ref< FosterHomeRead[ ] >([ ]);
+const managers = ref< ManagerRead[ ] >([ ]);
+
+// tanstack query-like lib could help us invalidate cache
+// when we create a new cat. Right now when something goes wrong after
+// foster home creation (cat creation), foster home is created, this
+// isnt updated, next req same foster home will br created
+// invalidating foster home cache on cat add fail would solve this issue
+listFosterHomesFosterHomesGet( ).then( ( res ) => {
+  // todo: error handleing
+  fosterHomes.value = res.data;
+});
+
+listManagersManagersGet( ).then( res => {
+  managers.value = res.data;
+})
 
 // todo: maybe add localStorage so when page is switched, form data isnt lost
 const catData = reactive({
-  name: "",
+  name: "" as string,
   // todo: colony_id: "",
-  birthDate: undefined,
+  birthDate: undefined as CatRead[ "birth_date" ],
   sex: "unknown",
   onHomepage: "true", // can't do booleans due to how HorizontalSingleSelection works
   chipID: "",
   intakeDate: undefined,
-  // todo: manager_id
-  // todo: status
-  // todo: foster_home_id (name, id, address)
+  status: "ACTIVE" as CatRead[ "status" ],
+  managerId: -1,
+  fosterHomeId: -1,
   // todo: foster_end_date
   notes: "",
   isNeutered: "false",
+});
+
+const newFosterHomeData = reactive({
+  name: "",
+  phone: "",
+  address: "",
+  email: "",
+  notes: "",
 });
 
 // https://vuelidate-next.netlify.app/#alternative-syntax-composition-api
@@ -290,28 +423,60 @@ const onSubmit = async ( e: SubmitEvent ) => {
   console.log( v$.value )
   if ( !isFormValid ) return;
 
-  const sendData = {
-    name: catData.name,              // • string (unique)
-    sex: catData.sex,             // string enum: male | female | unknown (default unknown)
-    chip_number: catData.chipID,             // string?
-    status: "ACTIVE",              // enum: ACTIVE | FOSTER | ADOPTED | ARCHIVED | MISSING | RESERVED (default ACTIVE)
-    manager_id: null,              // int?
-    foster_home_id: null,              // int?
-    colony_id: null,             // int?
-    intake_date: catData.intakeDate,             // date?
-    birth_date: catData.birthDate,              // date?
-    foster_end_date: null,             // date?
-    notes: catData.notes,             // string?
-    is_neutered: catData.isNeutered === "true",             // bool?
+  if ( catData.fosterHomeId === -1 ) {
+    // create foster 
+    const newFosterHomeID = await sendFosterHomeCreate( );
+
+    catData.fosterHomeId = newFosterHomeID;
+    return; // remove l8r
   }
 
+  await sendCatCreate( );
+}
+
+const sendFosterHomeCreate = async ( ): Promise< number > => {
+  const res = await createFosterHomeFosterHomesPost({
+    body: {
+      name: newFosterHomeData.name,
+      phone: newFosterHomeData.phone,
+      email: newFosterHomeData.email,
+      address: newFosterHomeData.address,
+      comments: newFosterHomeData.notes
+    }
+  });
+
+  // todo error validation;
+  return res.data.id;
+}
+
+const sendCatCreate = async ( ) => {
+  const sendData = {
+    name: catData.name,
+    // string enum: male | female | unknown (default unknown)
+    sex: catData.sex,
+    chip_number: catData.chipID,
+    status: catData.status,
+    // could have an unassigned manager aka -1, set to null if its -1
+    manager_id: catData.managerId === -1 ? null : catData.managerId,
+    // set in fosterhome creation anyways, always exists
+    foster_home_id: catData.fosterHomeId,
+    colony_id: null,
+    intake_date: catData.intakeDate,
+    birth_date: catData.birthDate,
+    foster_end_date: null, // backend optional, idk if we'll use it yet
+    notes: catData.notes,
+    // backend expects bool
+    is_neutered: catData.isNeutered === "true"
+  }
 
   const formData = new FormData( );
   formData.append( "payload", JSON.stringify( sendData ) );
 
-  createCatCatsPost({
+  const res = await createCatCatsPost({
     body: { payload: JSON.stringify( sendData ) }
   });
+
+  // todo: router.push to cats view or cat page
 }
 </script>
 

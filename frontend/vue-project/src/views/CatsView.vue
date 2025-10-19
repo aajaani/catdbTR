@@ -92,10 +92,9 @@ listCatsCatsGet( ).then( res => {
 } )
 
 const tableDefinition = computed( ( ) => defineTable({
-    "cat-id": field({
-      title: "#",
+    "cat-intake-date": field({
+      title: "KK alates",
       component: TableText,
-      disableSorting: true,
       centerEntries: true,
       centerTitle: true
     }),
@@ -143,8 +142,8 @@ const tableDefinition = computed( ( ) => defineTable({
     })
   },
   cats.value.map( ( cat: CatRead ) => ({
-    "cat-id": {
-      text: cat.id.toString( )
+    "cat-intake-date": {
+      text: cat.intake_date ?? "-"
     } as const,
     "cat-name": {
       text: cat.name
@@ -157,7 +156,7 @@ const tableDefinition = computed( ( ) => defineTable({
       text: cat.manager?.display_name || "-",
     } as const,
     "cat-colony": {
-      text: `${ cat.colony_id }` || "-"
+      text: cat.colony_id ? cat.colony_id.toString( )  : "-"
     } as const,
     "cat-details": {
       text: cat.notes ?? "-"
@@ -191,10 +190,12 @@ const tableDefinition = computed( ( ) => defineTable({
 
     <div class="flex flex-col gap-4 pt-2">
       <div class="flex flex-row justify-between">
-        <Button class="border-primary-normal border-0.5 text-primary-normal fill-primary-normal abril-fatface-regular uppercase text-[14px]">
+        <router-link to="/add-cat">
+          <Button class="primary border-0.5 text-primary-normal fill-neutral-white">
             <AiOutlinePlus size="20" class="fill-inherit"></AiOutlinePlus>
             Lisa kass
-        </Button>
+          </Button>
+        </router-link>
         <input
             v-model="searchQuery"
             type="text"

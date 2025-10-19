@@ -63,14 +63,12 @@ const entries = computed< BreadCrumbEntry[ ] >(( ) => {
   }
 
   a {
-    color: var( --color-breadcrumbs-inactive );
+    color: theme( "colors.breadcrumbs.inactive" );
     text-decoration: none;
   }
 }
 
 .breadcrumb:last-child > * {
-  color: var( --color-breadcrumbs-active );
+  color: theme( "colors.breadcrumbs.active" );
 }
-
-
 </style>
