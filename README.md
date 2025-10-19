@@ -79,13 +79,15 @@ http://127.0.0.1:8000/
 
 ## 4) Frontend setup & run
 
-From the `frontend/vue-project`
 
 ```bash
-# 1) install dependencies
+# 1) go to vue directory
+cd frontend/vue-project
+
+# 2) install dependencies
 npm install
 
-# 2) start development server
+# 3) start development server
 npm run dev
 ```
 
