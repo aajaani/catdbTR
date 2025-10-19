@@ -76,12 +76,23 @@ http://127.0.0.1:8000/
 → {"Hello":"World"}
 ```
 
+## 4) Frontend setup & run
+
+From the `frontend/vue-project`
+
+```bash
+# 1) install dependencies
+npm install
+
+# 2) start development server
+npm run dev
+```
+
+Visit ``http://localhost:8081`` in your browser
 
 
 
-
-
-## 4) API endpoints 
+## 5) API endpoints 
 
 ### Cats
 
@@ -122,7 +133,7 @@ http://127.0.0.1:8000/
 
 ---
 
-## 5) Database layout overview
+## 6) Database layout overview
 
 **Main tables:**
 
@@ -139,7 +150,7 @@ http://127.0.0.1:8000/
 
 
 
-## 6) Tests
+## 7) Tests
 
 To run tests 
 ``` 
@@ -147,27 +158,5 @@ cd backend
 python -m pytest
 
 ```
-## 7) Install dependencies
 
-From the `frontend/vue-project`
-
-```
-npm install
-```
-
-## 8) Set up client types from backend
-
-```
-npx @hey-api/openapi-ts -i http://localhost:8000/openapi.json -o src/gen_types
-```
-
-## 9) Start Development Server
-
-```
-npm run dev
-```
-
-## 10) Open the site
-
-Visit ``http://localhost:8081`` in your browser
 
