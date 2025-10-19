@@ -72,11 +72,6 @@
                                     </div>
 
                                     <div class="infofield">
-                                        <p>Sugu</p>
-                                        <p>{{ catData.sex === "male" ? "isane" : catData.sex === "female" ? "emane" : "teadmata" }}</p>
-                                    </div>
-
-                                    <div class="infofield">
                                         <p>Steriliseeritud</p>
                                         <input
                                             v-if="catData.is_neutered !== null"

@@ -437,7 +437,6 @@ const onSubmit = async ( e: SubmitEvent ) => {
 
   const catId = await sendCatCreate( );
 
-  console.log( catId )
   await router.push({
     name: "CatProfile",
     params: { id: catId }
