@@ -12,6 +12,18 @@ const routes: RouteRecordRaw[] = [
 		}
 	},
 	{
+		path: "/cats/:id",
+		name: "CatProfile",
+		component: ( ) => import( "@/views/CatProfile.vue" ),
+		meta: {
+			breadcrumbs: [
+				{ name: "Ulevaade", link: "/" },
+				{ name: "Kassid", link: "/cats" },
+				{ name: "[nimi] Profiil" }
+			]
+		}
+	},
+	{
 		path: "/cats",
 		name: "CatsList",
 		component: ( ) => import( "@/views/CatsView.vue" ),

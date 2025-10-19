@@ -167,7 +167,7 @@ const tableDefinition = computed( ( ) => defineTable({
     "cat-actions": {
       actions: [{
         icon: MdArrowOutward,
-        onClick: ( ) => { }
+        onClick: ( ) => { router.push( `/cats/${ cat.id }` ) }
       }, {
         icon: FiEdit3,
         onClick: ( ) => { }

@@ -108,21 +108,7 @@ li.nav-item {
     grid-column: 1;
   }
 
-  /* active/inactive */
   & .nav-link > span {
-    &:is( .inactive ) {
-      color: var( --nav-li-text );
-      fill: var( --nav-li-icon );
-      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-    }
-
-    &:is( .active ) {
-      color: var( --nav-li-selected-text );
-      fill: var( --nav-li-selected-icon );
-      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-    }
-
-    transition: clip-path var( --transition-duration ) ease;
     align-items: center;
   }
 
@@ -147,27 +133,13 @@ li.nav-item {
     z-index: 0;
   }
 
-  & a::before {
-    content: "";
-    position: absolute;
-    background: var( --nav-li-selected );
-    transition: translate var( --transition-duration ) ease;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    transform: 0 0;
-    border-top-left-radius: 20px;
-    border-bottom-left-radius: 20px;
-
-    /* move behind parent */
-    z-index: -1;
-  }
 
   /* move next bg to active */
   /* todo: background has to be relative to li's, otherwise
            animating between multiple children will introduce
            artifacts behind inbetween children
   */
+
   &[data-active="true"] ~ .nav-item a::before {
     translate: 0 -150%;
   }
@@ -186,6 +158,41 @@ li.nav-item {
   }
 }
 
+/* do we have active items? eg on cat profile page none are active -> cant highlight */
+aside:has( [data-active=true] ) li.nav-item {
+  /* active/inactive */
+  & .nav-link > span {
+    &:is( .inactive ) {
+      color: var( --nav-li-text );
+      fill: var( --nav-li-icon );
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    }
+
+    &:is( .active ) {
+      color: var( --nav-li-selected-text );
+      fill: var( --nav-li-selected-icon );
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    }
+
+    transition: clip-path var( --transition-duration ) ease;
+  }
+
+  & a::before {
+    content: "";
+    position: absolute;
+    background: var( --nav-li-selected );
+    transition: translate var( --transition-duration ) ease;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform: 0 0;
+    border-top-left-radius: 20px;
+    border-bottom-left-radius: 20px;
+
+    /* move behind parent */
+    z-index: -1;
+  }
+}
 
 .profile-picture-container {
   --status-color: #aaa; /* default to offline */

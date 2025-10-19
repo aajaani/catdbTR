@@ -76,7 +76,7 @@
         <tbody>
             <!-- one row for each perPage count -->
             <tr
-                v-for="entryIndex in ( Math.min( props.entries.length, pageData.isLastPage ? pageData.entriesLastPage : perPage ) )"
+                v-for="entryIndex in ( Math.min( mutatedEntries.length, pageData.isLastPage ? pageData.entriesLastPage : perPage ) )"
                 class="text-center"
             >
                 <td
@@ -101,7 +101,7 @@
     </table>
 
     <div
-        v-if="props.entries.length === 0"
+        v-if="mutatedEntries.length === 0"
         class="py-2.5 w-full"
     >
         <p
@@ -255,8 +255,6 @@ const mutatedEntries = computed( ( ) => {
                     if ( fieldFilters.some( f => propAsStr.includes( f ) || f.includes( propAsStr ) ) )
                         matchedAny = true;
                 }
-
-                if ( i == 1 ) console.log( fieldFilters, Object.entries( row[ fieldName ]  ) )
 
                 if ( !matchedAny ) return false;
             }

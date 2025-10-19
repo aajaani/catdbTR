@@ -1,6 +1,6 @@
 <template>
   <button
-    class="px-2.5 py-auto h-[40px] border-neutral-400 border-[1px] rounded-[8px] flex gap-2 justify-center items-center uppercase text-[14px]"
+    class="px-2.5 py-auto border-neutral-400 border-[1px] rounded-[8px] flex gap-2 justify-center items-center uppercase text-[14px]"
   >
     <slot name="icon"></slot>
     <slot></slot>
@@ -8,6 +8,15 @@
 </template>
 
 <style scoped>
+button {
+  min-height: 40px;
+
+  &.small {
+    @apply rounded-full bg-border-group capitalize py-0 leading-[18px];
+    min-height: fit-content;
+  }
+}
+
 button.primary {
   @apply border-primary-normal bg-primary-normal text-text-button;
 }

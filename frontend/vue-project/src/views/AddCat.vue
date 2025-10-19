@@ -340,6 +340,7 @@ import { required, helpers } from '@vuelidate/validators';
 
 import { createCatCatsPost, createFosterHomeFosterHomesPost, listFosterHomesFosterHomesGet, listManagersManagersGet } from "@/gen_types/sdk.gen"
 import { type ManagerRead, type CatRead, type FosterHomeRead } from '@/gen_types/types.gen';
+import router from '@/router';
 
 const catStatuses: { [ key: CatRead[ "status" ] ]: string } = {
   "ACTIVE": "Otsib kodu",
@@ -427,11 +428,20 @@ const onSubmit = async ( e: SubmitEvent ) => {
     // create foster 
     const newFosterHomeID = await sendFosterHomeCreate( );
 
+    // no foster created, dont create cat
+    // todo: show error
+    if ( !newFosterHomeID ) return;
+
     catData.fosterHomeId = newFosterHomeID;
-    return; // remove l8r
   }
 
-  await sendCatCreate( );
+  const catId = await sendCatCreate( );
+
+  console.log( catId )
+  await router.push({
+    name: "CatProfile",
+    params: { id: catId }
+  });
 }
 
 const sendFosterHomeCreate = async ( ): Promise< number > => {
@@ -476,7 +486,7 @@ const sendCatCreate = async ( ) => {
     body: { payload: JSON.stringify( sendData ) }
   });
 
-  // todo: router.push to cats view or cat page
+  return res.data.id;
 }
 </script>
 

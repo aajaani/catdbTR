@@ -46,6 +46,17 @@ const entries = computed< BreadCrumbEntry[ ] >(( ) => {
 </template>
 
 <style scoped>
+nav {
+  --bc-active: theme( "colors.breadcrumbs.active" );
+  --bc-inactive: theme( "colors.breadcrumbs.inactive" );
+
+  &.light {
+    /* they do exist, tailwind is going crazy */
+    --bc-active: theme( "colors.breadcrumbs.light.active" );
+    --bc-inactive: theme( "colors.breadcrumbs.light.inactive" );
+  }
+}
+
 /* has next breadcrumb? */
 .breadcrumb:has( + .breadcrumb ) {
   padding-right: 1rem;
@@ -63,12 +74,12 @@ const entries = computed< BreadCrumbEntry[ ] >(( ) => {
   }
 
   a {
-    color: theme( "colors.breadcrumbs.inactive" );
+    color: var( --bc-inactive );
     text-decoration: none;
   }
 }
 
 .breadcrumb:last-child > * {
-  color: theme( "colors.breadcrumbs.active" );
+  color: var( --bc-active )
 }
 </style>

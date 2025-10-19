@@ -7,6 +7,10 @@
 @tailwind components;
 @tailwind utilities;
 
+body {
+    @apply bg-main-bg;
+}
+
 #app {
     display: grid;
     inset: 0;
