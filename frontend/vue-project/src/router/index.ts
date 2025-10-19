@@ -4,7 +4,7 @@ const routes: RouteRecordRaw[] = [
 	{
 		path: "/",
 		name: "Dashboard",
-		component: import( "@/views/DashboardView.vue" ),
+		component: ( ) => import( "@/views/DashboardView.vue" ),
 		meta: {
 			breadcrumbs: [
 				{ name: "Ulevaade", link: "/" }
@@ -12,9 +12,21 @@ const routes: RouteRecordRaw[] = [
 		}
 	},
 	{
+		path: "/cats/:id",
+		name: "CatProfile",
+		component: ( ) => import( "@/views/CatProfile.vue" ),
+		meta: {
+			breadcrumbs: [
+				{ name: "Ulevaade", link: "/" },
+				{ name: "Kassid", link: "/cats" },
+				{ name: "[nimi] Profiil" }
+			]
+		}
+	},
+	{
 		path: "/cats",
 		name: "CatsList",
-		component: () => import( "@/views/CatsView.vue" ),
+		component: ( ) => import( "@/views/CatsView.vue" ),
 		meta: {
 			breadcrumbs: [
 				{ name: "Ulevaade", link: "/" },
@@ -29,19 +41,19 @@ const routes: RouteRecordRaw[] = [
 		meta: {
 			breadcrumbs: [
 				{ name: "Ulevaade", link: "/" },
-				{ name: "Personal", link: "/personal" },
+				{ name: "Vabatahtlikud", link: "/managers" },
 				{ name: "Lisa Hooldaja" },
 			]
 		}
 	},
 		{
-		path: "/personal",
-		name: "PersonalList",
-		component: ( ) => import( "@/views/Personal.vue" ),
+		path: "/managers",
+		name: "ManagerLsist",
+		component: ( ) => import( "@/views/Managers.vue" ),
 		meta: {
 			breadcrumbs: [
 				{ name: "Ulevaade", link: "/" },
-				{ name: "Personal" },
+				{ name: "Vabatahtlikud" },
 			]
 		}
 	},
