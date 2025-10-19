@@ -1,6 +1,5 @@
 from .common import ORMBase
-# allows nested models (cats can nest ManagerRef and FosterHomeRef, might be pointless)
-
+# mark's favorite things
 class ManagerRef(ORMBase):
     id: int
     display_name: str
@@ -13,3 +12,7 @@ class FosterHomeRef(ORMBase):
     phone: str | None = None
     email: str | None = None
     address: str | None = None
+
+class ColonyRef(ORMBase):
+    id: int
+    name: str
