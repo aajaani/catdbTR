@@ -5,8 +5,8 @@ import { useRoute } from 'vue-router';
 // reactive route
 const route = useRoute( );
 
-
 // todo: add translations, idk if i18n exists for vue3
+// links derived from router config @/sec/router/index.ts
 const sidebar_links = {
   "/": {
     title: "Ulevaade",
@@ -20,25 +20,27 @@ const sidebar_links = {
     title: "Lisa kass",
     icon: MdCatchingPokemon,
   },
+  "/managers": {
+    title: "Vabatahtlikud",
+    icon: MdPeople,
+  },
   "/add-manager": {
-    title: "Lisa hooldaja",
+    title: "Lisa vabatahtlik",
     icon: MdPersonAdd,
   },
-  "/personal": {
-    title: "Personal",
-    icon: MdPeople,
-  }
+
 }
 </script>
 
 <template>
 <aside class="flex flex-col gap-6 pt-4">
-  <div class="pl-4 flex flex-row justify-between">
-    <h1 class="poppins-medium text-[18px] text-nav-li-text">Kassid Koju</h1>
+  <div class="pl-4 flex flex-row justify-between relative h-min w-full">
+    <h1 class="poppins-medium text-[18px] text-nav-li-text" id="logo-name">Kassid Koju</h1>
 
     <!-- todo: figure out if this is back or collapse -->
-    <span id="collapse" class="relative translate-x-[50%] w-[40px] aspect-square h-auto left-0 p-2 bg-nav-li-text self-end justify-self-end flex place-items-center justify-center rounded-[8px]">
-      <MdArrowBack size="20" class="fill-nav-bg bg-main-bg"/>
+    <span id="collapse" class="absolute right-0 top-3 translate-x-[50%] w-[40px] aspect-square h-auto left-0 p-2 bg-nav-li-text self-end justify-self-end flex place-items-center justify-center rounded-[8px]">
+      <MdArrowBack size="20" class="fill-nav-bg bg-main-bg transition-all transition-[300ms]"/>
+      <input type="checkbox" id="collapseCheckbox" class="absolute inset-0 opacity-0 cursor-pointer"></input>
     </span>
   </div>
   <div class="profile-container flex gap-4 px-4">
@@ -106,21 +108,7 @@ li.nav-item {
     grid-column: 1;
   }
 
-  /* active/inactive */
   & .nav-link > span {
-    &:is( .inactive ) {
-      color: var( --nav-li-text );
-      fill: var( --nav-li-icon );
-      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-    }
-
-    &:is( .active ) {
-      color: var( --nav-li-selected-text );
-      fill: var( --nav-li-selected-icon );
-      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-    }
-
-    transition: clip-path var( --transition-duration ) ease;
     align-items: center;
   }
 
@@ -145,23 +133,13 @@ li.nav-item {
     z-index: 0;
   }
 
-  & a::before {
-    content: "";
-    position: absolute;
-    background: var( --nav-li-selected );
-    transition: translate var( --transition-duration ) ease;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    transform: 0 0;
-    border-top-left-radius: 20px;
-    border-bottom-left-radius: 20px;
-
-    /* move behind parent */
-    z-index: -1;
-  }
 
   /* move next bg to active */
+  /* todo: background has to be relative to li's, otherwise
+           animating between multiple children will introduce
+           artifacts behind inbetween children
+  */
+
   &[data-active="true"] ~ .nav-item a::before {
     translate: 0 -150%;
   }
@@ -180,6 +158,41 @@ li.nav-item {
   }
 }
 
+/* do we have active items? eg on cat profile page none are active -> cant highlight */
+aside:has( [data-active=true] ) li.nav-item {
+  /* active/inactive */
+  & .nav-link > span {
+    &:is( .inactive ) {
+      color: var( --nav-li-text );
+      fill: var( --nav-li-icon );
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    }
+
+    &:is( .active ) {
+      color: var( --nav-li-selected-text );
+      fill: var( --nav-li-selected-icon );
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    }
+
+    transition: clip-path var( --transition-duration ) ease;
+  }
+
+  & a::before {
+    content: "";
+    position: absolute;
+    background: var( --nav-li-selected );
+    transition: translate var( --transition-duration ) ease;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform: 0 0;
+    border-top-left-radius: 20px;
+    border-bottom-left-radius: 20px;
+
+    /* move behind parent */
+    z-index: -1;
+  }
+}
 
 .profile-picture-container {
   --status-color: #aaa; /* default to offline */
@@ -201,5 +214,40 @@ li.nav-item {
   border-radius: 50%;
   border: 2px solid var( --nav-li-bg );
   background-color: var( --status-color );
+}
+
+/* collapsed styles */
+
+aside:has( #collapseCheckbox:checked ) {
+  nav > ul {
+    padding: 0 0 0 5px;
+
+    li.nav-item a {
+      padding: 8px;
+    }
+
+    li.nav-item a > span {
+      display: flex;
+      justify-content: center;
+    }
+
+    li.nav-item span :is( svg + span ) {
+      display: none;
+    }
+  }
+
+  #logo-name {
+    opacity: 0;
+  }
+
+  .profile-container {
+    margin-bottom: 8px;
+    margin-top: auto;
+    order: 10;
+    padding: 0 8px;
+    & > div {
+      display: none;
+    }
+  }
 }
 </style>

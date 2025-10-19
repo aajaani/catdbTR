@@ -77,13 +77,23 @@ http://127.0.0.1:8000/
 → {"Hello":"World"}
 ```
 
+## 4) Frontend setup & run
+
+From the `frontend/vue-project`
+
+```bash
+# 1) install dependencies
+npm install
+
+# 2) start development server
+npm run dev
+```
+
+Visit ``http://localhost:8081`` in your browser
 
 
 
-
-
-## 4) API endpoints 
-- [Schemas and Endpoints in more detail](https://gitlab.cs.ut.ee/aajaani/catdb/-/wikis/Schemas&Endpoints)
+## 5) API endpoints 
 
 ### Cats
 
@@ -124,7 +134,7 @@ http://127.0.0.1:8000/
 
 ---
 
-## 5) Database layout overview
+## 6) Database layout overview
 
 **Main tables:**
 
@@ -141,7 +151,7 @@ http://127.0.0.1:8000/
 
 
 
-## 6) Tests
+## 7) Tests
 
 To run tests 
 ``` 
@@ -149,21 +159,5 @@ cd backend
 python -m pytest
 
 ```
-## 7) Install dependencies
 
-From the `frontend/vue-project`
-
-```
-npm install
-```
-
-## 8) Start Development Server
-
-```
-npm run dev
-```
-
-## 9) Open the site
-
-Visit ``http://localhost:8081`` in your browser
 

@@ -11,7 +11,7 @@ interface BreadCrumbEntry {
 }
 
 const route = useRoute( );
-console.log( route.meta?.breadcrumbs );
+
 // typescript is so boss
 const entries = computed< BreadCrumbEntry[ ] >(( ) => {
   // no breadcrumbs defined for this route, nothing to show
@@ -22,7 +22,7 @@ const entries = computed< BreadCrumbEntry[ ] >(( ) => {
 
 <template>
   <nav aria-label="Breadcrumb" v-if="entries.length > 0 && entries">
-    <ol class="flex items-center gap-2">
+    <ol class="flex items-center gap-2" id="breadcrumbs">
       <li v-for="( entry, i ) in entries" :key="i" class="flex items-center gap-2 breadcrumb abril-fatface-regular">
         <!-- first entries are less opaque than the last one -->
         <router-link
@@ -46,6 +46,17 @@ const entries = computed< BreadCrumbEntry[ ] >(( ) => {
 </template>
 
 <style scoped>
+nav {
+  --bc-active: theme( "colors.breadcrumbs.active" );
+  --bc-inactive: theme( "colors.breadcrumbs.inactive" );
+
+  &.light {
+    /* they do exist, tailwind is going crazy */
+    --bc-active: theme( "colors.breadcrumbs.light.active" );
+    --bc-inactive: theme( "colors.breadcrumbs.light.inactive" );
+  }
+}
+
 /* has next breadcrumb? */
 .breadcrumb:has( + .breadcrumb ) {
   padding-right: 1rem;
@@ -53,7 +64,6 @@ const entries = computed< BreadCrumbEntry[ ] >(( ) => {
   &:has( > a ):hover {
     text-decoration: underline;
   }
-  opacity: 0.6;
 
   /* absolute, otherwise gets underlined on link hover */
   &::before {
@@ -62,5 +72,14 @@ const entries = computed< BreadCrumbEntry[ ] >(( ) => {
     right: 0;
     color: var( --text-muted );
   }
+
+  a {
+    color: var( --bc-inactive );
+    text-decoration: none;
+  }
+}
+
+.breadcrumb:last-child > * {
+  color: var( --bc-active )
 }
 </style>

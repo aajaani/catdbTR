@@ -1,10 +1,15 @@
 @import './base.css';
 @import "./reset.css";
+@import "./generic-styles/input.css";
 
 /* tailwindcss directives */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+body {
+    @apply bg-main-bg;
+}
 
 #app {
     display: grid;
@@ -19,4 +24,22 @@
     /* mobiles have "dynamic" view height due to their navbar hiding/showing */
     /* if dvh doesnt work, we automatically fallback to vh */
     height: 100dvh;
+
+    /* 2nd child is the view content, we dont want to scroll with sidebar */
+    & > :nth-child( 2 ) {
+        overflow: scroll;
+    }
+}
+
+#app:has( #collapseCheckbox:checked ) {
+    grid-template-columns: 60px 1fr;
+    & #collapse {
+        svg {
+            rotate: 180deg;
+        }
+    }
+}
+
+button:disabled {
+    cursor: not-allowed;
 }
