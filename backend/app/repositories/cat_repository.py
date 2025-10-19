@@ -19,6 +19,7 @@ class CatRepository(BaseRepository):
             .options(
                 joinedload(Cat.manager),
                 joinedload(Cat.foster_home),
+                joinedload(Cat.colony),
             )
             .where(Cat.id == cat_id)
         )
@@ -31,6 +32,7 @@ class CatRepository(BaseRepository):
             .options(
                 joinedload(Cat.manager),
                 joinedload(Cat.foster_home),
+                joinedload(Cat.colony),
             )
         )
         return self.db.execute(stmt).scalars().all()

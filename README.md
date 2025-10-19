@@ -10,6 +10,7 @@ Customer: MTÜ Tartu Kassikaitse, contact (hanna.pook@gmail.com)
 - [Wiki](https://gitlab.cs.ut.ee/aajaani/catdb/-/wikis/home)
 - [Issue Board](https://gitlab.cs.ut.ee/aajaani/catdb/-/boards)
 
+
 ## Structure
 - backend/  
 - frontend/ 

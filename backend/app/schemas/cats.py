@@ -2,7 +2,7 @@ from datetime import date
 from typing import Literal
 from pydantic import BaseModel, Field
 from .common import ORMBase
-from .refs import ManagerRef, FosterHomeRef
+from .refs import ColonyRef, ManagerRef, FosterHomeRef
 
 Sex = Literal["male", "female", "unknown"]
 Status = Literal["ACTIVE","FOSTER","ADOPTED","ARCHIVED","MISSING","RESERVED"]
@@ -35,8 +35,7 @@ class CatRead(ORMBase):
 
     manager: ManagerRef | None = None
     foster_home: FosterHomeRef | None = None
-
-    colony_id: int | None = None
+    colony: ColonyRef | None = None
 
     intake_date: date | None = None
     birth_date: date | None = None

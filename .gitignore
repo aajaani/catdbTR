@@ -2,3 +2,6 @@
 __pycache__/
 memory:
 .pytest_cache/
+src/client/
+.vscode/
+node_modules/
