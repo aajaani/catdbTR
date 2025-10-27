@@ -84,7 +84,7 @@ http://127.0.0.1:8000/
 
 
 
-* New `users` table
+* `users` table
 
   * `username`, `password_hash`, `is_manager`, `is_active`, `manager_id (FK)`
 * Passwords hashed securely with **Argon2** (`passlib`).
