@@ -14,7 +14,7 @@ import mimetypes
 from minio import Minio
 
 from app.db.base import Base
-from app.db.session import engine, get_db
+from app.db.session import SessionLocal, engine, get_db
 from app.schemas.cats import CatCreate, CatRead, CatUpdate
 
 from app.schemas.manager import ManagerCreate, ManagerRead
@@ -30,6 +30,14 @@ from app.models.manager import Manager
 from app.models.foster_home import FosterHome
 from app.models.cat_procedure import CatProcedure
 
+# NEW IMPORTS FOR AUTH / USERS
+from app.schemas.user import UserCreate, UserRead, LoginRequest, LoginResponse
+from app.repositories.user_repository import UserRepository
+from app.services.user_service import UserService
+from app.services.auth_checks import require_user, require_manager
+from app.services.auth_service import bootstrap_admin
+
+
 # MinIO 
 MINIO_ENDPOINT = "localhost:9000"
 MINIO_ACCESS_KEY = "minioadmin"
@@ -42,6 +50,13 @@ MINIO_BUCKET = "tkk-cats"
 async def lifespan(app: FastAPI):
     # makes tables
     Base.metadata.create_all(bind=engine)
+
+    # bootstrap first admin user if needed
+    db = SessionLocal()
+    try:
+        bootstrap_admin(db)
+    finally:
+        db.close()
 
     # adds minio client to app
     app.state.minio = Minio(
@@ -80,11 +95,29 @@ async def read_root():
     return {"Hello": "World"}
 
 
+# AUTH / USERS 
+
+@app.post("/login", response_model=LoginResponse)
+def login(payload: LoginRequest, db = Depends(get_db)):
+    svc = UserService(UserRepository(db), ManagerRepository(db))
+    user = svc.authenticate_user(payload.username, payload.password)
+    token = svc.create_access_token(user)
+    return LoginResponse(access_token=token)
+
+@app.post("/users/full-create", response_model=UserRead, status_code=201)
+def create_user_full(payload: UserCreate, db = Depends(get_db), auth = Depends(require_manager)):
+    # only managers can add new people
+    svc = UserService(UserRepository(db), ManagerRepository(db))
+    new_user = svc.create_full_user(payload)
+    return new_user
+
+
 #  CATS !
 @app.post("/cats", response_model=CatRead, status_code=201)
 def create_cat(
     request: Request,
     db = Depends(get_db),
+    auth = Depends(require_manager),
     payload: str = Form(...),                      # JSON-string, form since multipart
     primary_image: UploadFile | None = File(None), # optional file
 ):
@@ -99,12 +132,12 @@ def create_cat(
     return service.create_from_payload(data, primary_image)
 
 @app.get("/cats", response_model=list[CatRead])
-def list_cats(request: Request, db = Depends(get_db)):
+def list_cats(request: Request, db = Depends(get_db), auth = Depends(require_user)):
     service = CatService(CatRepository(db), request.app.state.minio)
     return service.list_all()
 
 @app.get("/cats/{cat_id}", response_model=CatRead)
-def get_cat(cat_id: int, request: Request, db = Depends(get_db)):
+def get_cat(cat_id: int, request: Request, db = Depends(get_db), auth = Depends(require_user)):
     service = CatService(CatRepository(db), request.app.state.minio)
     return service.get(cat_id)
 
@@ -113,6 +146,7 @@ def update_cat(
     cat_id: int,
     request: Request,
     db = Depends(get_db),
+    auth = Depends(require_manager),
     payload: str = Form(...),                      # JSON-string, form since multipart
     primary_image: UploadFile | None = File(None), # optional file
 ):
@@ -127,7 +161,7 @@ def update_cat(
     return service.update_from_payload(cat_id, data, primary_image)
 
 @app.delete("/cats/{cat_id}", status_code=204)
-def delete_cat(cat_id: int, db = Depends(get_db)):
+def delete_cat(cat_id: int, db = Depends(get_db), auth = Depends(require_manager)):
     cat = CatRepository(db).get_with_related(cat_id)
     if not cat:
         raise HTTPException(status_code=404, detail="cat not found")
@@ -136,24 +170,24 @@ def delete_cat(cat_id: int, db = Depends(get_db)):
 
 # MANAGERS
 @app.post("/managers", response_model=ManagerRead, status_code=201)
-def create_manager(payload: ManagerCreate, db = Depends(get_db)):
+def create_manager(payload: ManagerCreate, db = Depends(get_db), auth = Depends(require_manager)):
     svc = ManagerService(ManagerRepository(db))
     m = svc.create(payload.display_name, payload.phone, payload.email)
     return m  # ORM to ManagerRead (maps the raw db data to json (as defined in schema))
 
 @app.get("/managers", response_model=list[ManagerRead])
-def list_managers(db = Depends(get_db)):
+def list_managers(db = Depends(get_db), auth = Depends(require_user)):
     svc = ManagerService(ManagerRepository(db))
     rows = svc.list_all()
     return rows  
 # FOSTER HOMES
 @app.post("/foster-homes", response_model=FosterHomeRead, status_code=201)
-def create_foster_home(payload: FosterHomeCreate, db = Depends(get_db)):
+def create_foster_home(payload: FosterHomeCreate, db = Depends(get_db), auth = Depends(require_manager)):
     svc = FosterHomeService(FosterHomeRepository(db))
     return svc.create(payload.name, payload.phone, payload.email, payload.address, payload.comments)# ORM -> FosterHomeRead
 
 @app.get("/foster-homes", response_model=list[FosterHomeRead])
-def list_foster_homes(db = Depends(get_db)):
+def list_foster_homes(db = Depends(get_db), auth = Depends(require_user)):
     svc = FosterHomeService(FosterHomeRepository(db))
     rows = svc.list_all()
     return rows  # ORM TO FosterHomeRead 
@@ -161,7 +195,7 @@ def list_foster_homes(db = Depends(get_db)):
 
 # MINIO IMAGE/FILE
 @app.get("/image/{object_name}")
-def get_image(object_name: str, request: Request):
+def get_image(object_name: str, request: Request, auth = Depends(require_user)):
     try:
         # takes object from MinIO
         obj = request.app.state.minio.get_object(MINIO_BUCKET, object_name)
@@ -179,6 +213,7 @@ def add_procedure(
     cat_id: int,
     request: Request,
     db = Depends(get_db),
+    auth = Depends(require_manager),
     payload: str = Form(...),
     file: UploadFile | None = File(None),
 ):
@@ -200,14 +235,14 @@ def add_procedure(
     )
 
 @app.get("/cats/{cat_id}/procedures", response_model=list[ProcedureRead])
-def list_procedures(cat_id: int, db = Depends(get_db)):
+def list_procedures(cat_id: int, db = Depends(get_db), auth = Depends(require_user)):
     svc = ProcedureService(CatProcedureRepository(db), CatRepository(db), None)
     return svc.list_for_cat(cat_id)
 
 
 # TASKS (for calendar)
 @app.post("/tasks", response_model=TaskRead, status_code=201)
-def create_task(payload: TaskCreate, db = Depends(get_db)):
+def create_task(payload: TaskCreate, db = Depends(get_db), auth = Depends(require_manager)):
     
     svc = TaskService(TaskRepository(db), CatRepository(db))
     return svc.add(
@@ -218,12 +253,12 @@ def create_task(payload: TaskCreate, db = Depends(get_db)):
     )
 
 @app.get("/tasks", response_model=list[TaskRead])
-def list_tasks(db = Depends(get_db)):
+def list_tasks(db = Depends(get_db), auth = Depends(require_user)):
     # gives all tasks
     svc = TaskService(TaskRepository(db), CatRepository(db))
     return svc.list_all()
 
 @app.get("/cats/{cat_id}/tasks", response_model=list[TaskRead])
-def list_tasks_for_cat(cat_id: int, db = Depends(get_db)):
+def list_tasks_for_cat(cat_id: int, db = Depends(get_db), auth = Depends(require_user)):
     svc = TaskService(TaskRepository(db), CatRepository(db))
     return svc.list_by_cat(cat_id)
