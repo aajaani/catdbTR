@@ -1,6 +1,3 @@
-Here’s the updated README — only the backend-related additions have been inserted under appropriate sections (✅ minimal, precise, no unrelated edits):
-
----
 
 # Cat Database for Tartu Kassikaitse
 
