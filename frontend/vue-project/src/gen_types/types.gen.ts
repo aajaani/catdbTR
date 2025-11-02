@@ -72,10 +72,7 @@ export type CatRead = {
     status: 'ACTIVE' | 'FOSTER' | 'ADOPTED' | 'ARCHIVED' | 'MISSING' | 'RESERVED';
     manager?: ManagerRef | null;
     foster_home?: FosterHomeRef | null;
-    /**
-     * Colony Id
-     */
-    colony_id?: number | null;
+    colony?: ColonyRef | null;
     /**
      * Intake Date
      */
@@ -100,6 +97,20 @@ export type CatRead = {
      * Primary Photo Object
      */
     primary_photo_object?: string | null;
+};
+
+/**
+ * ColonyRef
+ */
+export type ColonyRef = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Name
+     */
+    name: string;
 };
 
 /**
@@ -192,6 +203,30 @@ export type HttpValidationError = {
      * Detail
      */
     detail?: Array<ValidationError>;
+};
+
+/**
+ * LoginRequest
+ */
+export type LoginRequest = {
+    /**
+     * Username
+     */
+    username: string;
+    /**
+     * Password
+     */
+    password: string;
+};
+
+/**
+ * LoginResponse
+ */
+export type LoginResponse = {
+    /**
+     * Success
+     */
+    success: boolean;
 };
 
 /**
@@ -343,6 +378,62 @@ export type TaskRead = {
 };
 
 /**
+ * UserCreate
+ */
+export type UserCreate = {
+    /**
+     * Username
+     */
+    username: string;
+    /**
+     * Password
+     */
+    password: string;
+    /**
+     * Display Name
+     */
+    display_name: string;
+    /**
+     * Phone
+     */
+    phone?: string | null;
+    /**
+     * Email
+     */
+    email?: string | null;
+    /**
+     * Is Manager
+     */
+    is_manager?: boolean;
+};
+
+/**
+ * UserRead
+ */
+export type UserRead = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Username
+     */
+    username: string;
+    /**
+     * Is Manager
+     */
+    is_manager: boolean;
+    /**
+     * Is Active
+     */
+    is_active: boolean;
+    /**
+     * Manager Id
+     */
+    manager_id?: number | null;
+};
+
+/**
  * ValidationError
  */
 export type ValidationError = {
@@ -373,6 +464,56 @@ export type ReadRootGetResponses = {
      */
     200: unknown;
 };
+
+export type LoginLoginPostData = {
+    body: LoginRequest;
+    path?: never;
+    query?: never;
+    url: '/login';
+};
+
+export type LoginLoginPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type LoginLoginPostError = LoginLoginPostErrors[keyof LoginLoginPostErrors];
+
+export type LoginLoginPostResponses = {
+    /**
+     * Successful Response
+     */
+    200: LoginResponse;
+};
+
+export type LoginLoginPostResponse = LoginLoginPostResponses[keyof LoginLoginPostResponses];
+
+export type CreateUserFullUsersFullCreatePostData = {
+    body: UserCreate;
+    path?: never;
+    query?: never;
+    url: '/users/full-create';
+};
+
+export type CreateUserFullUsersFullCreatePostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreateUserFullUsersFullCreatePostError = CreateUserFullUsersFullCreatePostErrors[keyof CreateUserFullUsersFullCreatePostErrors];
+
+export type CreateUserFullUsersFullCreatePostResponses = {
+    /**
+     * Successful Response
+     */
+    201: UserRead;
+};
+
+export type CreateUserFullUsersFullCreatePostResponse = CreateUserFullUsersFullCreatePostResponses[keyof CreateUserFullUsersFullCreatePostResponses];
 
 export type ListCatsCatsGetData = {
     body?: never;

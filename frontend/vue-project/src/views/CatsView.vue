@@ -15,11 +15,13 @@ import TableText from "@/components/atoms/filter-table/Text.vue"
 import TableStatus from "@/components/atoms/filter-table/Status.vue"
 
 import Actions from "@/components/molecules/filter-table/Actions.vue";
-import router from "@/router";
 import { computed, ref, watch } from "vue";
 
-import { listCatsCatsGet } from "@/gen_types/sdk.gen";
+import api from "@/api_fetch.js";
 import type { CatRead } from "@/gen_types/types.gen";
+import { useRouter } from "vue-router";
+
+const router = useRouter( );
 
 const getQueryParam = ( name: string, def: string ) => {
   const queryParam = router.currentRoute.value.query[ name ];
@@ -86,8 +88,8 @@ const status_to_readable: { [ key in CatRead[ "status" ] ]: string } = {
 const cats = ref< CatRead[ ] >([ ]);
 
 // todo: refactor to something similiar to tanstack query
-listCatsCatsGet( ).then( res => {
-  console.log( res.data );
+api.listCatsCatsGet( ).then( res => {
+  console.log( res );
   cats.value = res.data;
 } )
 
