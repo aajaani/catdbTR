@@ -338,9 +338,11 @@ import { CgCheck, CgClose } from 'vue-icons-plus/cg';
 import useVuelidate from '@vuelidate/core';
 import { required, helpers } from '@vuelidate/validators';
 
-import { createCatCatsPost, createFosterHomeFosterHomesPost, listFosterHomesFosterHomesGet, listManagersManagersGet } from "@/gen_types/sdk.gen"
+import api from "@/api_fetch.js"
 import { type ManagerRead, type CatRead, type FosterHomeRead } from '@/gen_types/types.gen';
-import router from '@/router';
+import { useRouter } from "vue-router";
+
+const router = useRouter( )
 
 const catStatuses: { [ key: CatRead[ "status" ] ]: string } = {
   "ACTIVE": "Otsib kodu",
@@ -359,12 +361,12 @@ const managers = ref< ManagerRead[ ] >([ ]);
 // foster home creation (cat creation), foster home is created, this
 // isnt updated, next req same foster home will br created
 // invalidating foster home cache on cat add fail would solve this issue
-listFosterHomesFosterHomesGet( ).then( ( res ) => {
+api.listFosterHomesFosterHomesGet( ).then( ( res ) => {
   // todo: error handleing
   fosterHomes.value = res.data;
 });
 
-listManagersManagersGet( ).then( res => {
+api.listManagersManagersGet( ).then( res => {
   managers.value = res.data;
 })
 
@@ -444,7 +446,7 @@ const onSubmit = async ( e: SubmitEvent ) => {
 }
 
 const sendFosterHomeCreate = async ( ): Promise< number > => {
-  const res = await createFosterHomeFosterHomesPost({
+  const res = await api.createFosterHomeFosterHomesPost({
     body: {
       name: newFosterHomeData.name,
       phone: newFosterHomeData.phone,
@@ -481,7 +483,7 @@ const sendCatCreate = async ( ) => {
   const formData = new FormData( );
   formData.append( "payload", JSON.stringify( sendData ) );
 
-  const res = await createCatCatsPost({
+  const res = await api.createCatCatsPost({
     body: { payload: JSON.stringify( sendData ) }
   });
 
