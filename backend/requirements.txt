@@ -11,3 +11,4 @@ pwdlib
 PyJWT
 passlib
 passlib[argon2]
+rich
