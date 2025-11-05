@@ -3,7 +3,13 @@ image: node:22.12
 stages:
   - build
   - test
+  - image
   - deploy
+
+variables:
+  BACKEND_IMAGE: "$CI_REGISTRY_IMAGE/backend"
+  FRONTEND_IMAGE: "$CI_REGISTRY_IMAGE/frontend"
+  BRANCH_TAG: "$CI_COMMIT_REF_SLUG"
 
 build-job:
   stage: build
@@ -11,26 +17,6 @@ build-job:
     - cd frontend/vue-project
     - npm install
     - npm run build
-
-docker-build-push:
-  image: docker:25.0.3
-  stage: build
-  services:
-    - name: docker:25.0.3-dind
-      command: ["--tls=false"]
-  variables:
-    DOCKER_HOST: tcp://docker:2375
-    DOCKER_DRIVER: overlay2
-  script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
-    - docker build -t "$CI_REGISTRY_IMAGE/frontend:latest" frontend/vue-project
-    - docker push "$CI_REGISTRY_IMAGE/frontend:latest"
-    - docker build -t "$CI_REGISTRY_IMAGE/backend:latest" backend
-    - docker push "$CI_REGISTRY_IMAGE/backend:latest"
-  tags: []
-  interruptible: true
-  privileged: true
-
 
 backend-test:
   image: python:3.11
@@ -41,8 +27,44 @@ backend-test:
     - pip install -r requirements.txt
     - python -m pytest
 
+image:build-push:
+  image:
+    name: moby/buildkit:rootless
+    entrypoint: [""]
+  stage: image
+  variables:
+    DOCKER_CONFIG: "$CI_PROJECT_DIR/.docker"
+    BUILDKITD_FLAGS: "--oci-worker-no-process-sandbox"
+  script:
+    - mkdir -p "$DOCKER_CONFIG"
+    - AUTH_B64=$(printf "%s:%s" "$CI_REGISTRY_USER" "$CI_REGISTRY_PASSWORD" | base64 | tr -d '\n')
+    - |
+      cat > "$DOCKER_CONFIG/config.json" <<EOF
+      {
+        "auths": {
+          "$CI_REGISTRY": { "auth": "$AUTH_B64" }
+        }
+      }
+      EOF
+    # frontend
+    - |
+      buildctl-daemonless.sh build \
+        --frontend dockerfile.v0 \
+        --local context=frontend/vue-project \
+        --local dockerfile=frontend/vue-project \
+        --output type=image,name=${FRONTEND_IMAGE}:${BRANCH_TAG},push=true
+    # backend
+    - |
+      buildctl-daemonless.sh build \
+        --frontend dockerfile.v0 \
+        --local context=backend \
+        --local dockerfile=backend \
+        --output type=image,name=${BACKEND_IMAGE}:${BRANCH_TAG},push=true
+
+
+
 deploy-prod:
   stage: deploy
   script:
-    - echo "This job deploys something from the $CI_COMMIT_BRANCH branch."
+    - echo "deploying $CI_COMMIT_REF_SLUG"
   environment: production
