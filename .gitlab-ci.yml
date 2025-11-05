@@ -16,17 +16,21 @@ docker-build-push:
   image: docker:25.0.3
   stage: build
   services:
-    - docker:25.0.3-dind
+    - name: docker:25.0.3-dind
+      command: ["--tls=false"]
   variables:
+    DOCKER_HOST: tcp://docker:2375
     DOCKER_DRIVER: overlay2
   script:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
-    # frontend image
     - docker build -t "$CI_REGISTRY_IMAGE/frontend:latest" frontend/vue-project
     - docker push "$CI_REGISTRY_IMAGE/frontend:latest"
-    # backend image
     - docker build -t "$CI_REGISTRY_IMAGE/backend:latest" backend
     - docker push "$CI_REGISTRY_IMAGE/backend:latest"
+  tags: []
+  interruptible: true
+  privileged: true
+
 
 backend-test:
   image: python:3.11
