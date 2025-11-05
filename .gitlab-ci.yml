@@ -2,9 +2,9 @@ image: node:22.12
 
 stages:
   - build
- # - test
-  #- image
-  #- deploy
+  - test
+  - image
+  - deploy
 
 variables:
   BACKEND_IMAGE: "$CI_REGISTRY_IMAGE/backend"
