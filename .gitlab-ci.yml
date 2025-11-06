@@ -9,14 +9,24 @@ stages:
 variables:
   BACKEND_IMAGE: "$CI_REGISTRY_IMAGE/backend"
   FRONTEND_IMAGE: "$CI_REGISTRY_IMAGE/frontend"
+  # immutable tag per pipeline
+  IMAGE_TAG: "$CI_COMMIT_SHA"
+  # moving tag per branch
   BRANCH_TAG: "$CI_COMMIT_REF_SLUG"
 
-build-job:
+build-frontend:
   stage: build
   script:
     - cd frontend/vue-project
     - npm install
     - npm run build
+  artifacts:
+    expire_in: 1 hour
+    paths:
+      - frontend/vue-project/dist
+  only:
+    - branches
+    - merge_requests
 
 backend-test:
   image: python:3.11
@@ -24,9 +34,14 @@ backend-test:
   script:
     - cd backend
     - python -m venv .venv
+    - . .venv/bin/activate
     - pip install -r requirements.txt
     - python -m pytest
+  only:
+    - branches
+    - merge_requests
 
+# build + push docker images with buildkit
 image:build-push:
   image:
     name: moby/buildkit:rootless
@@ -46,25 +61,77 @@ image:build-push:
         }
       }
       EOF
-    # frontend
+
+    # frontend image (immutable tag)
+    - |
+      buildctl-daemonless.sh build \
+        --frontend dockerfile.v0 \
+        --local context=frontend/vue-project \
+        --local dockerfile=frontend/vue-project \
+        --output type=image,name=${FRONTEND_IMAGE}:${IMAGE_TAG},push=true
+
+    # frontend image (moving branch tag)
     - |
       buildctl-daemonless.sh build \
         --frontend dockerfile.v0 \
         --local context=frontend/vue-project \
         --local dockerfile=frontend/vue-project \
         --output type=image,name=${FRONTEND_IMAGE}:${BRANCH_TAG},push=true
-    # backend
+
+    # backend image (immutable tag)
+    - |
+      buildctl-daemonless.sh build \
+        --frontend dockerfile.v0 \
+        --local context=backend \
+        --local dockerfile=backend \
+        --output type=image,name=${BACKEND_IMAGE}:${IMAGE_TAG},push=true
+
+    # backend image (moving branch tag)
     - |
       buildctl-daemonless.sh build \
         --frontend dockerfile.v0 \
         --local context=backend \
         --local dockerfile=backend \
         --output type=image,name=${BACKEND_IMAGE}:${BRANCH_TAG},push=true
+  needs:
+    - build-frontend
+    - backend-test
+  only:
+    - branches
+    - merge_requests
 
-
-
+# 4) deploy server (with shell runner)
 deploy-prod:
   stage: deploy
+  tags:
+    - catdb-deploy
+  # run only on main
+  only:
+    - main
   script:
-    - echo "deploying $CI_COMMIT_REF_SLUG"
-  environment: production
+    # 1. login to gitlab registry on the server
+    - docker login "$CI_REGISTRY" -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD"
+
+    # 2. pull freshly built images (use immutable tag)
+    - docker pull ${FRONTEND_IMAGE}:${IMAGE_TAG}
+    - docker pull ${BACKEND_IMAGE}:${IMAGE_TAG}
+
+    # 3. stop old containers 
+    - docker rm -f catdb-frontend || true
+    - docker rm -f catdb-backend || true
+
+    # 4. start backend 
+    - docker run -d --name catdb-backend --network cat_default \
+        -e DATABASE_URL="postgresql+psycopg://user:password@db:5432/catdb" \
+        -e MINIO_ENDPOINT="minio:9000" \
+        -e MINIO_ACCESS_KEY="minioadmin" \
+        -e MINIO_SECRET_KEY="minioadmin" \
+        ${BACKEND_IMAGE}:${IMAGE_TAG}
+
+    # 5. start frontend
+    - docker run -d --name catdb-frontend --network cat_default \
+        ${FRONTEND_IMAGE}:${IMAGE_TAG}
+  environment:
+    name: production
+  needs:
+    - image:build-push
