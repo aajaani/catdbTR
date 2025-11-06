@@ -105,7 +105,6 @@ deploy-prod:
   stage: deploy
   tags:
     - catdb-deploy
-  # run only on main
   only:
     - main
   script:
@@ -121,17 +120,18 @@ deploy-prod:
     - docker rm -f catdb-backend || true
 
     # 4. start backend 
-    - docker run -d --name catdb-backend --network cat_default \
-        -e DATABASE_URL="postgresql+psycopg://user:password@db:5432/catdb" \
-        -e MINIO_ENDPOINT="minio:9000" \
-        -e MINIO_ACCESS_KEY="minioadmin" \
-        -e MINIO_SECRET_KEY="minioadmin" \
-        ${BACKEND_IMAGE}:${IMAGE_TAG}
+    - >
+      docker run -d --name catdb-backend --network cat_default
+      -e DATABASE_URL="postgresql+psycopg://user:password@db:5432/catdb"
+      -e MINIO_ENDPOINT="minio:9000"
+      -e MINIO_ACCESS_KEY="minioadmin"
+      -e MINIO_SECRET_KEY="minioadmin"
+      ${BACKEND_IMAGE}:${IMAGE_TAG}
 
     # 5. start frontend
-    - docker run -d --name catdb-frontend --network cat_default \
-        ${FRONTEND_IMAGE}:${IMAGE_TAG}
+    - docker run -d --name catdb-frontend --network cat_default ${FRONTEND_IMAGE}:${IMAGE_TAG}
   environment:
     name: production
   needs:
     - image:build-push
+
