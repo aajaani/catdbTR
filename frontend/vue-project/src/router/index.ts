@@ -1,14 +1,24 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
+import { defineBreadcrumbs, defineSidebar } from "@/router/helpers.js";
 
 const routes: RouteRecordRaw[] = [
+	{
+		path: "/login",
+		name: "Login",
+		component: ( ) => import( "@/views/LoginView.vue" ),
+		meta: {
+			...defineSidebar( false )
+		}
+	},
 	{
 		path: "/",
 		name: "Dashboard",
 		component: ( ) => import( "@/views/DashboardView.vue" ),
 		meta: {
-			breadcrumbs: [
+			...defineBreadcrumbs(
 				{ name: "Ulevaade", link: "/" }
-			]
+			),
+			...defineSidebar( true )
 		}
 	},
 	{
@@ -16,11 +26,12 @@ const routes: RouteRecordRaw[] = [
 		name: "CatProfile",
 		component: ( ) => import( "@/views/CatProfile.vue" ),
 		meta: {
-			breadcrumbs: [
+			...defineBreadcrumbs(
 				{ name: "Ulevaade", link: "/" },
 				{ name: "Kassid", link: "/cats" },
 				{ name: "[nimi] Profiil" }
-			]
+			),
+			...defineSidebar( true )
 		}
 	},
 	{
@@ -28,10 +39,11 @@ const routes: RouteRecordRaw[] = [
 		name: "CatsList",
 		component: ( ) => import( "@/views/CatsView.vue" ),
 		meta: {
-			breadcrumbs: [
+			...defineBreadcrumbs(
 				{ name: "Ulevaade", link: "/" },
 				{ name: "Kassid" }
-			]
+			),
+			...defineSidebar( true )
 		}
 	},
 	{
@@ -39,11 +51,12 @@ const routes: RouteRecordRaw[] = [
 		name: "AddManager",
 		component: ( ) => import( "@/views/AddManager.vue" ),
 		meta: {
-			breadcrumbs: [
+			...defineBreadcrumbs(
 				{ name: "Ulevaade", link: "/" },
 				{ name: "Vabatahtlikud", link: "/managers" },
-				{ name: "Lisa Hooldaja" },
-			]
+				{ name: "Lisa Hooldaja" }
+			),
+			...defineSidebar( true )
 		}
 	},
 		{
@@ -51,10 +64,11 @@ const routes: RouteRecordRaw[] = [
 		name: "ManagerLsist",
 		component: ( ) => import( "@/views/Managers.vue" ),
 		meta: {
-			breadcrumbs: [
+			...defineBreadcrumbs(
 				{ name: "Ulevaade", link: "/" },
 				{ name: "Vabatahtlikud" },
-			]
+			),
+			...defineSidebar( true )
 		}
 	},
 	{
@@ -62,11 +76,12 @@ const routes: RouteRecordRaw[] = [
 		name: "AddCat",
 		component: ( ) => import( "@/views/AddCat.vue" ),
 		meta: {
-			breadcrumbs: [
+			...defineBreadcrumbs(
 				{ name: "Ulevaade", link: "/" },
 				{ name: "Kassid", link: "/cats" },
-				{ name: "Lisa Kass" },
-			]
+				{ name: "Lisa Kass" }
+			),
+			...defineSidebar( true )
 		}
 	},
 
@@ -75,10 +90,13 @@ const routes: RouteRecordRaw[] = [
 		path: "/:pathMatch(.*)*",
 		name: "NotFound",
 		component: () => import( "@/views/NotFound.vue" ),
+		meta: {
+			...defineSidebar( false )
+		}
 	}
 ]
 
-const router = createRouter({
+export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
 })

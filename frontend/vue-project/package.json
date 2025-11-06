@@ -17,6 +17,7 @@
     "@fortawesome/vue-fontawesome": "^3.1.2",
     "@vuelidate/core": "^2.0.3",
     "@vuelidate/validators": "^2.0.4",
+    "primevue": "^4.4.1",
     "vue": "^3.5.22",
     "vue-component-type-helpers": "^3.1.1",
     "vue-icons-plus": "^0.1.8",

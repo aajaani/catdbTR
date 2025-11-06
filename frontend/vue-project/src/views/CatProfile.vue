@@ -84,7 +84,7 @@
 
                                     <div class="infofield">
                                         <p>Koloonia</p>
-                                        <p>{{ catData.colony_id ?? "-" }}</p>
+                                        <p>{{ catData.colony?.name ?? "-" }}</p>
                                     </div>
 
                                     <div class="infofield">
@@ -159,7 +159,7 @@
                             </div>
 
                             <div class="group outfit-400">
-                                <p class="text-[14px]">{{ catData.notes || "<markmeid pole>" }}</p>
+                                <p class="text-[14px]">{{ catData.notes || "markmeid pole" }}</p>
                             </div>
                         </div>
                     </div>
@@ -184,8 +184,10 @@ import Status from '@/components/atoms/filter-table/Status.vue';
 
 import { getCatCatsCatIdGet } from '@/gen_types/sdk.gen';
 import { type CatRead } from '@/gen_types/types.gen';
-import router from '@/router';
 import { ref, watch } from 'vue';
+import { useRouter } from "vue-router";
+
+const router = useRouter( )
 
 const status_to_readable: { [ key in CatRead[ "status" ] ]: string } = {
   "ACTIVE": "Otsib kodu",
@@ -238,7 +240,7 @@ const onClick = ( what: EditableFields ) => {
 
 const fetchCatInfo = ( id: any ) => {
     getCatCatsCatIdGet({
-        path: { cat_id: id }
+        path: { cat_id: Number( id ) }
     }).then( res => {
         console.log( res )
         catData.value = res.data;
@@ -250,7 +252,6 @@ watch(
     ( newId ) => fetchCatInfo( newId )
 );
 
-console.log( router.currentRoute.value.params.id )
 fetchCatInfo( router.currentRoute.value.params.id );
 </script>
 

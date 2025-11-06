@@ -2,7 +2,7 @@
 
 import { type Client, formDataBodySerializer, type Options as Options2, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddProcedureCatsCatIdProceduresPostData, AddProcedureCatsCatIdProceduresPostErrors, AddProcedureCatsCatIdProceduresPostResponses, CreateCatCatsPostData, CreateCatCatsPostErrors, CreateCatCatsPostResponses, CreateFosterHomeFosterHomesPostData, CreateFosterHomeFosterHomesPostErrors, CreateFosterHomeFosterHomesPostResponses, CreateManagerManagersPostData, CreateManagerManagersPostErrors, CreateManagerManagersPostResponses, CreateTaskTasksPostData, CreateTaskTasksPostErrors, CreateTaskTasksPostResponses, DeleteCatCatsCatIdDeleteData, DeleteCatCatsCatIdDeleteErrors, DeleteCatCatsCatIdDeleteResponses, GetCatCatsCatIdGetData, GetCatCatsCatIdGetErrors, GetCatCatsCatIdGetResponses, GetImageImageObjectNameGetData, GetImageImageObjectNameGetErrors, GetImageImageObjectNameGetResponses, ListCatsCatsGetData, ListCatsCatsGetResponses, ListFosterHomesFosterHomesGetData, ListFosterHomesFosterHomesGetResponses, ListManagersManagersGetData, ListManagersManagersGetResponses, ListProceduresCatsCatIdProceduresGetData, ListProceduresCatsCatIdProceduresGetErrors, ListProceduresCatsCatIdProceduresGetResponses, ListTasksForCatCatsCatIdTasksGetData, ListTasksForCatCatsCatIdTasksGetErrors, ListTasksForCatCatsCatIdTasksGetResponses, ListTasksTasksGetData, ListTasksTasksGetResponses, ReadRootGetData, ReadRootGetResponses, UpdateCatCatsCatIdPatchData, UpdateCatCatsCatIdPatchErrors, UpdateCatCatsCatIdPatchResponses } from './types.gen';
+import type { AddProcedureCatsCatIdProceduresPostData, AddProcedureCatsCatIdProceduresPostErrors, AddProcedureCatsCatIdProceduresPostResponses, CreateCatCatsPostData, CreateCatCatsPostErrors, CreateCatCatsPostResponses, CreateFosterHomeFosterHomesPostData, CreateFosterHomeFosterHomesPostErrors, CreateFosterHomeFosterHomesPostResponses, CreateManagerManagersPostData, CreateManagerManagersPostErrors, CreateManagerManagersPostResponses, CreateTaskTasksPostData, CreateTaskTasksPostErrors, CreateTaskTasksPostResponses, CreateUserFullUsersFullCreatePostData, CreateUserFullUsersFullCreatePostErrors, CreateUserFullUsersFullCreatePostResponses, DeleteCatCatsCatIdDeleteData, DeleteCatCatsCatIdDeleteErrors, DeleteCatCatsCatIdDeleteResponses, GetCatCatsCatIdGetData, GetCatCatsCatIdGetErrors, GetCatCatsCatIdGetResponses, GetImageImageObjectNameGetData, GetImageImageObjectNameGetErrors, GetImageImageObjectNameGetResponses, ListCatsCatsGetData, ListCatsCatsGetResponses, ListFosterHomesFosterHomesGetData, ListFosterHomesFosterHomesGetResponses, ListManagersManagersGetData, ListManagersManagersGetResponses, ListProceduresCatsCatIdProceduresGetData, ListProceduresCatsCatIdProceduresGetErrors, ListProceduresCatsCatIdProceduresGetResponses, ListTasksForCatCatsCatIdTasksGetData, ListTasksForCatCatsCatIdTasksGetErrors, ListTasksForCatCatsCatIdTasksGetResponses, ListTasksTasksGetData, ListTasksTasksGetResponses, LoginLoginPostData, LoginLoginPostErrors, LoginLoginPostResponses, ReadRootGetData, ReadRootGetResponses, UpdateCatCatsCatIdPatchData, UpdateCatCatsCatIdPatchErrors, UpdateCatCatsCatIdPatchResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -29,10 +29,52 @@ export const readRootGet = <ThrowOnError extends boolean = false>(options?: Opti
 };
 
 /**
+ * Login
+ */
+export const loginLoginPost = <ThrowOnError extends boolean = false>(options: Options<LoginLoginPostData, ThrowOnError>) => {
+    return (options.client ?? client).post<LoginLoginPostResponses, LoginLoginPostErrors, ThrowOnError>({
+        url: '/login',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Create User Full
+ */
+export const createUserFullUsersFullCreatePost = <ThrowOnError extends boolean = false>(options: Options<CreateUserFullUsersFullCreatePostData, ThrowOnError>) => {
+    return (options.client ?? client).post<CreateUserFullUsersFullCreatePostResponses, CreateUserFullUsersFullCreatePostErrors, ThrowOnError>({
+        security: [
+            {
+                in: 'cookie',
+                name: 'access_token',
+                type: 'apiKey'
+            }
+        ],
+        url: '/users/full-create',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
  * List Cats
  */
 export const listCatsCatsGet = <ThrowOnError extends boolean = false>(options?: Options<ListCatsCatsGetData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListCatsCatsGetResponses, unknown, ThrowOnError>({
+        security: [
+            {
+                in: 'cookie',
+                name: 'access_token',
+                type: 'apiKey'
+            }
+        ],
         url: '/cats',
         ...options
     });
@@ -44,6 +86,13 @@ export const listCatsCatsGet = <ThrowOnError extends boolean = false>(options?: 
 export const createCatCatsPost = <ThrowOnError extends boolean = false>(options: Options<CreateCatCatsPostData, ThrowOnError>) => {
     return (options.client ?? client).post<CreateCatCatsPostResponses, CreateCatCatsPostErrors, ThrowOnError>({
         ...formDataBodySerializer,
+        security: [
+            {
+                in: 'cookie',
+                name: 'access_token',
+                type: 'apiKey'
+            }
+        ],
         url: '/cats',
         ...options,
         headers: {
@@ -58,6 +107,13 @@ export const createCatCatsPost = <ThrowOnError extends boolean = false>(options:
  */
 export const deleteCatCatsCatIdDelete = <ThrowOnError extends boolean = false>(options: Options<DeleteCatCatsCatIdDeleteData, ThrowOnError>) => {
     return (options.client ?? client).delete<DeleteCatCatsCatIdDeleteResponses, DeleteCatCatsCatIdDeleteErrors, ThrowOnError>({
+        security: [
+            {
+                in: 'cookie',
+                name: 'access_token',
+                type: 'apiKey'
+            }
+        ],
         url: '/cats/{cat_id}',
         ...options
     });
@@ -68,6 +124,13 @@ export const deleteCatCatsCatIdDelete = <ThrowOnError extends boolean = false>(o
  */
 export const getCatCatsCatIdGet = <ThrowOnError extends boolean = false>(options: Options<GetCatCatsCatIdGetData, ThrowOnError>) => {
     return (options.client ?? client).get<GetCatCatsCatIdGetResponses, GetCatCatsCatIdGetErrors, ThrowOnError>({
+        security: [
+            {
+                in: 'cookie',
+                name: 'access_token',
+                type: 'apiKey'
+            }
+        ],
         url: '/cats/{cat_id}',
         ...options
     });
@@ -79,6 +142,13 @@ export const getCatCatsCatIdGet = <ThrowOnError extends boolean = false>(options
 export const updateCatCatsCatIdPatch = <ThrowOnError extends boolean = false>(options: Options<UpdateCatCatsCatIdPatchData, ThrowOnError>) => {
     return (options.client ?? client).patch<UpdateCatCatsCatIdPatchResponses, UpdateCatCatsCatIdPatchErrors, ThrowOnError>({
         ...formDataBodySerializer,
+        security: [
+            {
+                in: 'cookie',
+                name: 'access_token',
+                type: 'apiKey'
+            }
+        ],
         url: '/cats/{cat_id}',
         ...options,
         headers: {
@@ -93,6 +163,13 @@ export const updateCatCatsCatIdPatch = <ThrowOnError extends boolean = false>(op
  */
 export const listManagersManagersGet = <ThrowOnError extends boolean = false>(options?: Options<ListManagersManagersGetData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListManagersManagersGetResponses, unknown, ThrowOnError>({
+        security: [
+            {
+                in: 'cookie',
+                name: 'access_token',
+                type: 'apiKey'
+            }
+        ],
         url: '/managers',
         ...options
     });
@@ -103,6 +180,13 @@ export const listManagersManagersGet = <ThrowOnError extends boolean = false>(op
  */
 export const createManagerManagersPost = <ThrowOnError extends boolean = false>(options: Options<CreateManagerManagersPostData, ThrowOnError>) => {
     return (options.client ?? client).post<CreateManagerManagersPostResponses, CreateManagerManagersPostErrors, ThrowOnError>({
+        security: [
+            {
+                in: 'cookie',
+                name: 'access_token',
+                type: 'apiKey'
+            }
+        ],
         url: '/managers',
         ...options,
         headers: {
@@ -117,6 +201,13 @@ export const createManagerManagersPost = <ThrowOnError extends boolean = false>(
  */
 export const listFosterHomesFosterHomesGet = <ThrowOnError extends boolean = false>(options?: Options<ListFosterHomesFosterHomesGetData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListFosterHomesFosterHomesGetResponses, unknown, ThrowOnError>({
+        security: [
+            {
+                in: 'cookie',
+                name: 'access_token',
+                type: 'apiKey'
+            }
+        ],
         url: '/foster-homes',
         ...options
     });
@@ -127,6 +218,13 @@ export const listFosterHomesFosterHomesGet = <ThrowOnError extends boolean = fal
  */
 export const createFosterHomeFosterHomesPost = <ThrowOnError extends boolean = false>(options: Options<CreateFosterHomeFosterHomesPostData, ThrowOnError>) => {
     return (options.client ?? client).post<CreateFosterHomeFosterHomesPostResponses, CreateFosterHomeFosterHomesPostErrors, ThrowOnError>({
+        security: [
+            {
+                in: 'cookie',
+                name: 'access_token',
+                type: 'apiKey'
+            }
+        ],
         url: '/foster-homes',
         ...options,
         headers: {
@@ -141,6 +239,13 @@ export const createFosterHomeFosterHomesPost = <ThrowOnError extends boolean = f
  */
 export const getImageImageObjectNameGet = <ThrowOnError extends boolean = false>(options: Options<GetImageImageObjectNameGetData, ThrowOnError>) => {
     return (options.client ?? client).get<GetImageImageObjectNameGetResponses, GetImageImageObjectNameGetErrors, ThrowOnError>({
+        security: [
+            {
+                in: 'cookie',
+                name: 'access_token',
+                type: 'apiKey'
+            }
+        ],
         url: '/image/{object_name}',
         ...options
     });
@@ -151,6 +256,13 @@ export const getImageImageObjectNameGet = <ThrowOnError extends boolean = false>
  */
 export const listProceduresCatsCatIdProceduresGet = <ThrowOnError extends boolean = false>(options: Options<ListProceduresCatsCatIdProceduresGetData, ThrowOnError>) => {
     return (options.client ?? client).get<ListProceduresCatsCatIdProceduresGetResponses, ListProceduresCatsCatIdProceduresGetErrors, ThrowOnError>({
+        security: [
+            {
+                in: 'cookie',
+                name: 'access_token',
+                type: 'apiKey'
+            }
+        ],
         url: '/cats/{cat_id}/procedures',
         ...options
     });
@@ -162,6 +274,13 @@ export const listProceduresCatsCatIdProceduresGet = <ThrowOnError extends boolea
 export const addProcedureCatsCatIdProceduresPost = <ThrowOnError extends boolean = false>(options: Options<AddProcedureCatsCatIdProceduresPostData, ThrowOnError>) => {
     return (options.client ?? client).post<AddProcedureCatsCatIdProceduresPostResponses, AddProcedureCatsCatIdProceduresPostErrors, ThrowOnError>({
         ...formDataBodySerializer,
+        security: [
+            {
+                in: 'cookie',
+                name: 'access_token',
+                type: 'apiKey'
+            }
+        ],
         url: '/cats/{cat_id}/procedures',
         ...options,
         headers: {
@@ -176,6 +295,13 @@ export const addProcedureCatsCatIdProceduresPost = <ThrowOnError extends boolean
  */
 export const listTasksTasksGet = <ThrowOnError extends boolean = false>(options?: Options<ListTasksTasksGetData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListTasksTasksGetResponses, unknown, ThrowOnError>({
+        security: [
+            {
+                in: 'cookie',
+                name: 'access_token',
+                type: 'apiKey'
+            }
+        ],
         url: '/tasks',
         ...options
     });
@@ -186,6 +312,13 @@ export const listTasksTasksGet = <ThrowOnError extends boolean = false>(options?
  */
 export const createTaskTasksPost = <ThrowOnError extends boolean = false>(options: Options<CreateTaskTasksPostData, ThrowOnError>) => {
     return (options.client ?? client).post<CreateTaskTasksPostResponses, CreateTaskTasksPostErrors, ThrowOnError>({
+        security: [
+            {
+                in: 'cookie',
+                name: 'access_token',
+                type: 'apiKey'
+            }
+        ],
         url: '/tasks',
         ...options,
         headers: {
@@ -200,6 +333,13 @@ export const createTaskTasksPost = <ThrowOnError extends boolean = false>(option
  */
 export const listTasksForCatCatsCatIdTasksGet = <ThrowOnError extends boolean = false>(options: Options<ListTasksForCatCatsCatIdTasksGetData, ThrowOnError>) => {
     return (options.client ?? client).get<ListTasksForCatCatsCatIdTasksGetResponses, ListTasksForCatCatsCatIdTasksGetErrors, ThrowOnError>({
+        security: [
+            {
+                in: 'cookie',
+                name: 'access_token',
+                type: 'apiKey'
+            }
+        ],
         url: '/cats/{cat_id}/tasks',
         ...options
     });

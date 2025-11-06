@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
 import Navigation from "@/components/organisms/Navigation.vue"
+import Toast from "primevue/toast";
 </script>
 
 <template>
@@ -10,6 +11,8 @@ import Navigation from "@/components/organisms/Navigation.vue"
 
   <!-- main content changes based on route -->
   <RouterView />
+
+  <Toast />
 </template>
 
 <style scoped>

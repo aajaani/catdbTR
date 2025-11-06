@@ -1,22 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRoute, type RouteLocationRaw } from 'vue-router';
-
-// breadcrumbentry should be able to be a string or a function that takes the route and returns a string
-// function allows for dynamic routes like /cats/:id to return the cat's name or whatever
-// link is optional, if not provided the breadcrumb will not be a link (for the current page)
-interface BreadCrumbEntry {
-  name: string | ( ( route: ReturnType< typeof useRoute > ) => string );
-  link?: string;
-}
+import { getBreadcrumbs } from "@/router/helpers.js";
 
 const route = useRoute( );
 
 // typescript is so boss
-const entries = computed< BreadCrumbEntry[ ] >(( ) => {
+const entries = computed(( ) => {
   // no breadcrumbs defined for this route, nothing to show
-  if ( !route.meta || !route.meta.breadcrumbs ) return [ ];
-  return route.meta.breadcrumbs as BreadCrumbEntry[ ];
+  return getBreadcrumbs( route.meta )
 });
 </script>
 

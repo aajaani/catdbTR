@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { MdFeed, MdOutlinePets, MdCatchingPokemon, MdPersonAdd, MdPeople, MdArrowBack } from 'vue-icons-plus/md'
 import { useRoute } from 'vue-router';
+import { isSidebarAvailable } from "@/router/helpers.js";
 
 // reactive route
 const route = useRoute( );
@@ -33,7 +34,7 @@ const sidebar_links = {
 </script>
 
 <template>
-<aside class="flex flex-col gap-6 pt-4">
+<aside v-if="isSidebarAvailable( route.meta )" class="flex flex-col gap-6 pt-4">
   <div class="pl-4 flex flex-row justify-between relative h-min w-full">
     <h1 class="poppins-medium text-[18px] text-nav-li-text" id="logo-name">Kassid Koju</h1>
 

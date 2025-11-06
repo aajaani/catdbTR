@@ -36,3 +36,9 @@ npm run dev
 ```sh
 npm run build
 ```
+
+# Generating API Documentation
+
+```sh
+ npx @hey-api/openapi-ts -i http://localhost:8000/openapi.json -o src/gen_types
+```

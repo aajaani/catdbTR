@@ -1,6 +1,7 @@
 @import './base.css';
 @import "./reset.css";
 @import "./generic-styles/input.css";
+@import "./generic-styles/toast.css";
 
 /* tailwindcss directives */
 @tailwind base;
@@ -28,6 +29,13 @@ body {
     /* 2nd child is the view content, we dont want to scroll with sidebar */
     & > :nth-child( 2 ) {
         overflow: scroll;
+    }
+
+    /* doesnt have 2 direct children -> nav doest exists (only conditional container inside parent) */
+    &:not(:has(> :nth-child(2))) {
+        grid-template-areas:
+            "view";
+        grid-template-columns: 1fr;
     }
 }
 

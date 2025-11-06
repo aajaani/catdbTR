@@ -7,3 +7,8 @@ python-multipart
 psycopg[binary]
 minio
 pytest
+pwdlib
+PyJWT
+passlib
+passlib[argon2]
+rich

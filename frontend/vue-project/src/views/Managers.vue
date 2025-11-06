@@ -27,10 +27,11 @@ import FilterTable from "@/components/organisms/FilterTable.vue"
 import TableText from "@/components/atoms/filter-table/Text.vue"
 import TableStatus from "@/components/atoms/filter-table/Text.vue"
 import Actions from '@/components/molecules/filter-table/Actions.vue';
-import router from '@/router';
+import { useRouter } from "vue-router";
 
 type ManagerActivityStatus = "active" | "inactive";
 
+const router = useRouter( )
 
 const getQueryParam = ( name: string, def: string ) => {
   const queryParam = router.currentRoute.value.query[ name ];

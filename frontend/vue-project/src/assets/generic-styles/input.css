@@ -10,7 +10,7 @@ body .input {
     }
 }
 
-body :is( .input, label ) {
+body :is( .input, label ):not( .own-font ) {
     font-family: "Abyssinica SIL", serif;
     font-weight: 400;
     font-style: normal;
