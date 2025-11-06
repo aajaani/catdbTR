@@ -17,7 +17,7 @@ RUN sed -i 's/^#LoadModule rewrite_module/LoadModule rewrite_module/' /usr/local
     sed -i 's/^#LoadModule proxy_wstunnel_module/LoadModule proxy_wstunnel_module/' /usr/local/apache2/conf/httpd.conf && \
     sed -i 's/^#LoadModule headers_module/LoadModule headers_module/' /usr/local/apache2/conf/httpd.conf
 
-    # my beloved
+# my beloved
 COPY apache-frontend.conf /usr/local/apache2/conf/extra/vue-frontend.conf
 RUN printf '\n# include Vue FE vhost\nInclude conf/extra/vue-frontend.conf\n' >> /usr/local/apache2/conf/httpd.conf
 
