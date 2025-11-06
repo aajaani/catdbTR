@@ -1,3 +1,5 @@
+from fastapi.openapi.utils import get_openapi
+
 from app.models.role import Permissions
 from app.repositories.cat_procedure_repository import CatProcedureRepository
 from app.repositories.task_repository import TaskRepository
@@ -94,6 +96,24 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Since CatUpdate model is not referenced in any API route directly,
+# FastAPI cannot detect the schema properly for docs and validation
+# which causes CatUpdate to be missing from the OpenAPI schema
+# (and missing from hey-api client generation)
+#
+# fix: we manually inject the schema into the OpenAPI definition
+def openapi_inject():
+    if app.openapi_schema:
+        return app.openapi_schema
+    openapi_schema = get_openapi(title="catdb-schema", version="temp_v1.0", routes=app.routes)
+    default_schemas = openapi_schema.setdefault("components", {}).setdefault("schemas", {})
+    default_schemas["CatUpdate"] = CatUpdate.schema()
+
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+app.openapi = openapi_inject
 
 
 # test
