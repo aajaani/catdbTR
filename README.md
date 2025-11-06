@@ -1,3 +1,5 @@
+# https://catdb.wxcoy.cc/
+The app runs there and is automatically updated via pipeline
 
 # Cat Database for Tartu Kassikaitse
 
