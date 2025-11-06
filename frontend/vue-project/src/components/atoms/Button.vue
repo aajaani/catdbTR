@@ -31,4 +31,20 @@ button.primary {
 button.secondary {
   @apply border-[color-mix(in_srgb,theme(colors.primary.normal)_50%,white)] bg-[color-mix(in_srgb,theme(colors.primary.normal)_50%,white)] text-black;
 }
+
+button.accept {
+  @apply border-green-600 bg-green-600 bg-opacity-40 border-opacity-40 text-white transition-colors;
+
+  &:hover {
+    @apply bg-green-600 bg-opacity-80 border-opacity-80;
+  }
+}
+
+button.destructive {
+  @apply border-red-600 bg-red-600 bg-opacity-40 border-opacity-40 text-white transition-colors;
+
+  &:hover {
+    @apply bg-red-600 bg-opacity-80 border-opacity-80;
+  }
+}
 </style>

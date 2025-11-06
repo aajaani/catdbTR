@@ -11,7 +11,7 @@ const app = createApp(App)
 
 client.setConfig({
 	credentials: "include",
-   baseUrl: ""
+	baseUrl: "http://localhost:8000/",
 })
 
 app.use( router )
