@@ -3,7 +3,7 @@
     v-if="!isEditing"
     @click.alt="isEditing = true"
   >
-    {{  props.text  }}
+    {{  props.date ?? "-"  }}
   </span>
 
   <div
@@ -11,14 +11,14 @@
    class="flex gap-1"
   >
     <input
-        type="text"
+        type="date"
         class="input outline-none max-w-32"
         v-model="editedValue"
     />
     <Button
       class="accept"
       @click="( ) => {
-        if ( props.onEditAccept )
+        if ( props.onEditAccept && editedValue )
           props.onEditAccept( editedValue );
 
         isEditing = false;
@@ -48,18 +48,15 @@ import Button from "@/components/atoms/Button.vue"
 import { ref, watch } from "vue";
 
 const props = defineProps<{
-  text: string,
+  date: string | null,
   isEditing?: boolean,
-  onEditAccept?: ( newText: string ) => void,
+  onEditAccept?: ( newDate: string ) => void,
   onEditCancel?: ( ) => void,
 }>( );
 
-// todo: instead of adding isEditing state for every
-//       table component, we can make a wrapper component
-//       so that altclick editing doesn't have to be implemented
-//       in every component
+// todo: check filter-table/Text.vue
 const isEditing = ref< boolean >( props.isEditing ?? false );
-const editedValue = ref<string>( props.text );
+const editedValue = ref< string | null >( props.date );
 
 // whenever props change, reflect isEditing
 watch(
@@ -68,7 +65,7 @@ watch(
       isEditing.value = newVal;
 
       if ( newVal ) {
-        editedValue.value = props.text;
+        editedValue.value = props.date;
       }
     }
 )

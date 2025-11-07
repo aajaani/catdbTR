@@ -10,7 +10,10 @@ const onResponse = async ( res: any ) => {
 	// todo: handle other error codes too :p
 	// todo: what if we're in an auth route already, need meta for those (simple)
 	if ( [ 401, 403 ].includes( res.response.status ) ) {
-		await router.push({ name: "Login" });
+		const currentRoute = router.currentRoute.value;
+		await router.push({ name: "Login", query: {
+			redirect: encodeURIComponent( currentRoute.fullPath )
+		} });
 	}
 
 	return res;
