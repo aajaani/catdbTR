@@ -16,7 +16,7 @@ const routes: RouteRecordRaw[] = [
 		component: ( ) => import( "@/views/DashboardView.vue" ),
 		meta: {
 			...defineBreadcrumbs(
-				{ name: "Ulevaade", link: "/" }
+				{ name: "Ülevaade", link: "/" }
 			),
 			...defineSidebar( true )
 		}
@@ -27,7 +27,7 @@ const routes: RouteRecordRaw[] = [
 		component: ( ) => import( "@/views/CatProfile.vue" ),
 		meta: {
 			...defineBreadcrumbs(
-				{ name: "Ulevaade", link: "/" },
+				{ name: "Ülevaade", link: "/" },
 				{ name: "Kassid", link: "/cats" },
 				{ name: "[nimi] Profiil" }
 			),
@@ -40,7 +40,7 @@ const routes: RouteRecordRaw[] = [
 		component: ( ) => import( "@/views/CatsView.vue" ),
 		meta: {
 			...defineBreadcrumbs(
-				{ name: "Ulevaade", link: "/" },
+				{ name: "Ülevaade", link: "/" },
 				{ name: "Kassid" }
 			),
 			...defineSidebar( true )
@@ -52,9 +52,9 @@ const routes: RouteRecordRaw[] = [
 		component: ( ) => import( "@/views/AddManager.vue" ),
 		meta: {
 			...defineBreadcrumbs(
-				{ name: "Ulevaade", link: "/" },
+				{ name: "Ülevaade", link: "/" },
 				{ name: "Vabatahtlikud", link: "/managers" },
-				{ name: "Lisa Hooldaja" }
+				{ name: "Lisa Vabatahtlik" }
 			),
 			...defineSidebar( true )
 		}
@@ -65,7 +65,7 @@ const routes: RouteRecordRaw[] = [
 		component: ( ) => import( "@/views/Managers.vue" ),
 		meta: {
 			...defineBreadcrumbs(
-				{ name: "Ulevaade", link: "/" },
+				{ name: "Ülevaade", link: "/" },
 				{ name: "Vabatahtlikud" },
 			),
 			...defineSidebar( true )
@@ -77,7 +77,7 @@ const routes: RouteRecordRaw[] = [
 		component: ( ) => import( "@/views/AddCat.vue" ),
 		meta: {
 			...defineBreadcrumbs(
-				{ name: "Ulevaade", link: "/" },
+				{ name: "Ülevaade", link: "/" },
 				{ name: "Kassid", link: "/cats" },
 				{ name: "Lisa Kass" }
 			),

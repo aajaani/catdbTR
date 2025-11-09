@@ -39,6 +39,7 @@ from app.services.user_service import UserService
 from app.services.auth_checks import require_user, require_manager, require_permission
 from app.services.auth_service import bootstrap_admin, bootstrap_roles
 
+
 # Response vars
 # set to true when deployed (prob should do via env var later)
 API_HTTPS = False
@@ -191,7 +192,7 @@ def delete_cat(cat_id: int, db = Depends(get_db), auth = Depends(require_permiss
 @app.post("/managers", response_model=ManagerRead, status_code=201)
 def create_manager(payload: ManagerCreate, db = Depends(get_db), auth = Depends(require_permission(Permissions.USER_ADD))):
     svc = ManagerService(ManagerRepository(db))
-    m = svc.create(payload.display_name, payload.phone, payload.email)
+    m = svc.create(payload)
     return m  # ORM to ManagerRead (maps the raw db data to json (as defined in schema))
 
 @app.get("/managers", response_model=list[ManagerRead])

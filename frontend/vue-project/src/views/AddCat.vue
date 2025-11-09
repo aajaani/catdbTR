@@ -9,7 +9,7 @@
       @submit.prevent="onSubmit"
     >
       <AccordionWithTitle
-        title="Uldine"
+        title="Üldine"
         :default-opened="true"
         :lock="true"
         class="bg-neutral-white rounded-lg px-4 py-4"
@@ -27,7 +27,7 @@
           </div>
 
           <div class="flex flex-col col-start-9 col-span-4 row-end-1">
-            <label for="cat-birth-date">Sunnikuupaev</label>
+            <label for="cat-birth-date">Sunnikuupäev</label>
             <input id="cat-birth-date" name="cat-birth-date" type="date" class="input" v-model="catData.birthDate"></input>
           </div>
 
@@ -92,7 +92,7 @@
           </div>
 
           <div class="flex flex-col col-start-9 col-span-4 row-end-2">
-            <label for="cat-chip-id">Kiibi number</label>
+            <label for="cat-chip-id">Kiibinumber</label>
             <NumberInput
               id="cat-chip-id"
               name="cat-chip-id"
@@ -102,14 +102,14 @@
               title="15 numbri pikkune kiibi number"
               v-model="catData.chipID"
             />
-            <p class="text-[12px] text-text-secondary">Kiibi number peaks olema 15 numbrit</p>
+            <p class="text-[12px] text-text-secondary">Kiibinumber peaks olema 15 numbrit</p>
           </div>
 
           <div class="grid grid-rows-[auto_1fr] col-start-1 col-span-12 row-end-3 gap-2">
             <h1 class="col-start-1 col-span-3 text-2xl h-fit">KK alates</h1>
             <div class="col-start-1 col-span-3 flex flex-row gap-5">
               <div class="flex flex-col basis-1/3">
-                <label for="cat-home-since">Kuupaev</label>
+                <label for="cat-home-since">Kuupäev</label>
                 <input id="cat-home-since" name="cat-home-since" type="date" class="input" v-model="catData.intakeDate"></input>
               </div>
               <!-- todo: manager dropdown -->
@@ -219,7 +219,7 @@
             v-if="catData.fosterHomeId === -1"
             class="flex flex-col col-start-1 col-span-2"
           >
-            <label for="foster-home-address">Hoiukodu markused</label>
+            <label for="foster-home-address">Hoiukodu märkused</label>
             <textarea id="foster-home-details" name="foster-home-details" class="input" v-model="newFosterHomeData.notes"></textarea>
           </div>
         </div>
@@ -238,12 +238,12 @@
             <template v-slot:Ussitablett>
               <div class="grid grid-cols-2 px-4 py-4 gap-5">
                 <div class="flex flex-col col-start-1 col-span-1">
-                  <label for="deworm-tablet-given-date">Andmise kuupaev</label>
+                  <label for="deworm-tablet-given-date">Andmise kuupäev</label>
                   <input id="deworm-tablet-given-date" name="deworm-tablet-given-date" type="date" class="input"></input>
                 </div>
 
                 <div class="flex flex-col col-start-2 col-span-1">
-                  <label for="deworm-tablet-next-date">Jargmise votmise kuupaev</label>
+                  <label for="deworm-tablet-next-date">Järgmise võtmise kuupäev</label>
                   <input id="deworm-tablet-next-date" name="deworm-tablet-next-date" type="date" class="input"></input>
                 </div>
               </div>
@@ -252,12 +252,12 @@
             <template v-slot:Turjatilk>
               <div class="grid grid-cols-2 px-4 py-4 gap-5">
                 <div class="flex flex-col col-start-1 col-span-1">
-                  <label for="flea-drop-given-date">Andmise kuupaev</label>
+                  <label for="flea-drop-given-date">Andmise kuupäev</label>
                   <input id="flea-drop-given-date" name="flea-drop-given-date" type="date" class="input"></input>
                 </div>
 
                 <div class="flex flex-col col-start-2 col-span-1">
-                  <label for="flea-drop-next-date">Jargmise votmise kuupaev</label>
+                  <label for="flea-drop-next-date">Järgmise võtmise kuupäev</label>
                   <input id="flea-drop-next-date" name="flea-drop-next-date" type="date" class="input"></input>
                 </div>
               </div>
@@ -266,7 +266,7 @@
             <template v-slot:Vaktsiin>
               <div class="grid grid-cols-2 px-4 py-4 gap-5">
                 <div class="flex flex-col col-start-1 col-span-1">
-                  <label for="vaccine-given-date">Andmise kuupaev</label>
+                  <label for="vaccine-given-date">Andmise kuupäev</label>
                   <input id="vaccine-given-date" name="vaccine-given-date" type="date" class="input"></input>
                 </div>
 
@@ -299,7 +299,7 @@
       </AccordionWithTitle>
 
       <AccordionWithTitle
-        title="Markmed"
+        title="Märkmed"
         :default-opened="false"
         :lock="false"
         class="bg-neutral-white rounded-lg"
@@ -315,9 +315,9 @@
 
       <div class="flex justify-end mb-5 mt-auto">
         <div class="flex w-fit bg-neutral-white rounded-lg p-4 gap-5">
-          <Button type="button">Tuhista</Button>
-          <Button class="secondary" type="reset">Tuhjenda Valjad</Button>
-          <Button class="primary" type="submit">Loo</bUtToN>
+          <Button type="button">Tühista</Button>
+          <Button class="secondary" type="reset">Tühjenda Väljad</Button>
+          <Button class="primary" type="submit">Loo</Button>
         </div>
       </div>
     </form>
