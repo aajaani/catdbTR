@@ -3,7 +3,13 @@ image: node:22.12
 stages:
   - build
   - test
+  - image
   - deploy
+
+variables:
+  BACKEND_IMAGE: "$CI_REGISTRY_IMAGE/backend"
+  FRONTEND_IMAGE: "$CI_REGISTRY_IMAGE/frontend"
+  BRANCH_TAG: "$CI_COMMIT_REF_SLUG"
 
 build-job:
   stage: build
@@ -11,7 +17,7 @@ build-job:
     - cd frontend/vue-project
     - npm install
     - npm run build
-  
+
 backend-test:
   image: python:3.11
   stage: test
@@ -21,8 +27,44 @@ backend-test:
     - pip install -r requirements.txt
     - python -m pytest
 
+image:build-push:
+  image:
+    name: moby/buildkit:rootless
+    entrypoint: [""]
+  stage: image
+  variables:
+    DOCKER_CONFIG: "$CI_PROJECT_DIR/.docker"
+    BUILDKITD_FLAGS: "--oci-worker-no-process-sandbox"
+  script:
+    - mkdir -p "$DOCKER_CONFIG"
+    - AUTH_B64=$(printf "%s:%s" "$CI_REGISTRY_USER" "$CI_REGISTRY_PASSWORD" | base64 | tr -d '\n')
+    - |
+      cat > "$DOCKER_CONFIG/config.json" <<EOF
+      {
+        "auths": {
+          "$CI_REGISTRY": { "auth": "$AUTH_B64" }
+        }
+      }
+      EOF
+    # frontend
+    - |
+      buildctl-daemonless.sh build \
+        --frontend dockerfile.v0 \
+        --local context=frontend/vue-project \
+        --local dockerfile=frontend/vue-project \
+        --output type=image,name=${FRONTEND_IMAGE}:${BRANCH_TAG},push=true
+    # backend
+    - |
+      buildctl-daemonless.sh build \
+        --frontend dockerfile.v0 \
+        --local context=backend \
+        --local dockerfile=backend \
+        --output type=image,name=${BACKEND_IMAGE}:${BRANCH_TAG},push=true
+
+
+
 deploy-prod:
   stage: deploy
   script:
-    - echo "This job deploys something from the $CI_COMMIT_BRANCH branch."
+    - echo "deploying $CI_COMMIT_REF_SLUG"
   environment: production

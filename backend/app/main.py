@@ -15,6 +15,7 @@ from typing import List
 from contextlib import asynccontextmanager
 import mimetypes
 from minio import Minio
+import os
 
 from app.db.base import Base
 from app.db.session import SessionLocal, engine, get_db
@@ -43,9 +44,9 @@ from app.services.auth_service import bootstrap_admin, bootstrap_roles
 API_HTTPS = False
 
 # MinIO 
-MINIO_ENDPOINT = "localhost:9000"
-MINIO_ACCESS_KEY = "minioadmin"
-MINIO_SECRET_KEY = "minioadmin"
+MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT", "localhost:9000")
+MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY", "minioadmin")
+MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY", "minioadmin")
 MINIO_SECURE = False
 MINIO_BUCKET = "tkk-cats"
 
