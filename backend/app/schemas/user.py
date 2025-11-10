@@ -1,27 +1,32 @@
 from pydantic import BaseModel
+from app.schemas.role import RoleRead
+
 
 class UserCreate(BaseModel):
-    # uhh lot of overlap with managercreate, but when creating users, if the user is a manager, we need to create both entries
-    username: str
-    password: str
+    username: str # account field, username to log in with
+    password: str | None = None # account field, can be none to autocreate pw for account
     display_name: str
     phone: str | None = None
     email: str | None = None
-    is_manager: bool = False
+    role_id: int | None # role id to create with, if none spllied should default back to SocialWorker 
+
 
 class UserRead(BaseModel):
     id: int
+    
     username: str
-    is_manager: bool
-    is_active: bool
-    manager_id: int | None = None
+    
+    role: RoleRead
 
-    class Config:
-        from_attributes = True
+    is_active: bool
+    phone: str
+    email: str
+
 
 class LoginRequest(BaseModel):
     username: str
     password: str
 
+
 class LoginResponse(BaseModel):
-    success: bool
+    pass # removed bool for success, http status codes exist

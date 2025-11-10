@@ -6,7 +6,6 @@ from sqlalchemy.orm import sessionmaker
 
 from app.db.base import Base
 from app.models.audit_log import AuditLog
-from app.models.manager import Manager
 from app.models.foster_home import FosterHome
 from app.repositories.cat_repository import CatRepository
 from app.schemas.cats import CatCreate, CatUpdate

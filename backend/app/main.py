@@ -1,3 +1,5 @@
+from sqlalchemy.orm import Session
+
 from app.models.role import Permissions
 from app.repositories.cat_procedure_repository import CatProcedureRepository
 from app.repositories.task_repository import TaskRepository
@@ -18,24 +20,22 @@ from app.db.base import Base
 from app.db.session import SessionLocal, engine, get_db
 from app.schemas.cats import CatCreate, CatRead, CatUpdate
 
-from app.schemas.manager import ManagerCreate, ManagerRead
 from app.schemas.foster_home import FosterHomeCreate, FosterHomeRead
 
 from app.repositories.cat_repository import CatRepository
-from app.repositories.manager_repository import ManagerRepository
 from app.repositories.foster_home_repository import FosterHomeRepository
 from app.services.cat_service import CatService
-from app.services.manager_service import ManagerService
 from app.services.foster_home_service import FosterHomeService
-from app.models.manager import Manager
 from app.models.foster_home import FosterHome
 from app.models.cat_procedure import CatProcedure
 
 # NEW IMPORTS FOR AUTH / USERS
 from app.schemas.user import UserCreate, UserRead, LoginRequest, LoginResponse
+from app.repositories.account_repository import AccountRepository
+from app.repositories.role_repository import RoleRepository
 from app.repositories.user_repository import UserRepository
 from app.services.user_service import UserService
-from app.services.auth_checks import require_user, require_manager, require_permission
+from app.services.auth_checks import require_user, require_permission
 from app.services.auth_service import bootstrap_admin, bootstrap_roles
 
 # Response vars
@@ -104,8 +104,13 @@ async def read_root():
 # AUTH / USERS 
 
 @app.post("/login", response_model=LoginResponse)
-def login(response: Response, payload: LoginRequest, db = Depends(get_db)):
-    svc = UserService(UserRepository(db), ManagerRepository(db))
+def login(response: Response, payload: LoginRequest, db: Session = Depends(get_db)):
+    svc = UserService(
+        account_repo=AccountRepository(db),
+        role_repo=RoleRepository(db),
+        user_repo=UserRepository(db)
+    )
+
     user = svc.authenticate_user(payload.username, payload.password)
     token = svc.create_access_token(user)
 
@@ -120,12 +125,16 @@ def login(response: Response, payload: LoginRequest, db = Depends(get_db)):
         path="/",
     )
 
-    return LoginResponse(success=True)
+    return LoginResponse( )
 
 @app.post("/users/full-create", response_model=UserRead, status_code=201)
-def create_user_full(payload: UserCreate, db = Depends(get_db), auth = Depends(require_permission(Permissions.USER_ADD))):
+def create_user_full(payload: UserCreate, db: Session = Depends(get_db), auth = Depends(require_permission(Permissions.USER_ADD))):
     # only managers can add new people
-    svc = UserService(UserRepository(db), ManagerRepository(db))
+    svc = UserService(
+        account_repo=AccountRepository(db),
+        role_repo=RoleRepository(db),
+        user_repo=UserRepository(db)
+    )
     new_user = svc.create_full_user(payload)
     return new_user
 
@@ -134,7 +143,7 @@ def create_user_full(payload: UserCreate, db = Depends(get_db), auth = Depends(r
 @app.post("/cats", response_model=CatRead, status_code=201)
 def create_cat(
     request: Request,
-    db = Depends(get_db),
+    db: Session = Depends(get_db),
     auth = Depends(require_permission(Permissions.CAT_ADD)),
     payload: str = Form(...),                      # JSON-string, form since multipart
     primary_image: UploadFile | None = File(None), # optional file
@@ -186,19 +195,6 @@ def delete_cat(cat_id: int, db = Depends(get_db), auth = Depends(require_permiss
     CatService(CatRepository(db), None).delete(cat)
     return 
 
-# MANAGERS
-@app.post("/managers", response_model=ManagerRead, status_code=201)
-def create_manager(payload: ManagerCreate, db = Depends(get_db), auth = Depends(require_permission(Permissions.USER_ADD))):
-    svc = ManagerService(ManagerRepository(db))
-    m = svc.create(payload.display_name, payload.phone, payload.email)
-    return m  # ORM to ManagerRead (maps the raw db data to json (as defined in schema))
-
-@app.get("/managers", response_model=list[ManagerRead])
-def list_managers(db = Depends(get_db), auth = Depends(require_permission(Permissions.USER_VIEW))):
-    svc = ManagerService(ManagerRepository(db))
-    rows = svc.list_all()
-    return rows
-
 # FOSTER HOMES
 @app.post("/foster-homes", response_model=FosterHomeRead, status_code=201)
 def create_foster_home(payload: FosterHomeCreate, db = Depends(get_db), auth = Depends(require_permission(Permissions.FOSTER_ADD))):
@@ -231,7 +227,7 @@ def get_image(object_name: str, request: Request, auth = Depends(require_user)):
 def add_procedure(
     cat_id: int,
     request: Request,
-    db = Depends(get_db),
+    db: Session = Depends(get_db),
     auth = Depends(require_permission(Permissions.PROCEDURE_ADD)),
     payload: str = Form(...),
     file: UploadFile | None = File(None),

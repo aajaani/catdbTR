@@ -51,7 +51,7 @@ class Role(Base):
 # if we want to change permissions (rare, client didn't want aswell)
 # we have to edit this file and redeploy to update the db
 class _RolePermissionConfig:
-    _roles = [ "ADMIN", "MANAGER", "SOCIAL_WORKER" ]
+    roles = [ "ADMIN", "MANAGER", "SOCIAL_WORKER" ]
 
     ADMIN = {
         Permissions.CAT_ADD,

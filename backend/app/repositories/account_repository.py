@@ -3,15 +3,15 @@ from app.repositories.base_repository import BaseRepository
 from app.models.user import User
 from app.models.account import Account
 
-class UserRepository(BaseRepository):
+class AccountRepository(BaseRepository):
     def create(
         self,
-        user: User
+        account: Account,
     ):
-        self.db.add(user)
+        self.db.add(account)
         self.db.commit()
-        self.db.refresh(user)
-        return user
+        self.db.refresh(account)
+        return account
 
     def get_by_username(self, username: str) -> User | None:
         stmt = select(User).join(User.account).where(Account.username == username)
