@@ -12,8 +12,6 @@ from app.repositories.account_repository import AccountRepository
 from app.repositories.user_repository import UserRepository
 from app.repositories.role_repository import RoleRepository
 
-from app.schemas.user import UserCreate
-
 from app.utils.audit import log_action
 from passlib.context import CryptContext
 
@@ -36,8 +34,9 @@ def bootstrap_roles(db: Session):
     existing_roles = db.execute(select(Role)).scalars().all()
     existing_role_names = {role.name for role in existing_roles}
 
-    for role_name in RolePermissionConfig.roles:
-        permissions = RolePermissionConfig.get_role_permissions(role_name)
+    for role in RolePermissionConfig.Roles:
+        role_name = role.value
+        permissions = RolePermissionConfig().get_role_permissions(role_name)
 
         if permissions is None:
             permissions = ( )

@@ -1,9 +1,11 @@
 from fastapi import HTTPException
 from datetime import datetime, timedelta, timezone
 import jwt
+from typing import Optional, Literal
 
 from app.models.user import User
 from app.models.account import Account
+from app.models.role import RolePermissionConfig
 
 from app.repositories.account_repository import AccountRepository
 from app.repositories.user_repository import UserRepository
@@ -96,3 +98,13 @@ class UserService:
 
         token = jwt.encode(payload, SECRET_KEY, algorithm=ALGO) # type: ignore
         return token
+
+    def list_users_by_role(
+        self,
+        role: Optional[Literal[
+            RolePermissionConfig.Roles.ADMIN,
+            RolePermissionConfig.Roles.MANAGER,
+            RolePermissionConfig.Roles.SOCIAL_WORKER,
+        ]] | None = None
+    ) -> list[User]:
+        return list(self.user_repo.get_by_role_name(role=role.value if role is not None else None))

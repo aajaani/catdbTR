@@ -1,7 +1,6 @@
 import os
 import mimetypes
 
-from typing import List
 from fastapi import FastAPI, Depends, UploadFile, File, Form, Request, HTTPException, Response
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -13,7 +12,7 @@ from minio import Minio
 from app.db.base import Base
 from app.db.session import SessionLocal, engine, get_db
 
-from app.models.role import Permissions
+from app.models.role import Permissions, RolePermissionConfig
 from app.models.foster_home import FosterHome
 from app.models.cat_procedure import CatProcedure
 
@@ -106,7 +105,6 @@ async def read_root():
 
 
 # AUTH / USERS 
-
 @app.post("/login", response_model=LoginResponse)
 def login(response: Response, payload: LoginRequest, db: Session = Depends(get_db)):
     svc = UserService(
@@ -131,8 +129,9 @@ def login(response: Response, payload: LoginRequest, db: Session = Depends(get_d
 
     return LoginResponse( )
 
+
 @app.post("/users/full-create", response_model=UserRead, status_code=201)
-def create_user_full(payload: UserCreate, db: Session = Depends(get_db), auth = Depends(require_permission(Permissions.USER_ADD))):
+def create_user_full(payload: UserCreate, db: Session = Depends(get_db), auth: bool = Depends(require_permission(Permissions.USER_ADD))):
     # only managers can add new people
     svc = UserService(
         account_repo=AccountRepository(db),
@@ -142,15 +141,37 @@ def create_user_full(payload: UserCreate, db: Session = Depends(get_db), auth = 
     new_user = svc.create_full_user(payload)
     return new_user
 
+
 # only users who can add new accounts can see all roles
 @app.get("/roles", response_model=list[RoleRead], status_code=201)
 def get_all_roles(
     request: Request,
     db: Session = Depends(get_db),
-    auth = Depends(require_permission(Permissions.USER_ADD))
+    auth: bool = Depends(require_permission(Permissions.USER_ADD))
 ):
     svc = RoleService(RoleRepository(db))
     return svc.list_roles()
+
+
+# higher lever "wrappers" for users
+# routes for managers & social workers
+@app.get( "/managers", response_model=list[UserRead], status_code=200)
+def list_managers(
+    request: Request,
+    db: Session = Depends(get_db),
+    auth: bool = Depends(require_permission(Permissions.USER_VIEW))
+):
+    svc = UserService(
+        account_repo=AccountRepository(db),
+        user_repo=UserRepository(db),
+        role_repo=RoleRepository(db)
+    )
+
+    return svc.list_users_by_role(
+        role=RolePermissionConfig.Roles.MANAGER
+    )
+
+    
 
 
 #  CATS !
@@ -158,7 +179,7 @@ def get_all_roles(
 def create_cat(
     request: Request,
     db: Session = Depends(get_db),
-    auth = Depends(require_permission(Permissions.CAT_ADD)),
+    auth: bool = Depends(require_permission(Permissions.CAT_ADD)),
     payload: str = Form(...),                      # JSON-string, form since multipart
     primary_image: UploadFile | None = File(None), # optional file
 ):
@@ -173,12 +194,12 @@ def create_cat(
     return service.create_from_payload(data, primary_image)
 
 @app.get("/cats", response_model=list[CatRead])
-def list_cats(request: Request, db = Depends(get_db), auth = Depends(require_permission(Permissions.CAT_VIEW))):
+def list_cats(request: Request, db: Session = Depends(get_db), auth: bool = Depends(require_permission(Permissions.CAT_VIEW))):
     service = CatService(CatRepository(db), request.app.state.minio)
     return service.list_all()
 
 @app.get("/cats/{cat_id}", response_model=CatRead)
-def get_cat(cat_id: int, request: Request, db = Depends(get_db), auth = Depends(require_permission(Permissions.CAT_VIEW))):
+def get_cat(cat_id: int, request: Request, db: Session = Depends(get_db), auth: bool = Depends(require_permission(Permissions.CAT_VIEW))):
     service = CatService(CatRepository(db), request.app.state.minio)
     return service.get(cat_id)
 
@@ -186,8 +207,8 @@ def get_cat(cat_id: int, request: Request, db = Depends(get_db), auth = Depends(
 def update_cat(
     cat_id: int,
     request: Request,
-    db = Depends(get_db),
-    auth = Depends(require_permission(Permissions.CAT_EDIT)),
+    db: Session = Depends(get_db),
+    auth: bool = Depends(require_permission(Permissions.CAT_EDIT)),
     payload: str = Form(...),                      # JSON-string, form since multipart
     primary_image: UploadFile | None = File(None), # optional file
 ):
@@ -202,7 +223,7 @@ def update_cat(
     return service.update_from_payload(cat_id, data, primary_image)
 
 @app.delete("/cats/{cat_id}", status_code=204)
-def delete_cat(cat_id: int, db = Depends(get_db), auth = Depends(require_permission(Permissions.CAT_REMOVE))):
+def delete_cat(cat_id: int, db: Session = Depends(get_db), auth: bool = Depends(require_permission(Permissions.CAT_REMOVE))):
     cat = CatRepository(db).get_with_related(cat_id)
     if not cat:
         raise HTTPException(status_code=404, detail="cat not found")
@@ -211,12 +232,12 @@ def delete_cat(cat_id: int, db = Depends(get_db), auth = Depends(require_permiss
 
 # FOSTER HOMES
 @app.post("/foster-homes", response_model=FosterHomeRead, status_code=201)
-def create_foster_home(payload: FosterHomeCreate, db = Depends(get_db), auth = Depends(require_permission(Permissions.FOSTER_ADD))):
+def create_foster_home(payload: FosterHomeCreate, db: Session = Depends(get_db), auth: bool = Depends(require_permission(Permissions.FOSTER_ADD))):
     svc = FosterHomeService(FosterHomeRepository(db))
     return svc.create(payload.name, payload.phone, payload.email, payload.address, payload.comments)# ORM -> FosterHomeRead
 
 @app.get("/foster-homes", response_model=list[FosterHomeRead])
-def list_foster_homes(db = Depends(get_db), auth = Depends(require_permission(Permissions.FOSTER_VIEW))):
+def list_foster_homes(db: Session = Depends(get_db), auth: bool = Depends(require_permission(Permissions.FOSTER_VIEW))):
     svc = FosterHomeService(FosterHomeRepository(db))
     rows = svc.list_all()
     return rows  # ORM TO FosterHomeRead 
@@ -224,7 +245,7 @@ def list_foster_homes(db = Depends(get_db), auth = Depends(require_permission(Pe
 
 # MINIO IMAGE/FILE
 @app.get("/image/{object_name}")
-def get_image(object_name: str, request: Request, auth = Depends(require_user)):
+def get_image(object_name: str, request: Request, auth: bool = Depends(require_user)):
     try:
         # takes object from MinIO
         obj = request.app.state.minio.get_object(MINIO_BUCKET, object_name)
@@ -242,7 +263,7 @@ def add_procedure(
     cat_id: int,
     request: Request,
     db: Session = Depends(get_db),
-    auth = Depends(require_permission(Permissions.PROCEDURE_ADD)),
+    auth: bool = Depends(require_permission(Permissions.PROCEDURE_ADD)),
     payload: str = Form(...),
     file: UploadFile | None = File(None),
 ):
@@ -264,14 +285,14 @@ def add_procedure(
     )
 
 @app.get("/cats/{cat_id}/procedures", response_model=list[ProcedureRead])
-def list_procedures(cat_id: int, db = Depends(get_db), auth = Depends(require_permission(Permissions.PROCEDURE_VIEW))):
+def list_procedures(cat_id: int, db: Session = Depends(get_db), auth: bool = Depends(require_permission(Permissions.PROCEDURE_VIEW))):
     svc = ProcedureService(CatProcedureRepository(db), CatRepository(db), None)
     return svc.list_for_cat(cat_id)
 
 
 # TASKS (for calendar)
 @app.post("/tasks", response_model=TaskRead, status_code=201)
-def create_task(payload: TaskCreate, db = Depends(get_db), auth = Depends(require_permission(Permissions.TASK_ADD))):
+def create_task(payload: TaskCreate, db: Session = Depends(get_db), auth: bool = Depends(require_permission(Permissions.TASK_ADD))):
     
     svc = TaskService(TaskRepository(db), CatRepository(db))
     return svc.add(
@@ -282,12 +303,12 @@ def create_task(payload: TaskCreate, db = Depends(get_db), auth = Depends(requir
     )
 
 @app.get("/tasks", response_model=list[TaskRead])
-def list_tasks(db = Depends(get_db), auth = Depends(require_permission(Permissions.TASK_VIEW))):
+def list_tasks(db: Session = Depends(get_db), auth: bool = Depends(require_permission(Permissions.TASK_VIEW))):
     # gives all tasks
     svc = TaskService(TaskRepository(db), CatRepository(db))
     return svc.list_all()
 
 @app.get("/cats/{cat_id}/tasks", response_model=list[TaskRead])
-def list_tasks_for_cat(cat_id: int, db = Depends(get_db), auth = Depends(require_permission([Permissions.CAT_VIEW, Permissions.PROCEDURE_VIEW]))):
+def list_tasks_for_cat(cat_id: int, db: Session = Depends(get_db), auth: bool = Depends(require_permission([Permissions.CAT_VIEW, Permissions.PROCEDURE_VIEW]))):
     svc = TaskService(TaskRepository(db), CatRepository(db))
     return svc.list_by_cat(cat_id)

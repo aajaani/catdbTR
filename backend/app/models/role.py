@@ -47,6 +47,8 @@ class Role(Base):
     name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     role_permissions: Mapped[list["RolePermission"]] = relationship("RolePermission", back_populates="role")
 
+    # used in UserRead converting, could have "role_permissions" instead
+    # of "permissions" in UserRead
     @property
     def permissions(self) -> list[dict[str, str]]:
         return [{"permission": rp.permission } for rp in self.role_permissions]
@@ -56,7 +58,10 @@ class Role(Base):
 # if we want to change permissions (rare, client didn't want aswell)
 # we have to edit this file and redeploy to update the db
 class _RolePermissionConfig:
-    roles = [ "ADMIN", "MANAGER", "SOCIAL_WORKER" ]
+    class Roles(Enum):
+        ADMIN = "ADMIN"
+        MANAGER = "MANAGER"
+        SOCIAL_WORKER = "SOCIAL_WORKER"
 
     ADMIN = {
         Permissions.CAT_ADD,
@@ -125,4 +130,4 @@ class _RolePermissionConfig:
         return getattr(self, role_name, None)
 
 # singleton for inner class (i like c syntax)
-RolePermissionConfig = _RolePermissionConfig()
+RolePermissionConfig = _RolePermissionConfig

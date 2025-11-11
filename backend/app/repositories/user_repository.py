@@ -1,7 +1,9 @@
+from typing import Sequence
 from sqlalchemy import select
 from app.repositories.base_repository import BaseRepository
 from app.models.user import User
 from app.models.account import Account
+from app.models.role import Role
 
 class UserRepository(BaseRepository):
     def create(
@@ -19,3 +21,11 @@ class UserRepository(BaseRepository):
 
     def get_by_id(self, user_id: int) -> User | None:
         return self.db.get(User, user_id)
+    
+    def get_by_role_name(self, role: str | None) -> Sequence[User]:
+        stmt = select(User)
+
+        if role is not None:
+            stmt = stmt.join(Role).where(Role.name == role)
+        return self.db.execute(stmt).scalars().all()
+
