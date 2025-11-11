@@ -1,3 +1,4 @@
+from minio import Minio
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException, UploadFile
 from app.repositories.cat_repository import CatRepository
@@ -8,7 +9,7 @@ from app.utils.audit import log_action
 
 
 class CatService:
-    def __init__(self, repo: CatRepository, minio_client):
+    def __init__(self, repo: CatRepository, minio_client: Minio):
         self.repo = repo
         self.minio = minio_client
 

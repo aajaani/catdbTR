@@ -5,7 +5,7 @@ from pydantic import BaseModel
 class PermissionRead(BaseModel):
     permission: str
 
-    class Config:
+    class ConfigDict:
         from_attributes = True
 
 
@@ -14,5 +14,5 @@ class RoleRead(BaseModel):
     name: str
     permissions: List[PermissionRead]
 
-    class Config:
+    class ConfigDict:
         from_attributes = True

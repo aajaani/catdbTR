@@ -22,7 +22,7 @@ class UserRead(BaseModel):
     phone: str
     email: str
 
-    class Config:
+    class ConfigDict:
         from_attributes = True
 
 

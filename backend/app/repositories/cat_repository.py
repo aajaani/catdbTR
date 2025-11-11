@@ -1,3 +1,5 @@
+from datetime import date
+
 from typing import Sequence
 from sqlalchemy import select, update
 from sqlalchemy.orm import joinedload
@@ -37,7 +39,7 @@ class CatRepository(BaseRepository):
         )
         return self.db.execute(stmt).scalars().all()
 
-    def update(self, cat_id: int, data: dict) -> Cat | None:
+    def update(self, cat_id: int, data: dict[str, int | str | date | bool]) -> Cat | None:
         # SQL: update cat by id with partial data and return updated cat (with related)
         # use data dict to set only the fields that are present, so we dont have to load the whole ORM object first
     

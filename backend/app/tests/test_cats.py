@@ -1,21 +1,32 @@
 import io
 import pytest
+from typing import BinaryIO, Set
+
 from fastapi import HTTPException, UploadFile
-from sqlalchemy import create_engine, select
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine, select, delete
+from sqlalchemy.orm import sessionmaker, Session
 
 from app.db.base import Base
-from app.models.audit_log import AuditLog
+from app.models.account import Account
+from app.models.user import User
 from app.models.foster_home import FosterHome
+from app.models.role import RolePermissionConfig
+
 from app.repositories.cat_repository import CatRepository
+from app.repositories.role_repository import RoleRepository
+
 from app.schemas.cats import CatCreate, CatUpdate
+
+from app.services.auth_service import bootstrap_roles
 from app.services.cat_service import CatService
+
+from app.models.audit_log import AuditLog
 
 
 # fake minio client used in tests
 class DummyMinio:
     def __init__(self):
-        self.objects = set()
+        self.objects: Set[str] = set()
 
     def stat_object(self, bucket: str, object_name: str):
         # raise if object not present (simulates minio behavior)
@@ -23,7 +34,7 @@ class DummyMinio:
             raise Exception("not found")
         return object_name
 
-    def put_object(self, bucket: str, object_name: str, fileobj, size: int, content_type: str | None = None):
+    def put_object(self, bucket: str, object_name: str, fileobj: BinaryIO, size: int, content_type: str | None = None):
         # remember we "uploaded" it
         self.objects.add(object_name)
         return object_name
@@ -45,8 +56,13 @@ def service_and_db():
     Session = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
     db = Session()
 
+    # need roles for manager accounts
+    bootstrap_roles(db)
+    # clear role audit logs for tests
+    db.execute(delete(AuditLog))
+
     # wire the service to this session and a dummy minio
-    service = CatService(CatRepository(db), DummyMinio())
+    service = CatService(CatRepository(db), DummyMinio())  # type: ignore (dummy client)
 
     try:
         yield service, db
@@ -55,7 +71,7 @@ def service_and_db():
         engine.dispose()
 
 
-def test_create_cat_trims_name_and_logs(service_and_db):
+def test_create_cat_trims_name_and_logs(service_and_db: tuple[CatService, Session]):
     service, db = service_and_db
 
     created = service.create_from_payload(CatCreate(name="  Mjau  "), primary_image=None)
@@ -69,7 +85,7 @@ def test_create_cat_trims_name_and_logs(service_and_db):
     assert logs[0].entity_id == created.id
 
 
-def test_create_cat_requires_non_empty_name(service_and_db):
+def test_create_cat_requires_non_empty_name(service_and_db: tuple[CatService, Session]):
     service, _ = service_and_db
 
     payload = CatCreate(name="   ")
@@ -80,20 +96,40 @@ def test_create_cat_requires_non_empty_name(service_and_db):
     assert exc.value.status_code == 422
 
 
-def test_list_all_returns_related(service_and_db):
+def test_list_all_returns_related(service_and_db: tuple[CatService, Session]):
     service, db = service_and_db
 
+    rolerepo = RoleRepository(db)
+    manager_role = rolerepo.get_by_name(RolePermissionConfig.Roles.MANAGER.value)
+
+    assert manager_role != None
+
     # create related rows that cats can point to
-    manager = Manager(display_name="bob", phone="123", email="bob@fazeclan.com")
+    account = Account(
+        username="bobmarley1945",
+        password_hash="wedontcare"
+    )
+
+    user = User(
+        display_name="bob",
+        phone="123",
+        email="bob@fazeclan.com",
+        account=account,
+        role=manager_role,
+        role_id=manager_role.id
+    )
+
     foster_home = FosterHome(name="dust 2", phone="321")
-    db.add_all([manager, foster_home])
+
+    db.add_all([account, user, foster_home])
     db.commit()
-    db.refresh(manager)
+    db.refresh(account)
+    db.refresh(user)
     db.refresh(foster_home)
 
     # create two cats; one linked to manager + foster home
     service.create_from_payload(
-        CatCreate(name="yummi", manager_id=manager.id, foster_home_id=foster_home.id),
+        CatCreate(name="yummi", manager_id=user.id, foster_home_id=foster_home.id),
         primary_image=None,
     )
     service.create_from_payload(CatCreate(name="Luna"), primary_image=None)
@@ -107,14 +143,14 @@ def test_list_all_returns_related(service_and_db):
     assert yummi.foster_home.name == "dust 2"
 
 
-def test_update_cat_adds_primary_image_and_logs(service_and_db, monkeypatch):
+def test_update_cat_adds_primary_image_and_logs(service_and_db: tuple[CatService, Session], monkeypatch):
     service, db = service_and_db
 
     # create cat
     created = service.create_from_payload(CatCreate(name="Chili"), primary_image=None)
 
     # monkeypatch for fake upload
-    def fake_upload(minio_client, file):
+    def fake_upload(minio_client: DummyMinio, file: BinaryIO):
         fake_upload.called = True
         return "object-key.png"
 
