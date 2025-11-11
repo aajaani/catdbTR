@@ -6,6 +6,7 @@ import router from '@/router/index.js'
 import PrimeVue from 'primevue/config';
 import ToastService from "primevue/toastservice";
 import { client } from './gen_types/client.gen.ts';
+import VCalendar from 'v-calendar'
 
 const app = createApp(App)
 
@@ -17,5 +18,6 @@ client.setConfig({
 app.use( router )
    .use( PrimeVue )
    .use( ToastService )
+   .use( VCalendar, {})
 
 app.mount('#app')
