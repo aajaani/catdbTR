@@ -1,10 +1,13 @@
 import hashlib, os
+from typing import BinaryIO
+from minio import Minio
 from fastapi import UploadFile, HTTPException
 
 MAX_FILE_MB = 20  
 BUCKET = "tkk-cats"
 
-def sha256_file(fileobj, chunk=8192) -> str:
+
+def sha256_file(fileobj: BinaryIO, chunk: int=8192) -> str:
     h = hashlib.sha256()
     while True:
         data = fileobj.read(chunk)
@@ -14,7 +17,7 @@ def sha256_file(fileobj, chunk=8192) -> str:
     fileobj.seek(0)
     return h.hexdigest()
 
-def upload_to_minio(minio_client, file: UploadFile) -> str:
+def upload_to_minio(minio_client: Minio, file: UploadFile) -> str:
     # size guard
     file.file.seek(0, 2); size = file.file.tell(); file.file.seek(0)
     if size > MAX_FILE_MB * 1024 * 1024:

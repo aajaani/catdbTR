@@ -29,7 +29,7 @@ class Cat(Base):
     status: Mapped[StatusEnum] = mapped_column(Enum(StatusEnum), default=StatusEnum.ACTIVE)
 
     # links
-    manager_id: Mapped[int | None] = mapped_column(ForeignKey("managers.id", ondelete="SET NULL"))
+    manager_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
     foster_home_id: Mapped[int | None] = mapped_column(ForeignKey("foster_homes.id", ondelete="SET NULL"))
     colony_id: Mapped[int | None] = mapped_column(ForeignKey("colonies.id", ondelete="SET NULL"))
 
@@ -48,7 +48,7 @@ class Cat(Base):
     primary_photo_object: Mapped[str | None] = mapped_column(String(255))
 
     # relations
-    manager = relationship("Manager")
+    manager = relationship("User")
     foster_home = relationship("FosterHome")
     colony = relationship("Colony", back_populates="cats")
     procedures = relationship("CatProcedure", back_populates="cat", cascade="all, delete-orphan")

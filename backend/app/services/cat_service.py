@@ -1,3 +1,4 @@
+from minio import Minio
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException, UploadFile
 from app.repositories.cat_repository import CatRepository
@@ -8,7 +9,7 @@ from app.utils.audit import log_action
 
 
 class CatService:
-    def __init__(self, repo: CatRepository, minio_client):
+    def __init__(self, repo: CatRepository, minio_client: Minio):
         self.repo = repo
         self.minio = minio_client
 
@@ -49,7 +50,7 @@ class CatService:
     def list_all(self) -> list[Cat]:
         return list(self.repo.list_all_with_related())
     
-    def update_from_payload(self, cat_id: int, payload: CatUpdate, new_primary_image) -> Cat | None:
+    def update_from_payload(self, cat_id: int, payload: CatUpdate, new_primary_image: UploadFile | None) -> Cat | None:
         # cat id is target row, payload uses the fields defined in schema to build a patch dict
         object_key = None
         if new_primary_image is not None:
