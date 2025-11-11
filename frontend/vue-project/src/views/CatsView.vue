@@ -24,8 +24,7 @@ import type {
   CatUpdate,
   ListCatsCatsGetResponse,
   ListManagersManagersGetResponse,
-  ManagerRead,
-  UpdateCatCatsCatIdPatchResponse
+  UpdateCatCatsCatIdPatchResponse, UserRead
 } from "@/gen_types/types.gen";
 import { useRouter } from "vue-router";
 import { useToast } from "primevue";
@@ -104,16 +103,11 @@ const status_to_readable: { [ key in CatStatus ]: string } = {
 } 
 
 const cats = ref< CatRead[ ] >([ ]);
-const managerNames = ref< ManagerRead[ "display_name" ][ ] >( [ "-" ]);
 
 // todo: refactor to something similiar to tanstack query
 // todo: check if type is correct for all api calls, RequestResponse might not be the correct template type
 api.listCatsCatsGet( ).then( ( res: RequestResult< ListCatsCatsGetResponse > ) => {
   cats.value = res.data;
-} )
-
-api.listManagersManagersGet( ( res: RequestResult< ListManagersManagersGetResponse > ) => {
-  managerNames.value = res.data.map( ( m: ManagerRead ) => m.display_name );
 } )
 
 const isEditingCat = ( cat: CatRead ) => {
@@ -131,7 +125,7 @@ const pushCatEdit = ( cat: CatRead, body: Partial< CatUpdate > ) => {
   }).then( ( res: RequestResult< UpdateCatCatsCatIdPatchResponse > )  => {
     Object.assign( cat, res.data );
     isEditing.value = -1;
-  }).catch( ( e: Error ) => {
+  }).catch( ( _: Error ) => {
     isEditing.value = -1;
     toast.add({
       severity: 'error',
@@ -168,7 +162,7 @@ const getManagers = async ( ): Promise<{ [ display_name: string ]: number } > =>
      .catch( ( _: any ) => ([ ]) );
 
   const response = managersFromApi
-                    .map( ( m: ManagerRead ) => ( { display_name: m.display_name, id: m.id } ) )
+                    .map( ( m: UserRead ) => ( { display_name: m.display_name, id: m.id } ) )
                     .reduce(
                         // @ts-ignore shut up ts, you know this works
                         ( acc, curr ) => ( { ...acc, [ curr.display_name ]: curr.id } ), {}
@@ -208,7 +202,7 @@ const tableDefinition = computed( ( ) => defineTable({
       component: TableSelection,
       fitContent: true,
       filterMode: "unique",
-      filterInputOptions: managerNames.value, // todo: not reactive
+      filterInputOptions: async ( ) => api.listManagersManagersGet( ).then( ( res: RequestResult< ListManagersManagersGetResponse > ) => res.data.map( ( m: UserRead ) => m.display_name ) ),
     }),
     "cat-colony": field({
       title: "Originaalne koloonia",
@@ -248,7 +242,7 @@ const tableDefinition = computed( ( ) => defineTable({
       options: CAT_STATUSES.map( s => ({
         [ status_to_readable[ s ] ]: s
       }) ).reduce( ( acc, curr ) => ( { ...acc, ...curr } ), { } ),
-      onChange: ( statusNameDB: any, statusNamePretty: string ) => pushCatEdit( cat, { status: statusNameDB as CatStatus } )
+      onChange: ( statusNameDB: any, _: string ) => pushCatEdit( cat, { status: statusNameDB as CatStatus } )
     } as const,
     "cat-manager-name": {
       label: cat.manager?.display_name || "-",

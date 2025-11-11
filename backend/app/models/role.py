@@ -58,7 +58,7 @@ class Role(Base):
 # if we want to change permissions (rare, client didn't want aswell)
 # we have to edit this file and redeploy to update the db
 class _RolePermissionConfig:
-    class Roles(Enum):
+    class Roles(str, Enum):
         ADMIN = "ADMIN"
         MANAGER = "MANAGER"
         SOCIAL_WORKER = "SOCIAL_WORKER"
