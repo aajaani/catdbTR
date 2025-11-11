@@ -3,7 +3,7 @@
 // add a middleware error wrapper for each export key
 // on unauthorized, push to login page
 
-import * as sdk from "@/gen_types/sdk.gen";
+import * as sdk from "@/gen_types/sdk.gen.ts";
 import router from "@/router/index.js";
 
 const onResponse = async ( res: any ) => {
@@ -33,4 +33,4 @@ for ( const key in sdk ) {
 	}
 }
 
-export default api;
+export default api as typeof sdk;

@@ -10,8 +10,8 @@ import { client } from './gen_types/client.gen.ts';
 const app = createApp(App)
 
 client.setConfig({
-	credentials: "include",
-	baseUrl: "http://localhost:8000/",
+    credentials: "include",
+    baseUrl: "http://localhost:8000/",
 })
 
 app.use( router )

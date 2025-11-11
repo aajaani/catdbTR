@@ -10,7 +10,7 @@ const route = useRoute( );
 // links derived from router config @/sec/router/index.ts
 const sidebar_links = {
   "/": {
-    title: "Ulevaade",
+    title: "Ülevaade",
     icon: MdFeed,
   },
   "/cats": {
