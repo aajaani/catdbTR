@@ -27,7 +27,7 @@
                 v-else
                 class="flex-1"
                 :is="selectableOption.option.component"
-                v-bind="selectableOption.option.props"
+                v-bind="selectableOption.option.props as Object"
             ></component>
         </span>
     </div>
@@ -61,10 +61,11 @@
             >
                 {{ selectableFiltereredOption.option }}
             </span>
+
             <component
                 v-else
                 :is="selectableFiltereredOption.option.component"
-                v-bind="selectableFiltereredOption.option.props"
+                v-bind="selectableFiltereredOption.option.props as Object"
             ></component>
         </span>
 
@@ -79,7 +80,7 @@
 </template>
 
 <script setup lang="ts" generic="Component">
-import {ref, computed, defineComponent, watch} from 'vue';
+import { ref, computed } from 'vue';
 import type { filterInputOptionsType, filterInputOptionType } from "@/components/FilterTable.ts";
 
 const emit = defineEmits<{
@@ -101,6 +102,9 @@ type SelectableOption = {
   arrIdx: number
 }
 
+// wrap options from component props to selectable options
+// need arrIdx to show filtered results and append them to selected
+// options
 const make_option_selectable = ( ( opt: OptionType, arrIdx: number ) => {
     if ( typeof opt === "string" ) return { option: opt, arrIdx }
     return { option: { ...opt }, arrIdx }

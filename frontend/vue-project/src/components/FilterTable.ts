@@ -4,11 +4,9 @@
 
 import type { ComponentProps, } from "vue-component-type-helpers";
 import type { Prettify } from "@/type_utils.ts";
-import {type Component, markRaw, type Raw} from "vue";
+import { type Component, markRaw, type Raw } from "vue";
 
-// im not going to think of a jank solution to filter by Component props
-// component could have innerText or child items inside it & I don't think
-// its possible to filter by that
+
 export interface OptionAsComponent<Component> {
     component: Component,
     props: ComponentProps< Component >,
@@ -29,7 +27,7 @@ export interface TableField<
     component: ComponentType,
 
     // -1 0 1, toLocaleCompare on strings for example, same result type
-    sortFn?: ( ( props1: ComponentProps< ComponentType >, props2: ComponentProps< ComponentType > ) => number ) | undefined;
+    sortFn?: ( props1: ComponentProps< ComponentType >, props2: ComponentProps< ComponentType > ) => number;
     disableSorting?: boolean,
 
     // what should be filterable?
@@ -43,7 +41,6 @@ export interface TableField<
     // todo: have to think of a way to support searching by colonies, would use unique
 
     // only exists on filterMode=unique & toggle, groups to show in search
-    // todo: type strictness
     filterInputOptions?: filterInputOptionsType< ComponentType >,
     
     // todo: rethink if we need this, would be useful for filtering for "on homepage"
@@ -68,12 +65,18 @@ export type RowEntry< F extends Record< string, FieldReturn< Component > > > = {
 // intention: have defined type hints for filter and sort functions
 export const field = < C extends Component >( def: TableField< C > ) => ({ ...def, component: markRaw( def.component ) }) as FieldReturn< C >;
 
-// F extends FieldsMap, ts will pick up on component and replace that for
-// TableField type so that the component inside TableField gets the
-// correct component type
+
+// explanation:
+// > F extends FieldsMap (Record<string, FieldReturn< Component >)
+// give us type hints if anything is missing from component props that is required
+// tried to prettify type errors but no solution for that yet
 //
-// RowEntry will pick up on component from FieldMap at index K (key of itself)
-// and take the given component and extract its' props
+// FieldReturn is created so we can mark each component in fields (table head)
+// as raw (vue was yelling, found that to be the fix), also what `field` function returns
+//
+// for entries, type is typed to let us know when some prop is missing from a component
+// for example, has to match RowEntry< FieldReturn + component (now raw, handled by field function)
+// RowEntry unions component props to each field return (let ts let us know when a property that's needed is missing)
 export function defineTable< F extends Record< string, Prettify< FieldReturn< Component > > > >(
     fields: F,
     entries: RowEntry< F >[ ]
