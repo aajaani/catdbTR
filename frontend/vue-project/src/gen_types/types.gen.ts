@@ -245,15 +245,7 @@ export type ManagerRef = {
     /**
      * Email
      */
-    email: string ;
-    /**
-     * Status
-     */
-    status: 'ACTIVE' | 'INACTIVE';
-    /**
-     * Role
-     */
-    role: "MANAGER" | "NOT_MANAGER";
+    email?: string | null;
 };
 
 /**
