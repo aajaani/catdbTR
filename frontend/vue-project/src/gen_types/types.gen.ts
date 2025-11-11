@@ -567,6 +567,24 @@ export type Permissions = {
     TASK_DELETE: 'task:delete';
 };
 
+/**
+ * Roles
+ */
+export type Roles = {
+    /**
+     * ADMIN
+     */
+    ADMIN: 'ADMIN';
+    /**
+     * MANAGER
+     */
+    MANAGER: 'MANAGER';
+    /**
+     * SOCIAL_WORKER
+     */
+    SOCIAL_WORKER: 'SOCIAL_WORKER';
+};
+
 export type ReadRootGetData = {
     body?: never;
     path?: never;

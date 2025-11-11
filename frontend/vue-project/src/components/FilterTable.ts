@@ -4,6 +4,19 @@
 
 import type { ComponentProps, } from "vue-component-type-helpers";
 import type { Prettify } from "@/type_utils.ts";
+import {type Component, markRaw, type Raw} from "vue";
+
+// im not going to think of a jank solution to filter by Component props
+// component could have innerText or child items inside it & I don't think
+// its possible to filter by that
+export interface OptionAsComponent<Component> {
+    component: Component,
+    props: ComponentProps< Component >,
+    searchName: string
+}
+
+export type filterInputOptionsType<T> = string[ ] | OptionAsComponent<T>[ ] | ( ( ) => Promise< string[ ] > )
+export type filterInputOptionType<T> = string | OptionAsComponent<T>
 
 // given entry component can either be a vue component (todo: or a html tag)
 export interface TableField<
@@ -16,7 +29,7 @@ export interface TableField<
     component: ComponentType,
 
     // -1 0 1, toLocaleCompare on strings for example, same result type
-    sortFn?: ( props1: ComponentProps< ComponentType >, props2: ComponentProps< ComponentType > ) => number;
+    sortFn?: ( ( props1: ComponentProps< ComponentType >, props2: ComponentProps< ComponentType > ) => number ) | undefined;
     disableSorting?: boolean,
 
     // what should be filterable?
@@ -31,7 +44,7 @@ export interface TableField<
 
     // only exists on filterMode=unique & toggle, groups to show in search
     // todo: type strictness
-    filterInputOptions?: string[ ] | any,
+    filterInputOptions?: filterInputOptionsType< ComponentType >,
     
     // todo: rethink if we need this, would be useful for filtering for "on homepage"
     //       "yes" / "no" -> mapped visible in this fn based on selected opt
@@ -44,17 +57,16 @@ export interface TableField<
     centerTitle?: boolean
 }
 
-export type FieldsMap = Record< string, TableField< any > >;
+// field converts TableField component to raw (vue is not happy about nested reactivity)
+type FieldReturn< C extends Component > = TableField< C > & { component: Raw< C > };
 
-export type RowEntry< FieldMap extends FieldsMap > = {
-    [ K in keyof FieldMap ]: ComponentProps< FieldMap[ K ][ "component" ] >
+export type RowEntry< F extends Record< string, FieldReturn< Component > > > = {
+    [ K in keyof F ]: ComponentProps< F[ K ][ "component" ] >
 }
 
-export type FieldsMapBeautiful = Prettify<FieldsMap>
-
-// wrapper to create tables
+// wrapper to create tables<br>
 // intention: have defined type hints for filter and sort functions
-export const field = < C >( def: TableField< C > ) => def;
+export const field = < C extends Component >( def: TableField< C > ) => ({ ...def, component: markRaw( def.component ) }) as FieldReturn< C >;
 
 // F extends FieldsMap, ts will pick up on component and replace that for
 // TableField type so that the component inside TableField gets the
@@ -62,6 +74,9 @@ export const field = < C >( def: TableField< C > ) => def;
 //
 // RowEntry will pick up on component from FieldMap at index K (key of itself)
 // and take the given component and extract its' props
-export function defineTable< F extends FieldsMapBeautiful >( fields: F, entries: RowEntry< F >[ ] ) {
-    return { fields, entries };
+export function defineTable< F extends Record< string, Prettify< FieldReturn< Component > > > >(
+    fields: F,
+    entries: RowEntry< F >[ ]
+) {
+    return { fields, entries } as const;
 }

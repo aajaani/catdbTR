@@ -104,16 +104,11 @@ const status_to_readable: { [ key in CatStatus ]: string } = {
 } 
 
 const cats = ref< CatRead[ ] >([ ]);
-const managerNames = ref< ManagerRead[ "display_name" ][ ] >( [ "-" ]);
 
 // todo: refactor to something similiar to tanstack query
 // todo: check if type is correct for all api calls, RequestResponse might not be the correct template type
 api.listCatsCatsGet( ).then( ( res: RequestResult< ListCatsCatsGetResponse > ) => {
   cats.value = res.data;
-} )
-
-api.listManagersManagersGet( ( res: RequestResult< ListManagersManagersGetResponse > ) => {
-  managerNames.value = res.data.map( ( m: ManagerRead ) => m.display_name );
 } )
 
 const isEditingCat = ( cat: CatRead ) => {
@@ -208,7 +203,7 @@ const tableDefinition = computed( ( ) => defineTable({
       component: TableSelection,
       fitContent: true,
       filterMode: "unique",
-      filterInputOptions: managerNames.value, // todo: not reactive
+      filterInputOptions: async ( ) => api.listManagersManagersGet( ).then( ( res: RequestResult< ListManagersManagersGetResponse > ) => res.data.map( m => m.display_name ) ), // todo: not reactive
     }),
     "cat-colony": field({
       title: "Originaalne koloonia",

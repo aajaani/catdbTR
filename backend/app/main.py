@@ -130,6 +130,19 @@ def openapi_inject():
         "required": [_make_permission_key(p) for p in Permissions]
     }
 
+    default_schemas["Roles"] = {
+        "title": "Roles",
+        "type": "object",
+        "properties": {
+            r: {
+                "enum": [r],
+                "type": "string",
+                "title": r
+            } for r in RolePermissionConfig.Roles
+        },
+        "required": [ r for r in RolePermissionConfig.Roles]
+    }
+
     app.openapi_schema = openapi_schema
     return app.openapi_schema
 
