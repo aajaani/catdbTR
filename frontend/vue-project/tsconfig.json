@@ -17,6 +17,8 @@
     "useDefineForClassFields": true,
     "verbatimModuleSyntax": true,
     "allowJs": false,
+    "declaration": true,
+    "emitDeclarationOnly": true,
     "allowImportingTsExtensions": true
   },
   "include": [
