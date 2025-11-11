@@ -223,50 +223,7 @@ export type LoginRequest = {
  * LoginResponse
  */
 export type LoginResponse = {
-    /**
-     * Success
-     */
-    success: boolean;
-};
-
-/**
- * ManagerCreate
- */
-export type ManagerCreate = {
-    /**
-     * Display Name
-     */
-    display_name: string;
-    /**
-     * Phone
-     */
-    phone?: string | null;
-    /**
-     * Email
-     */
-    email?: string | null;
-};
-
-/**
- * ManagerRead
- */
-export type ManagerRead = {
-    /**
-     * Id
-     */
-    id: number;
-    /**
-     * Display Name
-     */
-    display_name: string;
-    /**
-     * Phone
-     */
-    phone?: string | null;
-    /**
-     * Email
-     */
-    email?: string | null;
+    [key: string]: unknown;
 };
 
 /**
@@ -289,6 +246,16 @@ export type ManagerRef = {
      * Email
      */
     email?: string | null;
+};
+
+/**
+ * PermissionRead
+ */
+export type PermissionRead = {
+    /**
+     * Permission
+     */
+    permission: string;
 };
 
 /**
@@ -327,6 +294,24 @@ export type ProcedureRead = {
      * Payment
      */
     payment?: number | null;
+};
+
+/**
+ * RoleRead
+ */
+export type RoleRead = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Permissions
+     */
+    permissions: Array<PermissionRead>;
 };
 
 /**
@@ -388,7 +373,7 @@ export type UserCreate = {
     /**
      * Password
      */
-    password: string;
+    password?: string | null;
     /**
      * Display Name
      */
@@ -402,9 +387,9 @@ export type UserCreate = {
      */
     email?: string | null;
     /**
-     * Is Manager
+     * Role Id
      */
-    is_manager?: boolean;
+    role_id: number | null;
 };
 
 /**
@@ -416,21 +401,22 @@ export type UserRead = {
      */
     id: number;
     /**
-     * Username
+     * Display Name
      */
-    username: string;
-    /**
-     * Is Manager
-     */
-    is_manager: boolean;
+    display_name: string;
+    role: RoleRead;
     /**
      * Is Active
      */
     is_active: boolean;
     /**
-     * Manager Id
+     * Phone
      */
-    manager_id?: number | null;
+    phone: string;
+    /**
+     * Email
+     */
+    email: string;
 };
 
 /**
@@ -514,6 +500,42 @@ export type CreateUserFullUsersFullCreatePostResponses = {
 };
 
 export type CreateUserFullUsersFullCreatePostResponse = CreateUserFullUsersFullCreatePostResponses[keyof CreateUserFullUsersFullCreatePostResponses];
+
+export type GetAllRolesRolesGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/roles';
+};
+
+export type GetAllRolesRolesGetResponses = {
+    /**
+     * Response Get All Roles Roles Get
+     *
+     * Successful Response
+     */
+    201: Array<RoleRead>;
+};
+
+export type GetAllRolesRolesGetResponse = GetAllRolesRolesGetResponses[keyof GetAllRolesRolesGetResponses];
+
+export type ListManagersManagersGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/managers';
+};
+
+export type ListManagersManagersGetResponses = {
+    /**
+     * Response List Managers Managers Get
+     *
+     * Successful Response
+     */
+    200: Array<UserRead>;
+};
+
+export type ListManagersManagersGetResponse = ListManagersManagersGetResponses[keyof ListManagersManagersGetResponses];
 
 export type ListCatsCatsGetData = {
     body?: never;
@@ -647,49 +669,6 @@ export type UpdateCatCatsCatIdPatchResponses = {
 };
 
 export type UpdateCatCatsCatIdPatchResponse = UpdateCatCatsCatIdPatchResponses[keyof UpdateCatCatsCatIdPatchResponses];
-
-export type ListManagersManagersGetData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/managers';
-};
-
-export type ListManagersManagersGetResponses = {
-    /**
-     * Response List Managers Managers Get
-     *
-     * Successful Response
-     */
-    200: Array<ManagerRead>;
-};
-
-export type ListManagersManagersGetResponse = ListManagersManagersGetResponses[keyof ListManagersManagersGetResponses];
-
-export type CreateManagerManagersPostData = {
-    body: ManagerCreate;
-    path?: never;
-    query?: never;
-    url: '/managers';
-};
-
-export type CreateManagerManagersPostErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type CreateManagerManagersPostError = CreateManagerManagersPostErrors[keyof CreateManagerManagersPostErrors];
-
-export type CreateManagerManagersPostResponses = {
-    /**
-     * Successful Response
-     */
-    201: ManagerRead;
-};
-
-export type CreateManagerManagersPostResponse = CreateManagerManagersPostResponses[keyof CreateManagerManagersPostResponses];
 
 export type ListFosterHomesFosterHomesGetData = {
     body?: never;
