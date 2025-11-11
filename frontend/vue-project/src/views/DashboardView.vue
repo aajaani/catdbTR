@@ -19,23 +19,31 @@ const cats = ref<CatRead[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
 const date = ref(new Date());
+const showPopup = ref(false);
+
+const CatName = ref('');
+const time = ref('');
+const Task = ref('');
+const taskType = ref('');
 
 const attrs = ref([
+  // sample event
   {
     key: 'event1',
     dot: true,
-    dates: new Date(2025, 10, 10, 18),
+    dates: new Date(2025, 10, 10, 18), //dates for some reason are 0-indexed months (10 = november)
     popover: {label: 'Kassi kiibistamine'}
   },
 ])
 
-function addEvent() {
-  const newEventDate = new Date(2025, 10, 15);
+function addEvent(catName: string, Date: Date, task: string, taskType: string) {
+  // add a new event to the calendar and later persist info to db
+  const newEventDate = Date;
   attrs.value.push({
     key: `event-${attrs.value.length + 1}`,
     dot: true,
     dates: newEventDate,
-    popover: { label: `Uus sündmus` }
+    popover: { label: task }
   });
 }
 
@@ -134,6 +142,18 @@ onMounted(async () => {
         </h2>
       </div>
 
+      <div v-if="showPopup" class="popup-overlay" @click.self="showPopup = false">
+        <div class="popup-content">
+          <div class="popup-inputs">
+            <input type="text" v-model="CatName" placeholder="Kassi nimi" />
+            <input type="date" v-model="time"/>
+            <input type="text" v-model="Task" placeholder="Ülesanne" />
+            <input type="text" v-model="taskType" placeholder="Ülesande tüüp"/>
+          </div>
+          <button class="save-button" @click="addEvent(CatName, time, Task, taskType); showPopup=false">Salvesta</button>
+        </div>
+      </div>
+
       <div class="kalender">
         <div class="kalender-header">
           <h4>Minu Kalender</h4>
@@ -143,7 +163,7 @@ onMounted(async () => {
           <p class="kalender-item">Timeline</p>
           <VDatePicker transparent borderless show-weeknumbers v-model="date" mode="date" :attributes="attrs"  class="kalender-item" />
           <button class="add-event" > 
-            <span class="hover-text" @click="addEvent">LISA +</span>
+            <span class="hover-text" @click="showPopup=true">LISA +</span>
           </button>
         </div>
       </div>
@@ -251,6 +271,52 @@ h3 {
 
 .hover-text {
   cursor: pointer;
+}
+
+.popup-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  z-index: 1000;;
+}
+
+.popup-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background: #FFFFFF;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+  width: 600px;
+  max-width: 90vw;
+}
+
+.popup-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  margin-bottom: 2rem;
+}
+
+.popup-inputs input {
+  padding: 0.6rem;
+  font-size: 1rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  width: 100%;
+}
+
+.save-button {
+  background-color: #D9D9D9;
+  border-radius: 16px;
+  width: 100%;
 }
 
 @media (min-width: 1024px) {
