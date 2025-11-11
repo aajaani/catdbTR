@@ -1,43 +1,46 @@
-from sqlalchemy.orm import Session
+import os
+import mimetypes
 
-from app.models.role import Permissions
-from app.repositories.cat_procedure_repository import CatProcedureRepository
-from app.repositories.task_repository import TaskRepository
-from app.schemas.procedure import ProcedureCreate, ProcedureRead
-from app.schemas.task import TaskCreate, TaskRead
-from app.services.procedure_service import ProcedureService
-from app.services.task_service import TaskService
+from typing import List
 from fastapi import FastAPI, Depends, UploadFile, File, Form, Request, HTTPException, Response
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
 from pydantic import ValidationError
-from typing import List
 from contextlib import asynccontextmanager
-import mimetypes
 from minio import Minio
-import os
 
 from app.db.base import Base
 from app.db.session import SessionLocal, engine, get_db
-from app.schemas.cats import CatCreate, CatRead, CatUpdate
 
-from app.schemas.foster_home import FosterHomeCreate, FosterHomeRead
-
-from app.repositories.cat_repository import CatRepository
-from app.repositories.foster_home_repository import FosterHomeRepository
-from app.services.cat_service import CatService
-from app.services.foster_home_service import FosterHomeService
+from app.models.role import Permissions
 from app.models.foster_home import FosterHome
 from app.models.cat_procedure import CatProcedure
 
-# NEW IMPORTS FOR AUTH / USERS
-from app.schemas.user import UserCreate, UserRead, LoginRequest, LoginResponse
 from app.repositories.account_repository import AccountRepository
 from app.repositories.role_repository import RoleRepository
 from app.repositories.user_repository import UserRepository
-from app.services.user_service import UserService
+from app.repositories.cat_procedure_repository import CatProcedureRepository
+from app.repositories.task_repository import TaskRepository
+from app.repositories.cat_repository import CatRepository
+from app.repositories.foster_home_repository import FosterHomeRepository
+
+from app.schemas.user import UserCreate, UserRead, LoginRequest, LoginResponse
+from app.schemas.role import RoleRead
+from app.schemas.procedure import ProcedureCreate, ProcedureRead
+from app.schemas.task import TaskCreate, TaskRead
+from app.schemas.cats import CatCreate, CatRead, CatUpdate
+from app.schemas.foster_home import FosterHomeCreate, FosterHomeRead
+
 from app.services.auth_checks import require_user, require_permission
 from app.services.auth_service import bootstrap_admin, bootstrap_roles
+from app.services.user_service import UserService
+from app.services.role_service import RoleService
+from app.services.procedure_service import ProcedureService
+from app.services.task_service import TaskService
+from app.services.cat_service import CatService
+from app.services.foster_home_service import FosterHomeService
+
 
 # Response vars
 # set to true when deployed (prob should do via env var later)
@@ -138,6 +141,16 @@ def create_user_full(payload: UserCreate, db: Session = Depends(get_db), auth = 
     )
     new_user = svc.create_full_user(payload)
     return new_user
+
+# only users who can add new accounts can see all roles
+@app.get("/roles", response_model=list[RoleRead], status_code=201)
+def get_all_roles(
+    request: Request,
+    db: Session = Depends(get_db),
+    auth = Depends(require_permission(Permissions.USER_ADD))
+):
+    svc = RoleService(RoleRepository(db))
+    return svc.list_roles()
 
 
 #  CATS !

@@ -8,19 +8,22 @@ class UserCreate(BaseModel):
     display_name: str
     phone: str | None = None
     email: str | None = None
-    role_id: int | None # role id to create with, if none spllied should default back to SocialWorker 
+    role_id: int | None # role id to create with, if none supllied should default back to SocialWorker 
 
 
 class UserRead(BaseModel):
     id: int
     
-    username: str
+    display_name: str
     
     role: RoleRead
 
     is_active: bool
     phone: str
     email: str
+
+    class Config:
+        from_attributes = True
 
 
 class LoginRequest(BaseModel):

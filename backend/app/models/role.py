@@ -40,11 +40,16 @@ class RolePermission(Base):
     permission: Mapped[str] = mapped_column(String(50), nullable=False)
     role: Mapped["Role"] = relationship("Role", back_populates="role_permissions")
 
+
 class Role(Base):
     __tablename__ = "roles"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     role_permissions: Mapped[list["RolePermission"]] = relationship("RolePermission", back_populates="role")
+
+    @property
+    def permissions(self) -> list[dict[str, str]]:
+        return [{"permission": rp.permission } for rp in self.role_permissions]
 
 # created/updated in run
 # I kind of see an issue with this approach

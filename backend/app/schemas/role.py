@@ -1,11 +1,18 @@
+from typing import List
 from pydantic import BaseModel
 
 
 class PermissionRead(BaseModel):
-    permission_name: str
+    permission: str
+
+    class Config:
+        from_attributes = True
 
 
 class RoleRead(BaseModel):
     id: int
     name: str
-    permissions: list[PermissionRead]
+    permissions: List[PermissionRead]
+
+    class Config:
+        from_attributes = True
