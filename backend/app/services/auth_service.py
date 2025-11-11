@@ -1,33 +1,46 @@
 from rich import print
 from sqlalchemy import select
+from sqlalchemy.orm import Session
+
 from passlib.context import CryptContext
-from fastapi import HTTPException
 
 from app.models.role import Role, RolePermissionConfig, RolePermission
 from app.models.user import User
-from app.models.manager import Manager
-from app.repositories.manager_repository import ManagerRepository
+from app.models.account import Account
+
+from app.repositories.account_repository import AccountRepository
 from app.repositories.user_repository import UserRepository
+from app.repositories.role_repository import RoleRepository
+
 from app.utils.audit import log_action
 from passlib.context import CryptContext
+
 
 _pwd_ctx = CryptContext(
     schemes=["argon2"],
     deprecated="auto",
 )
 
+
 def hash_password(raw: str) -> str:
     return _pwd_ctx.hash(raw)
+
 
 def verify_password(raw: str, hashed: str) -> bool:
     return _pwd_ctx.verify(raw, hashed)
 
-def bootstrap_roles(db):
+
+def bootstrap_roles(db: Session):
     existing_roles = db.execute(select(Role)).scalars().all()
     existing_role_names = {role.name for role in existing_roles}
 
-    for role_name in RolePermissionConfig._roles:
-        permissions = RolePermissionConfig.get_role_permissions(role_name)
+    for role in RolePermissionConfig.Roles:
+        role_name = role.value
+        permissions = RolePermissionConfig().get_role_permissions(role_name)
+
+        if permissions is None:
+            permissions = ( )
+
         if role_name not in existing_role_names:
             # add roles which dont exist yet
             # permissions added later
@@ -51,6 +64,10 @@ def bootstrap_roles(db):
         else:
             # updated role permissions if changed
             role = db.execute(select(Role).where(Role.name == role_name)).scalars().first()
+
+            if role is None:
+                raise RuntimeError(f"Can't update { role_name } permissions, doesn't exist in database (should never happen)")
+
             current_permissions = {rp.permission for rp in role.role_permissions}
             new_permissions = {p.value for p in permissions}
 
@@ -65,37 +82,44 @@ def bootstrap_roles(db):
                 log_action(db, "role", role.id, "UPDATE_PERMISSIONS")
 
 
-def bootstrap_admin(db):
+def bootstrap_admin(db: Session):
     # creates a manager if none exist yet, so its possible to test / login first time
-    user_repo = UserRepository(db)
-    mgr_repo = ManagerRepository(db)
+    account_repo = AccountRepository(db)  # type: ignore
+    user_repo = UserRepository(db)  # type: ignore
+    role_repo = RoleRepository(db)  # type: ignore
 
     # does any user exist already?
     exists = db.execute(select(User.id)).first()
     if exists:
         return  # already bootstrapped
 
-    # create a manager row for this person
-    m = Manager(
-        display_name="Admin",
-        phone=None,
-        email="admin@example.com",
-    )
-    db.add(m)
-    db.commit()
-    db.refresh(m)
-    log_action(db, "manager", m.id, "CREATE")
+    admin_role = role_repo.get_admin_role()
 
-    # create the user row linked to that manager
-    u = User(
+    if admin_role is None:
+        raise RuntimeError("couln't find admin role in setup")
+
+    # would use UserService but circular imports aaaaaaaaaaaaaaaa
+
+    account = Account(
         username="admin",
-        password_hash=hash_password("admin12345"), 
-        is_manager=True,
-        is_active=True,
-        role_id=db.execute(select(Role).where(Role.name == "ADMIN")).scalars().first().id,
-        manager_id=m.id,
+        password_hash=hash_password("admin12345")
     )
-    db.add(u)
-    db.commit()
-    db.refresh(u)
-    log_action(db, "user", u.id, "CREATE")
+
+    # make user
+    u = User(
+        account=account,
+        display_name="default admin",
+        role_id=admin_role.id
+    )
+
+    try:
+        created_account = account_repo.create(account)
+        created_user = user_repo.create(u)
+    except Exception as e:
+        raise RuntimeError(e)
+
+    log_action(account_repo.db, "account", created_account.id, "CREATE")
+    log_action(user_repo.db, "user", created_user.id, "CREATE")
+
+    print(f"[bold green]+[/bold green] bootstrapped initial admin account")
+    

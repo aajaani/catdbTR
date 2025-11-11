@@ -4,9 +4,10 @@
         <thead>
             <tr>
                 <th
-                    v-for="field, fieldName in props.fields"
+                    v-for="( field, fieldName ) in props.fields"
                     class="text-nowrap text-[12px] text-table-secondary text-left px-5 h-[40px]"
                     :data-centered="field.centerTitle"
+                    :key="`${ field }-${ fieldName }`"
                 >
                     <span class="flex place-items-center h-full w-full gap-1 fill-text-secondary stroke-text-secondary">
                         {{ field.title }}
@@ -78,12 +79,14 @@
             <tr
                 v-for="entryIndex in ( Math.min( mutatedEntries.length, pageData.isLastPage ? pageData.entriesLastPage : perPage ) )"
                 class="text-center"
+                :key="`row-${ entryIndex }`"
             >
                 <td
-                    v-for="field, _name in props.fields"
+                    v-for="( field, _name ) in props.fields"
                     class="px-6 w-fit py-2"
                     :data-centered="field.centerEntries"
                     :data-fit-text="field.fitContent"
+                    :key="`row-${ entryIndex }-field-${ _name }`"
                 >
                     <div>
                         <!-- should be able to be 100% sure entry exists, can let typescript know we know so -->
@@ -175,7 +178,7 @@ import { computed, ref, watch } from 'vue';
 import type { FieldsMap, RowEntry } from '../FilterTable';
 import Button from '../atoms/Button.vue';
 import { BiChevronLeft, BiChevronRight } from 'vue-icons-plus/bi';
-import { TbFilter, TbFilterFilled, TbFilterCheck } from 'vue-icons-plus/tb';
+import { TbFilter, TbFilterFilled } from 'vue-icons-plus/tb';
 import { BsSortDown, BsSortUp } from 'vue-icons-plus/bs';
 import Select from '../atoms/Select.vue';
 import InputUniqueOptions from '../atoms/filter-table/InputUniqueOptions.vue';

@@ -1,11 +1,8 @@
 <script setup lang="ts">
-import Toast from 'primevue/toast';
-
 import Button from "@/components/atoms/Button.vue";
 import api from "@/api_fetch.js";
 import { ref } from "vue";
 import { useToast } from "primevue";
-import Text from "@/components/atoms/filter-table/Text.vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter( )
@@ -57,7 +54,13 @@ const onSubmit = ( ) => {
       }
       toast.add({ severity: 'success', summary: 'Õnnestus', detail: 'Olete edukalt sisse logitud!', life: 3000 });
       loginState.value = ELoginState.SUCCESS;
-      router.push({ name: 'Dashboard' });
+
+      if ( router.currentRoute.value.query?.redirect ) {
+        const redirectPath = decodeURIComponent( router.currentRoute.value.query.redirect as string );
+        router.push( redirectPath );
+      } else {
+        router.push({ name: 'Dashboard' });
+      }
     }
   });
 }

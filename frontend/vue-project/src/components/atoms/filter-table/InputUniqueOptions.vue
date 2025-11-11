@@ -67,9 +67,8 @@
 </template>
 
 <script setup lang="ts" generic="Component">
-import { ref, computed, VueElement } from 'vue';
+import { ref, computed } from 'vue';
 import type { ComponentProps, } from "vue-component-type-helpers";
-import TableStatus from "@/components/atoms/filter-table/Status.vue"
 
 const emit = defineEmits<{
     "select": [ selectedOptions: string[ ] ]

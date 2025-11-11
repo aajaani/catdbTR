@@ -1,35 +1,28 @@
-from sqlalchemy import Integer, String, Boolean, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
-from app.models.role import Role
+
+from sqlalchemy import Integer, Boolean, ForeignKey, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 
 class User(Base):
     __tablename__ = "users"
-
+    
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
 
-    username: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)
-    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    # link to login_user
+    account_id: Mapped[int] = mapped_column(Integer, ForeignKey("accounts.id", ondelete="CASCADE"), unique=True, nullable=False)
 
-    is_manager: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    
+    # https://docs.sqlalchemy.org/en/14/orm/basic_relationships.html#one-to-one
+    account = relationship("Account", back_populates="user", uselist=False)
+
+    # link to user role
+    role_id: Mapped[int] = mapped_column(ForeignKey("roles.id", ondelete="CASCADE"), nullable=False)    
+    role = relationship("Role")
+
+    display_name = mapped_column(String(100), nullable=False)
+
     # remove user essentially, if false cant login
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
-    role_id: Mapped[int] = mapped_column(ForeignKey("roles.id", ondelete="CASCADE"), nullable=False, default=lambda: _get_social_worker_role_id())
-
-    manager_id: Mapped[int | None] = mapped_column(ForeignKey("managers.id", ondelete="SET NULL"), nullable=True)
-    manager = relationship("Manager")
-
-
-def _get_social_worker_role_id():
-    from sqlalchemy import select
-    from app.db.session import SessionLocal
-
-    db = SessionLocal()
-    try:
-        role = db.execute(select(Role).where(Role.name == "SOCIAL_WORKER")).scalars().first()
-        return role.id if role else RuntimeError("SOCIAL_WORKER role not found")
-    finally:
-        db.close()
-
+    phone = mapped_column(String(16), nullable=True, default=None)
+    email = mapped_column(String(100), nullable=True, default=None)

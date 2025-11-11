@@ -1,6 +1,10 @@
+from datetime import date
+
+from app.models.task import Task, TaskTypeEnum
+
 from app.repositories.task_repository import TaskRepository
 from app.repositories.cat_repository import CatRepository
-from app.models.task import Task, TaskTypeEnum
+
 from app.utils.audit import log_action
 from fastapi import HTTPException
 
@@ -10,7 +14,7 @@ class TaskService:
         self.cat_repo = cat_repo
 
     # add new task for cat
-    def add(self, cat_id: int, type_: str, due_date, notes: str | None) -> Task:
+    def add(self, cat_id: int, type_: str, due_date: date, notes: str | None) -> Task:
         if self.cat_repo.get_with_related(cat_id) is None:
             raise HTTPException(status_code=404, detail="cat not found")
 

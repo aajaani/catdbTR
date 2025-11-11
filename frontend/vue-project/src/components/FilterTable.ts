@@ -3,6 +3,7 @@
 */
 
 import type { ComponentProps, } from "vue-component-type-helpers";
+import type { Prettify } from "@/type_utils.ts";
 
 // given entry component can either be a vue component (todo: or a html tag)
 export interface TableField<
@@ -44,9 +45,12 @@ export interface TableField<
 }
 
 export type FieldsMap = Record< string, TableField< any > >;
+
 export type RowEntry< FieldMap extends FieldsMap > = {
     [ K in keyof FieldMap ]: ComponentProps< FieldMap[ K ][ "component" ] >
 }
+
+export type FieldsMapBeautiful = Prettify<FieldsMap>
 
 // wrapper to create tables
 // intention: have defined type hints for filter and sort functions
@@ -58,6 +62,6 @@ export const field = < C >( def: TableField< C > ) => def;
 //
 // RowEntry will pick up on component from FieldMap at index K (key of itself)
 // and take the given component and extract its' props
-export function defineTable< F extends FieldsMap >( fields: F, entries: RowEntry< F >[ ] ) {
+export function defineTable< F extends FieldsMapBeautiful >( fields: F, entries: RowEntry< F >[ ] ) {
     return { fields, entries };
 }

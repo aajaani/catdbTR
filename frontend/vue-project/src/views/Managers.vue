@@ -25,14 +25,10 @@ import BreadCrumbs from '@/components/organisms/BreadCrumbs.vue';
 import { defineTable, field } from "@/components/FilterTable.ts"
 import FilterTable from "@/components/organisms/FilterTable.vue"
 import TableText from "@/components/atoms/filter-table/Text.vue"
-import TableStatus from "@/components/atoms/filter-table/Status.vue"
-import Actions from '@/components/molecules/filter-table/Actions.vue';
+import TableSelection from "@/components/atoms/filter-table/Selection.vue"
 import { useRouter } from "vue-router";
-import type { ManagerRead } from '@/gen_types/types.gen';
-import { FcManager } from 'vue-icons-plus/fc';
 import api from '@/api_fetch';
-
-
+import { type UserRead } from "@/gen_types/types.gen.ts";
 
 const router = useRouter( )
 
@@ -61,23 +57,29 @@ watch(
   }
 );
 
+type ActivityStatus = "ACTIVE" | "INACTIVE";
+
+const get_activity_status = (user: UserRead): ActivityStatus => {
+  return user.is_active ? "ACTIVE" : "INACTIVE";
+}
+
 // todo: stricter types
 // right now we're not accounting for undefined
-const status_to_color: Record<ManagerRead['status'], 'green' | 'red'> = {
+const status_to_color: Record<ActivityStatus, 'green' | 'red'> = {
   ACTIVE: 'green',
   INACTIVE: 'red',
 };
-const status_to_readable: Record<ManagerRead['status'], string> = {
+const status_to_readable: Record<ActivityStatus, string> = {
   ACTIVE: 'Aktiivne',
   INACTIVE: 'Mitte aktiivne',
 };
 
-const role_to_readable: Record<ManagerRead['role'], string> = {
+const role_to_readable: Record<UserRead["role"]["name"], string> = {
   MANAGER: 'Haldur',
   NOT_MANAGER: 'Pole haldur',
 };
 
-const managers = ref< ManagerRead[ ] >([ ]);
+const managers = ref< UserRead[ ] >([ ]);
 
 api.listManagersManagersGet().then( (res) => {
   console.log(res);
@@ -99,11 +101,11 @@ const fields = {
     }),
     "manager-status": field({
       title: "Staatus",
-      component: TableStatus,
+      component: TableSelection,
       fitContent: true,
       filterMode: "unique",
-      filterInputOptions: (['ACTIVE', 'INACTIVE'] as ManagerRead['status'][]).map((s) => ({
-        component: TableStatus,              // or TableStatus with { color, label }
+      filterInputOptions: ( ['ACTIVE', 'INACTIVE'] as ActivityStatus[] ).map((s) => ({
+        component: TableSelection,              // or TableStatus with { color, label }
         props: { 
           color: status_to_color[s],
           label: status_to_readable[s] 
@@ -134,13 +136,13 @@ const fields = {
   };
   const tableDefinition = computed(() => defineTable(
     fields, 
-    managers.value.map(( manager: ManagerRead) => ({
+    managers.value.map(( manager: UserRead) => ({
       "manager-id": {
-        text:String(manager.id) 
+        text: String(manager.id)
       } as const,
       "manager-name": {
         text: manager.display_name
-      } as const, 
+      } as const,
       "manager-phone": {
         text: manager.phone ?? ""
       } as const,
@@ -148,11 +150,11 @@ const fields = {
         text: manager.email 
       } as const,
       "manager-role": {
-        text: role_to_readable[manager.role] 
+        text: manager.role.name
       } as const,
       "manager-status":  {
-        color: status_to_color[manager.status], 
-        label: status_to_readable[manager.status],
+        color: status_to_color[get_activity_status(manager)],
+        label: status_to_readable[get_activity_status(manager)],
       } as const
   }))
   )
