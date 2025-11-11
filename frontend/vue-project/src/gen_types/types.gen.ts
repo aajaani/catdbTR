@@ -249,16 +249,6 @@ export type ManagerRef = {
 };
 
 /**
- * PermissionRead
- */
-export type PermissionRead = {
-    /**
-     * Permission
-     */
-    permission: string;
-};
-
-/**
  * ProcedureRead
  */
 export type ProcedureRead = {
@@ -311,7 +301,7 @@ export type RoleRead = {
     /**
      * Permissions
      */
-    permissions: Array<PermissionRead>;
+    permissions: Array<string>;
 };
 
 /**
@@ -491,6 +481,92 @@ export type CatUpdate = {
     is_neutered?: boolean | null;
 };
 
+/**
+ * Permissions
+ */
+export type Permissions = {
+    /**
+     * cat:create
+     */
+    CAT_CREATE: 'cat:create';
+    /**
+     * cat:read
+     */
+    CAT_READ: 'cat:read';
+    /**
+     * cat:update
+     */
+    CAT_UPDATE: 'cat:update';
+    /**
+     * cat:delete
+     */
+    CAT_DELETE: 'cat:delete';
+    /**
+     * user:create
+     */
+    USER_CREATE: 'user:create';
+    /**
+     * user:read
+     */
+    USER_READ: 'user:read';
+    /**
+     * user:update
+     */
+    USER_UPDATE: 'user:update';
+    /**
+     * user:delete
+     */
+    USER_DELETE: 'user:delete';
+    /**
+     * foster:create
+     */
+    FOSTER_CREATE: 'foster:create';
+    /**
+     * foster:read
+     */
+    FOSTER_READ: 'foster:read';
+    /**
+     * foster:update
+     */
+    FOSTER_UPDATE: 'foster:update';
+    /**
+     * foster:delete
+     */
+    FOSTER_DELETE: 'foster:delete';
+    /**
+     * procedures:create
+     */
+    PROCEDURES_CREATE: 'procedures:create';
+    /**
+     * procedures:read
+     */
+    PROCEDURES_READ: 'procedures:read';
+    /**
+     * procedures:update
+     */
+    PROCEDURES_UPDATE: 'procedures:update';
+    /**
+     * procedures:delete
+     */
+    PROCEDURES_DELETE: 'procedures:delete';
+    /**
+     * task:create
+     */
+    TASK_CREATE: 'task:create';
+    /**
+     * task:read
+     */
+    TASK_READ: 'task:read';
+    /**
+     * task:update
+     */
+    TASK_UPDATE: 'task:update';
+    /**
+     * task:delete
+     */
+    TASK_DELETE: 'task:delete';
+};
+
 export type ReadRootGetData = {
     body?: never;
     path?: never;
@@ -572,6 +648,26 @@ export type GetAllRolesRolesGetResponses = {
 };
 
 export type GetAllRolesRolesGetResponse = GetAllRolesRolesGetResponses[keyof GetAllRolesRolesGetResponses];
+
+export type GetAllPermissionsPermissionsGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/permissions';
+};
+
+export type GetAllPermissionsPermissionsGetResponses = {
+    /**
+     * Response Get All Permissions Permissions Get
+     *
+     * Successful Response
+     */
+    200: {
+        [key: string]: string;
+    };
+};
+
+export type GetAllPermissionsPermissionsGetResponse = GetAllPermissionsPermissionsGetResponses[keyof GetAllPermissionsPermissionsGetResponses];
 
 export type ListManagersManagersGetData = {
     body?: never;

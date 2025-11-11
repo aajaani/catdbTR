@@ -121,13 +121,13 @@ def openapi_inject():
         "title": "Permissions",
         "type": "object",
         "properties": {
-            _make_permission_key( p ): {
+            _make_permission_key(p): {
                 "enum": [p],
                 "type": "string",
                 "title": p
             } for p in Permissions
         },
-        "required": [_make_permission_key(p) for p in Permissions ]
+        "required": [_make_permission_key(p) for p in Permissions]
     }
 
     app.openapi_schema = openapi_schema

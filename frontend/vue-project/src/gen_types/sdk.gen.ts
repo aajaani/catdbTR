@@ -2,7 +2,7 @@
 
 import { type Client, formDataBodySerializer, type Options as Options2, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddProcedureCatsCatIdProceduresPostData, AddProcedureCatsCatIdProceduresPostErrors, AddProcedureCatsCatIdProceduresPostResponses, CreateCatCatsPostData, CreateCatCatsPostErrors, CreateCatCatsPostResponses, CreateFosterHomeFosterHomesPostData, CreateFosterHomeFosterHomesPostErrors, CreateFosterHomeFosterHomesPostResponses, CreateTaskTasksPostData, CreateTaskTasksPostErrors, CreateTaskTasksPostResponses, CreateUserFullUsersFullCreatePostData, CreateUserFullUsersFullCreatePostErrors, CreateUserFullUsersFullCreatePostResponses, DeleteCatCatsCatIdDeleteData, DeleteCatCatsCatIdDeleteErrors, DeleteCatCatsCatIdDeleteResponses, GetAllRolesRolesGetData, GetAllRolesRolesGetResponses, GetCatCatsCatIdGetData, GetCatCatsCatIdGetErrors, GetCatCatsCatIdGetResponses, GetImageImageObjectNameGetData, GetImageImageObjectNameGetErrors, GetImageImageObjectNameGetResponses, ListCatsCatsGetData, ListCatsCatsGetResponses, ListFosterHomesFosterHomesGetData, ListFosterHomesFosterHomesGetResponses, ListManagersManagersGetData, ListManagersManagersGetResponses, ListProceduresCatsCatIdProceduresGetData, ListProceduresCatsCatIdProceduresGetErrors, ListProceduresCatsCatIdProceduresGetResponses, ListTasksForCatCatsCatIdTasksGetData, ListTasksForCatCatsCatIdTasksGetErrors, ListTasksForCatCatsCatIdTasksGetResponses, ListTasksTasksGetData, ListTasksTasksGetResponses, LoginLoginPostData, LoginLoginPostErrors, LoginLoginPostResponses, ReadRootGetData, ReadRootGetResponses, UpdateCatCatsCatIdPatchData, UpdateCatCatsCatIdPatchErrors, UpdateCatCatsCatIdPatchResponses } from './types.gen';
+import type { AddProcedureCatsCatIdProceduresPostData, AddProcedureCatsCatIdProceduresPostErrors, AddProcedureCatsCatIdProceduresPostResponses, CreateCatCatsPostData, CreateCatCatsPostErrors, CreateCatCatsPostResponses, CreateFosterHomeFosterHomesPostData, CreateFosterHomeFosterHomesPostErrors, CreateFosterHomeFosterHomesPostResponses, CreateTaskTasksPostData, CreateTaskTasksPostErrors, CreateTaskTasksPostResponses, CreateUserFullUsersFullCreatePostData, CreateUserFullUsersFullCreatePostErrors, CreateUserFullUsersFullCreatePostResponses, DeleteCatCatsCatIdDeleteData, DeleteCatCatsCatIdDeleteErrors, DeleteCatCatsCatIdDeleteResponses, GetAllPermissionsPermissionsGetData, GetAllPermissionsPermissionsGetResponses, GetAllRolesRolesGetData, GetAllRolesRolesGetResponses, GetCatCatsCatIdGetData, GetCatCatsCatIdGetErrors, GetCatCatsCatIdGetResponses, GetImageImageObjectNameGetData, GetImageImageObjectNameGetErrors, GetImageImageObjectNameGetResponses, ListCatsCatsGetData, ListCatsCatsGetResponses, ListFosterHomesFosterHomesGetData, ListFosterHomesFosterHomesGetResponses, ListManagersManagersGetData, ListManagersManagersGetResponses, ListProceduresCatsCatIdProceduresGetData, ListProceduresCatsCatIdProceduresGetErrors, ListProceduresCatsCatIdProceduresGetResponses, ListTasksForCatCatsCatIdTasksGetData, ListTasksForCatCatsCatIdTasksGetErrors, ListTasksForCatCatsCatIdTasksGetResponses, ListTasksTasksGetData, ListTasksTasksGetResponses, LoginLoginPostData, LoginLoginPostErrors, LoginLoginPostResponses, ReadRootGetData, ReadRootGetResponses, UpdateCatCatsCatIdPatchData, UpdateCatCatsCatIdPatchErrors, UpdateCatCatsCatIdPatchResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -81,17 +81,20 @@ export const getAllRolesRolesGet = <ThrowOnError extends boolean = false>(option
 };
 
 /**
+ * Get All Permissions
+ */
+export const getAllPermissionsPermissionsGet = <ThrowOnError extends boolean = false>(options?: Options<GetAllPermissionsPermissionsGetData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetAllPermissionsPermissionsGetResponses, unknown, ThrowOnError>({
+        url: '/permissions',
+        ...options
+    });
+};
+
+/**
  * List Managers
  */
 export const listManagersManagersGet = <ThrowOnError extends boolean = false>(options?: Options<ListManagersManagersGetData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListManagersManagersGetResponses, unknown, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'access_token',
-                type: 'apiKey'
-            }
-        ],
         url: '/managers',
         ...options
     });
