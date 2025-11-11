@@ -15,3 +15,8 @@ class ManagerRepository(BaseRepository):
         # SQL: select all managers ordered by id
         stmt = select(Manager).order_by(Manager.id.asc())
         return self.db.execute(stmt).scalars().all()
+    
+    def get_by_email(self, email_norm:str) -> Manager | None:
+        stmt = select(Manager).where(func.lower(Manager.email) == email_norm)
+        return self.db.execute(stmt).scalars().first()
+
