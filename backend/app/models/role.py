@@ -5,7 +5,7 @@ from sqlalchemy import Integer, String, ForeignKey
 
 
 # NB: not a model
-class Permissions(Enum):
+class Permissions(str, Enum):
     # cat create read update delete
     CAT_ADD = "cat:create"  # c
     CAT_VIEW = "cat:read"  # r
