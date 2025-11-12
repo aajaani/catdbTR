@@ -339,7 +339,7 @@ import useVuelidate from '@vuelidate/core';
 import { required, helpers } from '@vuelidate/validators';
 
 import api from "@/api_fetch.js"
-import { type UserRead, type CatRead, type FosterHomeRead } from '@/gen_types/types.gen';
+import {type UserRead, type CatRead, type FosterHomeRead, type ColonyRead} from '@/gen_types/types.gen';
 import { useRouter } from "vue-router";
 
 const router = useRouter( )
@@ -355,6 +355,7 @@ const catStatuses: { [ key: CatRead[ "status" ] ]: string } = {
 
 const fosterHomes = ref< FosterHomeRead[ ] >([ ]);
 const managers = ref< UserRead[ ] >([ ]);
+const colonies = ref< ColonyRead[ ] >([ ]);
 
 // tanstack query-like lib could help us invalidate cache
 // when we create a new cat. Right now when something goes wrong after
