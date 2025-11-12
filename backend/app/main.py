@@ -26,7 +26,7 @@ from app.repositories.task_repository import TaskRepository
 from app.repositories.cat_repository import CatRepository
 from app.repositories.foster_home_repository import FosterHomeRepository
 
-from app.schemas.user import UserCreate, UserRead, LoginRequest, LoginResponse
+from app.schemas.user import UserCreate, UserRead, UserUpdate, LoginRequest, LoginResponse
 from app.schemas.role import RoleRead
 from app.schemas.procedure import ProcedureCreate, ProcedureRead
 from app.schemas.task import TaskCreate, TaskRead
@@ -217,7 +217,7 @@ def get_all_permissions(
 def list_managers(
     request: Request,
     db: Session = Depends(get_db),
-    # auth: bool = Depends(require_permission(Permissions.USER_VIEW))
+    auth: bool = Depends(require_permission(Permissions.USER_VIEW))
 ):
     svc = UserService(
         account_repo=AccountRepository(db),
@@ -229,7 +229,34 @@ def list_managers(
         role=RolePermissionConfig.Roles.MANAGER
     )
 
-    
+@app.get( "/users", response_model=list[UserRead], status_code=200)
+def list_users(
+    request: Request,
+    db: Session = Depends(get_db),
+    auth: bool = Depends(require_permission(Permissions.USER_VIEW))
+):
+    svc = UserService(
+        account_repo=AccountRepository(db),
+        user_repo=UserRepository(db),
+        role_repo=RoleRepository(db)
+    )
+
+    return svc.list_users_by_role(role=None)
+
+@app.patch( "/users/{user_id}", response_model=UserRead, status_code=200 )
+def edit_user(
+    user_id: int,
+    data: UserUpdate,
+    db: Session = Depends(get_db),
+    auth: bool = Depends(require_permission(Permissions.USER_EDIT))
+):
+    svc = UserService(
+        account_repo=AccountRepository(db),
+        user_repo=UserRepository(db),
+        role_repo=RoleRepository(db)
+    )
+
+    return svc.update(user_id, data)
 
 
 #  CATS !

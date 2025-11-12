@@ -1,5 +1,12 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from app.schemas.role import RoleRead
+
+class UserUpdate(BaseModel):
+    display_name: str | None
+    role_id: int | None
+    is_active: bool | None = None
+    phone: str | None = None
+    email: str | None = None
 
 
 class UserCreate(BaseModel):
@@ -19,8 +26,8 @@ class UserRead(BaseModel):
     role: RoleRead
 
     is_active: bool
-    phone: str
-    email: str
+    phone: str | None
+    email: str | None
 
     class ConfigDict:
         from_attributes = True
