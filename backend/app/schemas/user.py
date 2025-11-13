@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from app.schemas.role import RoleRead
 
 class UserUpdate(BaseModel):

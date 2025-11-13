@@ -182,7 +182,11 @@ def login(response: Response, payload: LoginRequest, db: Session = Depends(get_d
 
 
 @app.post("/users/full-create", response_model=UserRead, status_code=201)
-def create_user_full(payload: UserCreate, db: Session = Depends(get_db), auth: bool = Depends(require_permission(Permissions.USER_ADD))):
+def create_user_full(
+    payload: UserCreate,
+    db: Session = Depends(get_db),
+    auth: bool = Depends(require_permission(Permissions.USER_ADD))
+):
     # only managers can add new people
     svc = UserService(
         account_repo=AccountRepository(db),
