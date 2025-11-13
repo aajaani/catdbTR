@@ -22,13 +22,10 @@ import api from "@/api_fetch.js";
 import type {
   CatRead,
   CatUpdate,
-  ListCatsCatsGetResponse,
-  ListManagersManagersGetResponse,
-  UpdateCatCatsCatIdPatchResponse, UserRead
+  UserRead
 } from "@/gen_types/types.gen";
 import { useRouter } from "vue-router";
 import { useToast } from "primevue";
-import type { RequestResult } from "@/gen_types/client/index.js";
 
 const router = useRouter( );
 const toast = useToast( );
@@ -106,7 +103,8 @@ const cats = ref< CatRead[ ] >([ ]);
 
 // todo: refactor to something similiar to tanstack query
 // todo: check if type is correct for all api calls, RequestResponse might not be the correct template type
-api.listCatsCatsGet( ).then( ( res: RequestResult< ListCatsCatsGetResponse > ) => {
+api.listCatsCatsGet( ).then( ( res ) => {
+  if ( !res.data ) return;
   cats.value = res.data;
 } )
 
@@ -122,7 +120,7 @@ const pushCatEdit = ( cat: CatRead, body: Partial< CatUpdate > ) => {
     path: {
       cat_id: cat.id
     }
-  }).then( ( res: RequestResult< UpdateCatCatsCatIdPatchResponse > )  => {
+  }).then( ( res)  => {
     Object.assign( cat, res.data );
     isEditing.value = -1;
   }).catch( ( _: Error ) => {
@@ -158,15 +156,17 @@ const getManagers = async ( ): Promise<{ [ display_name: string ]: number } > =>
   // 4. we add an extra entry for "-" with id -1 to represent no manager
 
   const managersFromApi = await api.listManagersManagersGet( )
-     .then( ( res: RequestResult< ListManagersManagersGetResponse > ) => res.data )
+     .then( res => res.data )
      .catch( ( _: any ) => ([ ]) );
+
+  if ( !managersFromApi ) return { };
 
   const response = managersFromApi
                     .map( ( m: UserRead ) => ( { display_name: m.display_name, id: m.id } ) )
                     .reduce(
                         // @ts-ignore shut up ts, you know this works
                         ( acc, curr ) => ( { ...acc, [ curr.display_name ]: curr.id } ), {}
-                    )
+                    ) as { [ display_name: string ]: number }
 
   response[ "-" ] = -1;
 
@@ -202,7 +202,7 @@ const tableDefinition = computed( ( ) => defineTable({
       component: TableSelection,
       fitContent: true,
       filterMode: "unique",
-      filterInputOptions: async ( ) => api.listManagersManagersGet( ).then( ( res: RequestResult< ListManagersManagersGetResponse > ) => res.data.map( ( m: UserRead ) => m.display_name ) ),
+      filterInputOptions: async ( ) => api.listManagersManagersGet( ).then( res => res.data ? res.data.map( ( m: UserRead ) => m.display_name ) : [ ] ),
     }),
     "cat-colony": field({
       title: "Originaalne koloonia",
