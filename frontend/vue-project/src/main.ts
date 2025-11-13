@@ -11,7 +11,9 @@ const app = createApp(App)
 
 client.setConfig({
     credentials: "include",
-    baseUrl: "http://localhost:8000/",
+    baseUrl: import.meta.env.DEV
+        ? "http://localhost:8000/"  // when running npm run dev
+        : "/",                      // when building img for deploy
 })
 
 app.use( router )
