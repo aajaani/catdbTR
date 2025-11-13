@@ -237,7 +237,7 @@ def list_managers(
 def list_users(
     request: Request,
     db: Session = Depends(get_db),
-    auth: bool = Depends(require_permission(Permissions.USER_VIEW))
+    # auth: bool = Depends(require_permission(Permissions.USER_VIEW))
 ):
     svc = UserService(
         account_repo=AccountRepository(db),
@@ -262,6 +262,19 @@ def edit_user(
 
     return svc.update(user_id, data)
 
+@app.delete("/users/{user_id}", status_code=200)
+def delete_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    # auth: bool = Depends(require_permission(Permissions.USER_REMOVE))
+):
+    svc = UserService(
+        account_repo=AccountRepository(db),
+        user_repo=UserRepository(db),
+        role_repo=RoleRepository(db)
+    )
+
+    svc.delete_user(user_id)
 
 #  CATS !
 @app.post("/cats", response_model=CatRead, status_code=201)

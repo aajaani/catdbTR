@@ -51,4 +51,8 @@ class UserRepository(BaseRepository):
         
         self.db.commit()
         return self.get_by_id(user_id)
+    
+    def delete(self, user: User):
+        self.db.delete(user)
+        self.db.commit()
 

@@ -132,4 +132,12 @@ class UserService:
         log_action( self.user_repo.db, "user", updated_user.id, "UPDATE" )
 
         return updated_user
+    
+    def delete_user(self, user_id: int) -> None:
+        existing = self.user_repo.get_by_id(user_id)
+
+        if existing is None:
+            raise HTTPException(status_code=404, detail="user does not exist")
         
+        self.user_repo.delete(existing)
+
