@@ -211,7 +211,7 @@ def get_all_roles(
 @app.get("/permissions", response_model=dict[str, str], tags=["meta"], status_code=200)
 def get_all_permissions(
     request: Request,
-    # auth: bool = Depends(require_user)
+    auth: bool = Depends(require_user)
 ):
     return { p: p for p in Permissions.__members__ }
 
@@ -266,7 +266,7 @@ def edit_user(
 def delete_user(
     user_id: int,
     db: Session = Depends(get_db),
-    # auth: bool = Depends(require_permission(Permissions.USER_REMOVE))
+    auth: bool = Depends(require_permission(Permissions.USER_REMOVE))
 ):
     svc = UserService(
         account_repo=AccountRepository(db),
