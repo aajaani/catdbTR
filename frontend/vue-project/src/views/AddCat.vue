@@ -15,14 +15,45 @@
         class="bg-neutral-white rounded-lg px-4 py-4"
       >
         <div class="grid grid-cols-12 gap-5 ">
+          <!-- cat name -->
           <div class="flex flex-col col-start-1 col-span-4 row-end-1">
             <label for="cat-name">Kassi nimi</label>
             <input id="cat-name" name="cat-name" class="input" v-model="catData.name" required>
           </div>
 
+          <!-- cat colony -->
           <div class="flex flex-col col-start-5 col-span-4 row-end-1">
-            <label for="cat-colony">Originaalne koloonia</label>
-            <select id="cat-colony" name="cat-colony" class="input" @change="( e ) => {
+            <label for="cat-colony">Originaalne koloonia
+              {{ catData.colony_id === COLONY_CASES.NEW ? " (uus)" : "" }}
+            </label>
+
+            <!-- todo: on new colony change to text input for name -->
+            <!-- todo: could add a button next to the dropdown to add a new and then show it, upper todo is a must -->
+            <!-- on submit, formData (catData) changes to new cat colony id, ui updates, we dont want that! -->
+            <div
+                v-if="catData.colony_id === COLONY_CASES.NEW"
+                class="grid grid-cols-[auto_1fr] grid-rows-1 gap-2.5"
+            >
+              <input
+                  type="text"
+                  id="new-colony-name"
+                  name="new-colony-name"
+                  class="input"
+                  placeholder="Koloonia nimi"
+              >
+              <Button
+                  class="destructive"
+                  @click="( _ ) => {
+                    catData.colony_id = COLONY_CASES.NONE;
+                  }"
+              >X</Button>
+            </div>
+            <select
+                v-else
+                id="cat-colony"
+                name="cat-colony"
+                class="input"
+                @change="( e ) => {
                 if ( !e.target ) return;
                 const selIdStr: string = ( e.target as HTMLSelectElement ).value;
 
@@ -36,9 +67,15 @@
             >
               <option
                   key="colony-unassigned"
-                  :value="-1"
-                  :selected="catData.colony_id === -1"
+                  :value="COLONY_CASES.NONE"
+                  :selected="catData.colony_id === COLONY_CASES.NONE"
               >-</option>
+
+              <option
+                  key="colony-unassigned"
+                  :value="COLONY_CASES.NEW"
+                  :selected="catData.colony_id === COLONY_CASES.NEW"
+              >+ Lisa Uus</option>
 
               <option
                   v-for="( colony, index ) in colonies"
@@ -49,11 +86,13 @@
             </select>
           </div>
 
+          <!-- cat birth date -->
           <div class="flex flex-col col-start-9 col-span-4 row-end-1">
             <label for="cat-birth-date">Sunnikuupäev</label>
             <input id="cat-birth-date" name="cat-birth-date" type="date" class="input" v-model="catData.birthDate">
           </div>
 
+          <!-- cat sex -->
           <div class="flex flex-col col-start-1 col-span-2 row-end-2">
             <label for="cat-sex">Sugu</label>
             <HorizontalSingleSelection
@@ -75,6 +114,7 @@
             />
           </div>
 
+          <!-- is on homepage -->
           <div class="flex flex-col col-start-3 col-span-2 row-end-2">
             <label for="cat-on-homepage">Kodukal</label>
             <HorizontalSingleSelection
@@ -95,6 +135,7 @@
             />
           </div>
 
+          <!-- cat status -->
           <div class="flex flex-col col-start-5 col-span-4 row-end-2">
             <label for="cat-status">Staatus</label>
             <select id="cat-status" name="cat-status" class="input" @change="( e ) => {
@@ -114,6 +155,7 @@
             </select>
           </div>
 
+          <!-- chip number -->
           <div class="flex flex-col col-start-9 col-span-4 row-end-2">
             <label for="cat-chip-id">Kiibinumber</label>
             <NumberInput
@@ -128,6 +170,7 @@
             <p class="text-[12px] text-text-secondary">Kiibinumber peaks olema 15 numbrit</p>
           </div>
 
+          <!-- in -->
           <div class="grid grid-rows-[auto_1fr] col-start-1 col-span-12 row-end-3 gap-2">
             <h1 class="col-start-1 col-span-3 text-2xl h-fit">KK alates</h1>
             <div class="col-start-1 col-span-3 flex flex-row gap-5">
@@ -176,6 +219,7 @@
         class="bg-neutral-white rounded-lg"
       >
         <div class="grid grid-cols-2 gap-5">
+          <!-- foster home selection -->
           <div class="flex flex-col col-start-1 col-span-2">
             <label for="foster-home-selection">Hoiukodu valik</label>
             <select id="foster-home-selection" name="foster-home-selection"
@@ -204,40 +248,45 @@
             </select>
           </div>
 
+          <!-- foster home name -->
           <div
-            v-if="catData.fosterHomeId === -1"
+            v-if="catData.fosterHomeId === FOSTER_HOME_CASES.NEW"
             class="flex flex-col col-start-1 col-span-1"
           >
             <label for="foster-home-name">Hoiukodu nimi</label>
             <input id="foster-home-name" name="foster-home-name" class="input" v-model="newFosterHomeData.name" required>
           </div>
 
+          <!-- foster home phone nr -->
           <div
-            v-if="catData.fosterHomeId === -1"
+            v-if="catData.fosterHomeId === FOSTER_HOME_CASES.NEW"
             class="flex flex-col col-start-2 col-span-1"
           >
             <label for="foster-home-tel">Hoiukodu telefoninumber</label>
             <input id="foster-home-tel" name="foster-home-tel" class="input" type="tel" v-model="newFosterHomeData.phone">
           </div>
 
+          <!-- foster home address -->
           <div
-            v-if="catData.fosterHomeId === -1"
+            v-if="catData.fosterHomeId === FOSTER_HOME_CASES.NEW"
             class="flex flex-col col-start-1 col-span-1"
           >
             <label for="foster-home-address">Hoiukodu aadress</label>
             <input id="foster-home-address" name="foster-home-address" class="input" v-model="newFosterHomeData.address">
           </div>
 
+          <!-- foster home email -->
           <div
-            v-if="catData.fosterHomeId === -1"
+            v-if="catData.fosterHomeId === FOSTER_HOME_CASES.NEW"
             class="flex flex-col col-start-2 col-span-1"
           >
             <label for="foster-home-email">Hoiukodu e-mail</label>
             <input id="foster-home-email" name="foster-home-email" class="input" type="email" v-model="newFosterHomeData.email">
           </div>
 
+          <!-- foster home notes -->
           <div
-            v-if="catData.fosterHomeId === -1"
+            v-if="catData.fosterHomeId === FOSTER_HOME_CASES.NEW"
             class="flex flex-col col-start-1 col-span-2"
           >
             <label for="foster-home-address">Hoiukodu märkused</label>
@@ -246,6 +295,7 @@
         </div>
       </AccordionWithTitle>
 
+      <!-- medical info -->
       <AccordionWithTitle
         title="Meditsiiniline info"
         :default-opened="true"
@@ -319,6 +369,7 @@
         </div>
       </AccordionWithTitle>
 
+      <!-- cat notes -->
       <AccordionWithTitle
         title="Märkmed"
         :default-opened="false"
@@ -331,9 +382,9 @@
           class="w-full resize-y input min-h-10"
           v-model="catData.notes"
         ></textarea>
-
       </AccordionWithTitle>
 
+      <!-- actions (cancel, clear, send) -->
       <div class="flex justify-end mb-5 mt-auto">
         <div class="flex w-fit bg-neutral-white rounded-lg p-4 gap-5">
           <Button type="button">Tühista</Button>
@@ -376,6 +427,20 @@ const catStatuses: { [ key in CatRead[ "status" ] ]: string } = {
   "RESERVED": "Broneeritud"
 };
 
+
+enum COLONY_CASES {
+  NEW = -2,
+  NONE = -1,
+}
+
+enum MANAGER_CASES {
+  NONE = -1
+}
+
+enum FOSTER_HOME_CASES {
+  NEW = -2
+}
+
 const fosterHomes = ref< FosterHomeRead[ ] >([ ]);
 const managers = ref< UserRead[ ] >([ ]);
 const colonies = ref< ColonyRead[ ] >([ ]);
@@ -383,7 +448,7 @@ const colonies = ref< ColonyRead[ ] >([ ]);
 // tanstack query-like lib could help us invalidate cache
 // when we create a new cat. Right now when something goes wrong after
 // foster home creation (cat creation), foster home is created, this
-// isnt updated, next req same foster home will br created
+// isn't updated, next req same foster home will br created
 // invalidating foster home cache on cat add fail would solve this issue
 api.listFosterHomesFosterHomesGet( ).then( async ( res ) => {
   if ( !res.data ) {
@@ -428,17 +493,21 @@ api.getAllColoniesColoniesGet( ).then( async res => {
 })
 
 // todo: maybe add localStorage so when page is switched, form data isnt lost
+// todo: might want to move this to a separate formdata variable
+//       right now might get confusing trying to develop here
+//       eg. when is it accessed, when are manager & colony cases
+//       handled etc
 const catData = reactive({
   name: "" as string,
-  colony_id: -1,
+  colony_id: COLONY_CASES.NONE,
   birthDate: undefined as CatRead[ "birth_date" ],
   sex: "unknown",
   onHomepage: "true", // can't do booleans due to how HorizontalSingleSelection works
   chipID: "",
   intakeDate: undefined,
   status: "ACTIVE" as CatRead[ "status" ],
-  managerId: -1,
-  fosterHomeId: -1,
+  managerId: MANAGER_CASES.NONE,
+  fosterHomeId: FOSTER_HOME_CASES.NEW,
   // todo: foster_end_date
   notes: "",
   isNeutered: "false",
@@ -491,18 +560,49 @@ const onSubmit = async ( e: SubmitEvent ) => {
     return;
   }
 
-  if ( catData.colony_id === -1 ) {
+  if ( catData.colony_id === COLONY_CASES.NEW ) {
+      const newColonyRes = await api.createColonyColoniesPost({
+        body: {
+          name: "TODO"
+        }
+      });
 
+      if ( !newColonyRes.data ) {
+        toast.add({
+          severity: "error",
+          summary: `Koloonia loomine ebaonnestus.`,
+          detail: await newColonyRes.response?.text() || null,
+          life: 3000
+        });
+        return;
+      }
+
+      catData.colony_id = newColonyRes.data.id;
   }
 
-  if ( catData.fosterHomeId === -1 ) {
+  if ( catData.fosterHomeId === FOSTER_HOME_CASES.NEW ) {
     // create foster 
-    const newFosterHomeID = await sendFosterHomeCreate( );
+    const fosterHomeRes = await api.createFosterHomeFosterHomesPost({
+      body: {
+        name: newFosterHomeData.name,
+        phone: newFosterHomeData.phone,
+        email: newFosterHomeData.email,
+        address: newFosterHomeData.address,
+        comments: newFosterHomeData.notes
+      }
+    });
 
-    // no foster created, dont create cat
-    if ( !newFosterHomeID ) return;
+    if ( !fosterHomeRes.data ) {
+      toast.add({
+        severity: "error",
+        summary: `Hoiukodu loomine ebaonnestus.`,
+        detail: await fosterHomeRes.response?.text() || null,
+        life: 3000
+      });
+      return;
+    }
 
-    catData.fosterHomeId = newFosterHomeID;
+    catData.fosterHomeId = fosterHomeRes.data.id;
   }
 
   const catId = await sendCatCreate( );
@@ -513,30 +613,6 @@ const onSubmit = async ( e: SubmitEvent ) => {
   });
 }
 
-const sendFosterHomeCreate = async ( ): Promise< number | null > => {
-  const res = await api.createFosterHomeFosterHomesPost({
-    body: {
-      name: newFosterHomeData.name,
-      phone: newFosterHomeData.phone,
-      email: newFosterHomeData.email,
-      address: newFosterHomeData.address,
-      comments: newFosterHomeData.notes
-    }
-  });
-
-  if ( !res.data ) {
-    toast.add({
-      severity: "error",
-      summary: `Hoiukodu loomine ebaonnestus.`,
-      detail: await res.response?.text() || null,
-      life: 3000
-    });
-    return null;
-  }
-
-  return res.data.id;
-}
-
 const sendCatCreate = async ( ) => {
   const sendData = {
     name: catData.name,
@@ -545,13 +621,15 @@ const sendCatCreate = async ( ) => {
     chip_number: catData.chipID,
     status: catData.status,
     // could have an unassigned manager aka -1, set to null if its -1
-    manager_id: catData.managerId === -1 ? null : catData.managerId,
-    // set in fosterhome creation anyways, always exists
+    manager_id: catData.managerId === MANAGER_CASES.NONE ? null : catData.managerId,
+    // set in fosterhome creation anyway, always exists
     foster_home_id: catData.fosterHomeId,
-    colony_id: catData.colony_id === -1 ? null : catData.colony_id,
+    // colony id invalid -> no colony.
+    // colony id new -> colony wasn't created
+    colony_id: [ COLONY_CASES.NONE, COLONY_CASES.NEW ].includes( catData.colony_id ) ? null : catData.colony_id,
     intake_date: catData.intakeDate,
     birth_date: catData.birthDate,
-    foster_end_date: null, // backend optional, idk if we'll use it yet
+    foster_end_date: null, // backend optional, IDK if we'll use it yet
     notes: catData.notes,
     // backend expects bool
     is_neutered: catData.isNeutered === "true"
