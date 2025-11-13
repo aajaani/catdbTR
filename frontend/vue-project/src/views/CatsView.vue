@@ -3,8 +3,7 @@ import BreadCrumbs from "@/components/organisms/BreadCrumbs.vue";
 import FilterTable from "@/components/organisms/FilterTable.vue";
 
 import { MdArrowOutward } from "vue-icons-plus/md";
-import { FiEdit3, FiX } from "vue-icons-plus/fi";
-import { HiOutlineTrash } from "vue-icons-plus/hi";
+import { FiEdit3, FiX, FiArchive } from "vue-icons-plus/fi";
 import { AiOutlinePlus } from "vue-icons-plus/ai";
 import { GiAngelOutfit } from "vue-icons-plus/gi";
 
@@ -350,7 +349,7 @@ const tableDefinition = computed( ( ) => defineTable({
             isEditing.value = -1;
         }
       }, {
-        icon: cat.status === "ARCHIVED" ? GiAngelOutfit : HiOutlineTrash,
+        icon: cat.status === "ARCHIVED" ? GiAngelOutfit : FiArchive,
         onClick: ( ) => {
           pushCatEdit(cat, {
             status: cat.status === "ARCHIVED" ? "ACTIVE" : "ARCHIVED"
