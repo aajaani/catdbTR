@@ -11,7 +11,7 @@ from app.repositories.account_repository import AccountRepository
 from app.repositories.user_repository import UserRepository
 from app.repositories.role_repository import RoleRepository
 
-from app.schemas.user import UserCreate
+from app.schemas.user import UserCreate, UserUpdate
 from app.services.auth_service import hash_password, verify_password
 from app.utils.audit import log_action
 
@@ -73,7 +73,6 @@ class UserService:
 
         return created_user
 
-
     def authenticate_user(self, username: str, password: str) -> User:
         user = self.user_repo.get_by_username(username.strip())
         if user is None:
@@ -108,3 +107,29 @@ class UserService:
         ]] | None = None
     ) -> list[User]:
         return list(self.user_repo.get_by_role_name(role=role.value if role is not None else None))
+    
+    def update(self, user_id: int, data: UserUpdate) -> User:
+        try:
+            json = data.model_dump(exclude_unset=True)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"{e}")
+        
+        existing = self.user_repo.get_by_id(user_id)
+
+        if not existing:
+            raise HTTPException(status_code=404, detail="user not found")
+
+        if data.role_id is not None:
+            role = self.role_repo.get_by_id(data.role_id)
+            if role is None:
+                raise HTTPException(status_code=404, detail="role not found")
+            
+        updated_user = self.user_repo.update(user_id, json)
+
+        if updated_user is None:
+            raise HTTPException(status_code=500, detail="failed to update user")
+
+        log_action( self.user_repo.db, "user", updated_user.id, "UPDATE" )
+
+        return updated_user
+        

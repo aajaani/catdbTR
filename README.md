@@ -146,8 +146,10 @@ Visit `http://localhost:8081` in your browser
 
 ### Managers
 
-* `POST /managers` – create manager
+* `POST /users/full-create` – create an user account
 * `GET /managers` – list all managers
+* `GET /users` – list all users
+* `PATCH /users/{user_id}` – update an user
 
 ### Foster Homes
 
