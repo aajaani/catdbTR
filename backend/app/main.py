@@ -24,15 +24,13 @@ from app.repositories.user_repository import UserRepository
 from app.repositories.cat_procedure_repository import CatProcedureRepository
 from app.repositories.task_repository import TaskRepository
 from app.repositories.cat_repository import CatRepository
-from app.repositories.colony_repository import ColonyRepository
 from app.repositories.foster_home_repository import FosterHomeRepository
 
-from app.schemas.user import UserCreate, UserRead, LoginRequest, LoginResponse
+from app.schemas.user import UserCreate, UserRead, UserUpdate, LoginRequest, LoginResponse
 from app.schemas.role import RoleRead
 from app.schemas.procedure import ProcedureCreate, ProcedureRead
 from app.schemas.task import TaskCreate, TaskRead
 from app.schemas.cats import CatCreate, CatRead, CatUpdate
-from app.schemas.colony import ColonyCreate, ColonyRead, ColonyUpdate
 from app.schemas.foster_home import FosterHomeCreate, FosterHomeRead
 
 from app.services.auth_checks import require_user, require_permission
@@ -42,7 +40,6 @@ from app.services.role_service import RoleService
 from app.services.procedure_service import ProcedureService
 from app.services.task_service import TaskService
 from app.services.cat_service import CatService
-from app.services.colony_service import ColonyService
 from app.services.foster_home_service import FosterHomeService
 
 
@@ -185,7 +182,11 @@ def login(response: Response, payload: LoginRequest, db: Session = Depends(get_d
 
 
 @app.post("/users/full-create", response_model=UserRead, status_code=201)
-def create_user_full(payload: UserCreate, db: Session = Depends(get_db), auth: bool = Depends(require_permission(Permissions.USER_ADD))):
+def create_user_full(
+    payload: UserCreate,
+    db: Session = Depends(get_db),
+    auth: bool = Depends(require_permission(Permissions.USER_ADD))
+):
     # only managers can add new people
     svc = UserService(
         account_repo=AccountRepository(db),
@@ -210,7 +211,7 @@ def get_all_roles(
 @app.get("/permissions", response_model=dict[str, str], tags=["meta"], status_code=200)
 def get_all_permissions(
     request: Request,
-    # auth: bool = Depends(require_user)
+    auth: bool = Depends(require_user)
 ):
     return { p: p for p in Permissions.__members__ }
 
@@ -220,7 +221,7 @@ def get_all_permissions(
 def list_managers(
     request: Request,
     db: Session = Depends(get_db),
-    # auth: bool = Depends(require_permission(Permissions.USER_VIEW))
+    auth: bool = Depends(require_permission(Permissions.USER_VIEW))
 ):
     svc = UserService(
         account_repo=AccountRepository(db),
@@ -232,7 +233,48 @@ def list_managers(
         role=RolePermissionConfig.Roles.MANAGER
     )
 
+@app.get( "/users", response_model=list[UserRead], status_code=200)
+def list_users(
+    request: Request,
+    db: Session = Depends(get_db),
+    # auth: bool = Depends(require_permission(Permissions.USER_VIEW))
+):
+    svc = UserService(
+        account_repo=AccountRepository(db),
+        user_repo=UserRepository(db),
+        role_repo=RoleRepository(db)
+    )
 
+    return svc.list_users_by_role(role=None)
+
+@app.patch( "/users/{user_id}", response_model=UserRead, status_code=200 )
+def edit_user(
+    user_id: int,
+    data: UserUpdate,
+    db: Session = Depends(get_db),
+    auth: bool = Depends(require_permission(Permissions.USER_EDIT))
+):
+    svc = UserService(
+        account_repo=AccountRepository(db),
+        user_repo=UserRepository(db),
+        role_repo=RoleRepository(db)
+    )
+
+    return svc.update(user_id, data)
+
+@app.delete("/users/{user_id}", status_code=200)
+def delete_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    auth: bool = Depends(require_permission(Permissions.USER_REMOVE))
+):
+    svc = UserService(
+        account_repo=AccountRepository(db),
+        user_repo=UserRepository(db),
+        role_repo=RoleRepository(db)
+    )
+
+    svc.delete_user(user_id)
 
 #  CATS !
 @app.post("/cats", response_model=CatRead, status_code=201)
@@ -287,37 +329,8 @@ def delete_cat(cat_id: int, db: Session = Depends(get_db), auth: bool = Depends(
     cat = CatRepository(db).get_with_related(cat_id)
     if not cat:
         raise HTTPException(status_code=404, detail="cat not found")
-    CatService(CatRepository(db), None).delete(cat)  # type: ignore
-    return
-
-
-# CAT COLONIES
-@app.get("/colonies", status_code=200, response_model=list[ColonyRead])
-def get_all_colonies(
-    db: Session = Depends(get_db),
-    auth: bool = Depends(require_permission(Permissions.COLONY_VIEW))
-):
-    svc = ColonyService(ColonyRepository(db))
-    return svc.list_all()
-
-@app.get("/colonies/{colony_id}", status_code=201, response_model=ColonyRead)
-def get_colony(
-    colony_id: int,
-    db: Session = Depends(get_db),
-    auth: bool = Depends(require_permission(Permissions.COLONY_VIEW))
-):
-    svc = ColonyService(ColonyRepository(db))
-    return svc.get_by_id(colony_id)
-
-@app.post("/colonies", status_code=201, response_model=ColonyRead)
-def create_colony(
-    payload: ColonyCreate,
-    db: Session = Depends(get_db),
-    auth: bool = Depends(require_permission(Permissions.COLONY_ADD))
-):
-    svc = ColonyService(ColonyRepository(db))
-    return svc.create(payload)
-
+    CatService(CatRepository(db), None).delete(cat)
+    return 
 
 # FOSTER HOMES
 @app.post("/foster-homes", response_model=FosterHomeRead, status_code=201)
