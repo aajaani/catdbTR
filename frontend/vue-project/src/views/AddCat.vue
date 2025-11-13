@@ -18,21 +18,18 @@
           <!-- cat name -->
           <div class="flex flex-col col-start-1 col-span-4 row-end-1">
             <label for="cat-name">Kassi nimi</label>
-            <input id="cat-name" name="cat-name" class="input" v-model="catData.name" required>
+            <input id="cat-name" name="cat-name" class="input" v-model="formDataCat.name" required>
           </div>
 
           <!-- cat colony -->
           <div class="flex flex-col col-start-5 col-span-4 row-end-1">
             <label for="cat-colony">Originaalne koloonia
-              {{ catData.colony_id === COLONY_CASES.NEW ? " (uus)" : "" }}
+              {{ formDataCat.colonyId === COLONY_CASES.NEW ? " (uus)" : "" }}
             </label>
 
-            <!-- todo: on new colony change to text input for name -->
-            <!-- todo: could add a button next to the dropdown to add a new and then show it, upper todo is a must -->
-            <!-- on submit, formData (catData) changes to new cat colony id, ui updates, we dont want that! -->
             <div
-                v-if="catData.colony_id === COLONY_CASES.NEW"
-                class="grid grid-cols-[auto_1fr] grid-rows-1 gap-2.5"
+                v-if="formDataCat.colonyId === COLONY_CASES.NEW"
+                class="grid grid-cols-[1fr_auto] grid-rows-1 gap-2.5"
             >
               <input
                   type="text"
@@ -40,56 +37,63 @@
                   name="new-colony-name"
                   class="input"
                   placeholder="Koloonia nimi"
+                  v-model="newColonyData.name"
               >
               <Button
-                  class="destructive"
+                  class="destructive aspect-square"
                   @click="( _ ) => {
-                    catData.colony_id = COLONY_CASES.NONE;
+                    formDataCat.colonyId = COLONY_CASES.NONE;
                   }"
-              >X</Button>
+              ><FiX size="16" /></Button>
             </div>
-            <select
-                v-else
-                id="cat-colony"
-                name="cat-colony"
-                class="input"
-                @change="( e ) => {
+
+            <div
+                v-if="formDataCat.colonyId !== COLONY_CASES.NEW"
+                class="grid grid-cols-[1fr_auto] grid-rows-1 gap-2.5"
+            >
+              <select
+                  v-if="formDataCat.colonyId !== COLONY_CASES.NEW"
+                  id="cat-colony"
+                  name="cat-colony"
+                  class="input"
+                  @change="( e ) => {
                 if ( !e.target ) return;
                 const selIdStr: string = ( e.target as HTMLSelectElement ).value;
 
                 try {
-                  catData.colony_id = parseInt( selIdStr );
+                  formDataCat.colonyId = parseInt( selIdStr );
                 } catch ( e ) {
                   console.error( `Failed to parse selected colony id '${ selIdStr }'` )
                   return
                 }
               }"
-            >
-              <option
-                  key="colony-unassigned"
-                  :value="COLONY_CASES.NONE"
-                  :selected="catData.colony_id === COLONY_CASES.NONE"
-              >-</option>
+              >
+                <option
+                    key="colony-unassigned"
+                    :value="COLONY_CASES.NONE"
+                    :selected="formDataCat.colonyId === COLONY_CASES.NONE"
+                >-</option>
 
-              <option
-                  key="colony-unassigned"
-                  :value="COLONY_CASES.NEW"
-                  :selected="catData.colony_id === COLONY_CASES.NEW"
-              >+ Lisa Uus</option>
+                <option
+                    v-for="( colony, index ) in colonies"
+                    :value="colony.id"
+                    :key="index"
+                    :selected="colony.id === formDataCat.colonyId"
+                >{{ colony.name }}</option>
+              </select>
 
-              <option
-                  v-for="( colony, index ) in colonies"
-                  :value="colony.id"
-                  :key="index"
-                  :selected="colony.id === catData.colony_id"
-              >{{ colony.name }}</option>
-            </select>
+              <Button
+                  class="accept aspect-square"
+                  @click="formDataCat.colonyId = COLONY_CASES.NEW"
+              ><FiPlus size="16" /></Button>
+            </div>
+
           </div>
 
           <!-- cat birth date -->
           <div class="flex flex-col col-start-9 col-span-4 row-end-1">
             <label for="cat-birth-date">Sunnikuupäev</label>
-            <input id="cat-birth-date" name="cat-birth-date" type="date" class="input" v-model="catData.birthDate">
+            <input id="cat-birth-date" name="cat-birth-date" type="date" class="input" v-model="formDataCat.birthDate">
           </div>
 
           <!-- cat sex -->
@@ -100,7 +104,7 @@
               group-name="cat-sex"
               class="col-start-1 col-span-2 "
               fallback="unknown"
-              v-model="catData.sex"
+              v-model="formDataCat.sex"
               :items="{
                 'male': {
                   component: BiMaleSign,
@@ -121,7 +125,7 @@
               id="cat-on-homepage"
               group-name="cat-on-homepage"
               class="col-start-1 col-span-2"
-              v-model="catData.onHomepage"
+              v-model="formDataCat.onHomepage"
               :items="{
                 true: {
                   component: CgCheck,
@@ -142,7 +146,7 @@
                 if ( !e.target ) return;
                 const sel: CatRead[ 'status' ] | string = ( e.target as HTMLSelectElement ).value;
                 if ( sel in catStatuses ) {
-                  catData.status = sel as CatRead[ 'status' ];               
+                  formDataCat.status = sel as CatRead[ 'status' ];
                 } else {
                   console.error( `'${ sel }' not in cat statuses` );
                 }
@@ -165,7 +169,7 @@
               :numbers="15"
               class="input"
               title="15 numbri pikkune kiibi number"
-              v-model="catData.chipID"
+              v-model="formDataCat.chipID"
             />
             <p class="text-[12px] text-text-secondary">Kiibinumber peaks olema 15 numbrit</p>
           </div>
@@ -176,7 +180,7 @@
             <div class="col-start-1 col-span-3 flex flex-row gap-5">
               <div class="flex flex-col basis-1/3">
                 <label for="cat-home-since">Kuupäev</label>
-                <input id="cat-home-since" name="cat-home-since" type="date" class="input" v-model="catData.intakeDate">
+                <input id="cat-home-since" name="cat-home-since" type="date" class="input" v-model="formDataCat.intakeDate">
               </div>
 
               <div class="flex flex-col basis-2/3">
@@ -188,7 +192,7 @@
                     const sel = ( e.target as HTMLSelectElement ).value;
 
                     try {
-                      catData.managerId = parseInt( sel );
+                      formDataCat.managerId = parseInt( sel );
                     } catch ( _ ) {
                       console.error( `'${ sel }' not in managers (parseInt failure or wv)` );
                     }
@@ -229,7 +233,7 @@
                 const sel = ( e.target as HTMLSelectElement ).value;
 
                 try {
-                  catData.fosterHomeId = parseInt( sel );
+                  formDataCat.fosterHomeId = parseInt( sel );
                 } catch ( _ ) {
                   console.error( `'${ sel }' not in cat statuses` );
                 }
@@ -250,7 +254,7 @@
 
           <!-- foster home name -->
           <div
-            v-if="catData.fosterHomeId === FOSTER_HOME_CASES.NEW"
+            v-if="formDataCat.fosterHomeId === FOSTER_HOME_CASES.NEW"
             class="flex flex-col col-start-1 col-span-1"
           >
             <label for="foster-home-name">Hoiukodu nimi</label>
@@ -259,7 +263,7 @@
 
           <!-- foster home phone nr -->
           <div
-            v-if="catData.fosterHomeId === FOSTER_HOME_CASES.NEW"
+            v-if="formDataCat.fosterHomeId === FOSTER_HOME_CASES.NEW"
             class="flex flex-col col-start-2 col-span-1"
           >
             <label for="foster-home-tel">Hoiukodu telefoninumber</label>
@@ -268,7 +272,7 @@
 
           <!-- foster home address -->
           <div
-            v-if="catData.fosterHomeId === FOSTER_HOME_CASES.NEW"
+            v-if="formDataCat.fosterHomeId === FOSTER_HOME_CASES.NEW"
             class="flex flex-col col-start-1 col-span-1"
           >
             <label for="foster-home-address">Hoiukodu aadress</label>
@@ -277,7 +281,7 @@
 
           <!-- foster home email -->
           <div
-            v-if="catData.fosterHomeId === FOSTER_HOME_CASES.NEW"
+            v-if="formDataCat.fosterHomeId === FOSTER_HOME_CASES.NEW"
             class="flex flex-col col-start-2 col-span-1"
           >
             <label for="foster-home-email">Hoiukodu e-mail</label>
@@ -286,7 +290,7 @@
 
           <!-- foster home notes -->
           <div
-            v-if="catData.fosterHomeId === FOSTER_HOME_CASES.NEW"
+            v-if="formDataCat.fosterHomeId === FOSTER_HOME_CASES.NEW"
             class="flex flex-col col-start-1 col-span-2"
           >
             <label for="foster-home-address">Hoiukodu märkused</label>
@@ -358,11 +362,11 @@
                     true: 'Jah',
                     false: 'Ei'
                   }"
-                  v-model="catData.isNeutered"
+                  v-model="formDataCat.isNeutered"
                   class="col-start-1 col-span-1"
                 />
 
-                <input type="date" class="input" :disabled="!catData.isNeutered">
+                <input type="date" class="input" :disabled="!formDataCat.isNeutered">
               </div>
             </template>
           </TabSelection>
@@ -380,7 +384,7 @@
           id="cat-details"
           name="cat-details"
           class="w-full resize-y input min-h-10"
-          v-model="catData.notes"
+          v-model="formDataCat.notes"
         ></textarea>
       </AccordionWithTitle>
 
@@ -407,11 +411,12 @@ import {reactive, ref} from 'vue';
 
 import {BiFemaleSign, BiMaleSign} from 'vue-icons-plus/bi';
 import {CgCheck, CgClose} from 'vue-icons-plus/cg';
+import {FiX, FiPlus} from 'vue-icons-plus/fi';
 import useVuelidate from '@vuelidate/core';
 import {helpers, required} from '@vuelidate/validators';
 
 import api from "@/api_fetch.js"
-import {type CatRead, type ColonyRead, type FosterHomeRead, type UserRead} from '@/gen_types/types.gen';
+import {type CatCreate, type CatRead, type ColonyRead, type FosterHomeRead, type UserRead} from '@/gen_types/types.gen';
 import {useRouter} from "vue-router";
 import {useToast} from "primevue";
 
@@ -493,19 +498,28 @@ api.getAllColoniesColoniesGet( ).then( async res => {
 })
 
 // todo: maybe add localStorage so when page is switched, form data isnt lost
-// todo: might want to move this to a separate formdata variable
-//       right now might get confusing trying to develop here
-//       eg. when is it accessed, when are manager & colony cases
-//       handled etc
-const catData = reactive({
+const formDataCat = reactive<{
+  name: string,
+  colonyId: number | COLONY_CASES,
+  birthDate: CatRead[ "birth_date" ] | null,
+  sex: CatRead[ "sex" ],
+  onHomepage: "true" | "false",
+  chipID: string,
+  intakeDate: string | null,
+  status: CatRead[ "status" ],
+  managerId: number | MANAGER_CASES,
+  fosterHomeId: number | FOSTER_HOME_CASES,
+  notes: string,
+  isNeutered: "true" | "false"
+}>({
   name: "" as string,
-  colony_id: COLONY_CASES.NONE,
-  birthDate: undefined as CatRead[ "birth_date" ],
+  colonyId: COLONY_CASES.NONE,
+  birthDate: null,
   sex: "unknown",
   onHomepage: "true", // can't do booleans due to how HorizontalSingleSelection works
   chipID: "",
-  intakeDate: undefined,
-  status: "ACTIVE" as CatRead[ "status" ],
+  intakeDate: null,
+  status: "ACTIVE",
   managerId: MANAGER_CASES.NONE,
   fosterHomeId: FOSTER_HOME_CASES.NEW,
   // todo: foster_end_date
@@ -519,6 +533,10 @@ const newFosterHomeData = reactive({
   address: "",
   email: "",
   notes: "",
+});
+
+const newColonyData = reactive({
+  name: "",
 });
 
 // https://vuelidate-next.netlify.app/#alternative-syntax-composition-api
@@ -541,7 +559,7 @@ const validationRules = {
   isNeutered: { }
 }
 
-const v$ = useVuelidate( validationRules, catData );
+const v$ = useVuelidate( validationRules, formDataCat );
 
 
 const onSubmit = async ( e: SubmitEvent ) => {
@@ -549,7 +567,6 @@ const onSubmit = async ( e: SubmitEvent ) => {
 
   const isFormValid = await v$.value.$validate( );
 
-  console.log( v$.value )
   if ( !isFormValid ) {
     toast.add({
       severity: "error",
@@ -560,10 +577,31 @@ const onSubmit = async ( e: SubmitEvent ) => {
     return;
   }
 
-  if ( catData.colony_id === COLONY_CASES.NEW ) {
+  const sendData: CatCreate = {
+    name: formDataCat.name,
+    // string enum: male | female | unknown (default unknown)
+    sex: formDataCat.sex,
+    chip_number: formDataCat.chipID,
+    status: formDataCat.status,
+    // could have an unassigned manager aka -1, set to null if its -1
+    manager_id: formDataCat.managerId === MANAGER_CASES.NONE ? null : formDataCat.managerId,
+    // set in fosterhome creation anyway, always exists
+    foster_home_id: formDataCat.fosterHomeId,
+    // colony id invalid -> no colony.
+    // colony id new -> colony wasn't created
+    colony_id: [ COLONY_CASES.NONE, COLONY_CASES.NEW ].includes( formDataCat.colonyId ) ? null : formDataCat.colonyId,
+    intake_date: formDataCat.intakeDate,
+    birth_date: formDataCat.birthDate || null,
+    foster_end_date: null, // backend optional, IDK if we'll use it yet
+    notes: formDataCat.notes,
+    // backend expects bool
+    is_neutered: formDataCat.isNeutered === "true"
+  }
+
+  if ( formDataCat.colonyId === COLONY_CASES.NEW ) {
       const newColonyRes = await api.createColonyColoniesPost({
         body: {
-          name: "TODO"
+          name: newColonyData.name
         }
       });
 
@@ -571,16 +609,16 @@ const onSubmit = async ( e: SubmitEvent ) => {
         toast.add({
           severity: "error",
           summary: `Koloonia loomine ebaonnestus.`,
-          detail: await newColonyRes.response?.text() || null,
+          detail: newColonyRes.error?.detail?.map( err => err.msg ).join( "\n" ) || null,
           life: 3000
         });
         return;
       }
 
-      catData.colony_id = newColonyRes.data.id;
+      sendData.colony_id = newColonyRes.data.id;
   }
 
-  if ( catData.fosterHomeId === FOSTER_HOME_CASES.NEW ) {
+  if ( formDataCat.fosterHomeId === FOSTER_HOME_CASES.NEW ) {
     // create foster 
     const fosterHomeRes = await api.createFosterHomeFosterHomesPost({
       body: {
@@ -602,38 +640,21 @@ const onSubmit = async ( e: SubmitEvent ) => {
       return;
     }
 
-    catData.fosterHomeId = fosterHomeRes.data.id;
+    sendData.foster_home_id = fosterHomeRes.data.id;
   }
 
-  const catId = await sendCatCreate( );
+  const catId = await sendCatCreate( sendData );
 
-  await router.push({
-    name: "CatProfile",
-    params: { id: catId }
-  });
+  if ( catId ) {
+    await router.push({
+      name: "CatProfile",
+      params: { id: catId }
+    });
+  }
 }
 
-const sendCatCreate = async ( ) => {
-  const sendData = {
-    name: catData.name,
-    // string enum: male | female | unknown (default unknown)
-    sex: catData.sex,
-    chip_number: catData.chipID,
-    status: catData.status,
-    // could have an unassigned manager aka -1, set to null if its -1
-    manager_id: catData.managerId === MANAGER_CASES.NONE ? null : catData.managerId,
-    // set in fosterhome creation anyway, always exists
-    foster_home_id: catData.fosterHomeId,
-    // colony id invalid -> no colony.
-    // colony id new -> colony wasn't created
-    colony_id: [ COLONY_CASES.NONE, COLONY_CASES.NEW ].includes( catData.colony_id ) ? null : catData.colony_id,
-    intake_date: catData.intakeDate,
-    birth_date: catData.birthDate,
-    foster_end_date: null, // backend optional, IDK if we'll use it yet
-    notes: catData.notes,
-    // backend expects bool
-    is_neutered: catData.isNeutered === "true"
-  }
+const sendCatCreate = async ( sendData: CatCreate ) => {
+
 
   const formData = new FormData( );
   formData.append( "payload", JSON.stringify( sendData ) );
@@ -649,7 +670,7 @@ const sendCatCreate = async ( ) => {
       detail: await res.response?.text() || null,
       life: 3000
     });
-    return
+    return null;
   }
 
   return res.data.id;

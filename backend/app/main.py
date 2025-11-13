@@ -113,6 +113,7 @@ def openapi_inject():
         return app.openapi_schema
     openapi_schema = get_openapi(title="catdb-schema", version="temp_v1.0", routes=app.routes)
     default_schemas = openapi_schema.setdefault("components", {}).setdefault("schemas", {})
+    default_schemas["CatCreate"] = CatCreate.model_json_schema()
     default_schemas["CatUpdate"] = CatUpdate.model_json_schema()
 
     def _make_permission_key(permission: str):

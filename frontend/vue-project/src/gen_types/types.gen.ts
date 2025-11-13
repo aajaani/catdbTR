@@ -494,6 +494,60 @@ export type ValidationError = {
 };
 
 /**
+ * CatCreate
+ */
+export type CatCreate = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Sex
+     */
+    sex?: 'male' | 'female' | 'unknown' | null;
+    /**
+     * Chip Number
+     */
+    chip_number?: string | null;
+    /**
+     * Status
+     */
+    status?: 'ACTIVE' | 'FOSTER' | 'ADOPTED' | 'ARCHIVED' | 'MISSING' | 'RESERVED';
+    /**
+     * Manager Id
+     */
+    manager_id?: number | null;
+    /**
+     * Foster Home Id
+     */
+    foster_home_id?: number | null;
+    /**
+     * Colony Id
+     */
+    colony_id?: number | null;
+    /**
+     * Intake Date
+     */
+    intake_date?: string | null;
+    /**
+     * Birth Date
+     */
+    birth_date?: string | null;
+    /**
+     * Foster End Date
+     */
+    foster_end_date?: string | null;
+    /**
+     * Notes
+     */
+    notes?: string | null;
+    /**
+     * Is Neutered
+     */
+    is_neutered?: boolean | null;
+};
+
+/**
  * CatUpdate
  */
 export type CatUpdate = {
