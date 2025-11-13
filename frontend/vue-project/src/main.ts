@@ -11,7 +11,7 @@ const app = createApp(App)
 
 client.setConfig({
     credentials: "include",
-    baseUrl: "http://localhost:8000/",
+    baseUrl: import.meta.env.API_BASE_URL ?? "http://localhost:8000/",
 })
 
 app.use( router )
