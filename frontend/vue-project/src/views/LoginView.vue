@@ -25,7 +25,6 @@ const onSubmit = ( ) => {
   if ( loginState.value === ELoginState.LOADING ) return;
   loginState.value = ELoginState.LOADING;
 
-
   api.loginLoginPost( {
     body: {
       username: username.value,
@@ -57,8 +56,10 @@ const onSubmit = ( ) => {
 
       if ( router.currentRoute.value.query?.redirect ) {
         const redirectPath = decodeURIComponent( router.currentRoute.value.query.redirect as string );
+        console.log( `login success -> redirecting to ${ redirectPath }`)
         router.push( redirectPath );
       } else {
+        console.log( `login success -> default to dashboard` )
         router.push({ name: 'Dashboard' });
       }
     }

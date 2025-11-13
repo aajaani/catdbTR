@@ -2,7 +2,7 @@
 
 import { type Client, formDataBodySerializer, type Options as Options2, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddProcedureCatsCatIdProceduresPostData, AddProcedureCatsCatIdProceduresPostErrors, AddProcedureCatsCatIdProceduresPostResponses, CreateCatCatsPostData, CreateCatCatsPostErrors, CreateCatCatsPostResponses, CreateColonyColoniesPostData, CreateColonyColoniesPostErrors, CreateColonyColoniesPostResponses, CreateFosterHomeFosterHomesPostData, CreateFosterHomeFosterHomesPostErrors, CreateFosterHomeFosterHomesPostResponses, CreateTaskTasksPostData, CreateTaskTasksPostErrors, CreateTaskTasksPostResponses, CreateUserFullUsersFullCreatePostData, CreateUserFullUsersFullCreatePostErrors, CreateUserFullUsersFullCreatePostResponses, DeleteCatCatsCatIdDeleteData, DeleteCatCatsCatIdDeleteErrors, DeleteCatCatsCatIdDeleteResponses, GetAllColoniesColoniesGetData, GetAllColoniesColoniesGetResponses, GetAllPermissionsPermissionsGetData, GetAllPermissionsPermissionsGetResponses, GetAllRolesRolesGetData, GetAllRolesRolesGetResponses, GetCatCatsCatIdGetData, GetCatCatsCatIdGetErrors, GetCatCatsCatIdGetResponses, GetColonyColoniesColonyIdGetData, GetColonyColoniesColonyIdGetErrors, GetColonyColoniesColonyIdGetResponses, GetImageImageObjectNameGetData, GetImageImageObjectNameGetErrors, GetImageImageObjectNameGetResponses, ListCatsCatsGetData, ListCatsCatsGetResponses, ListFosterHomesFosterHomesGetData, ListFosterHomesFosterHomesGetResponses, ListManagersManagersGetData, ListManagersManagersGetResponses, ListProceduresCatsCatIdProceduresGetData, ListProceduresCatsCatIdProceduresGetErrors, ListProceduresCatsCatIdProceduresGetResponses, ListTasksForCatCatsCatIdTasksGetData, ListTasksForCatCatsCatIdTasksGetErrors, ListTasksForCatCatsCatIdTasksGetResponses, ListTasksTasksGetData, ListTasksTasksGetResponses, LoginLoginPostData, LoginLoginPostErrors, LoginLoginPostResponses, ReadRootGetData, ReadRootGetResponses, UpdateCatCatsCatIdPatchData, UpdateCatCatsCatIdPatchErrors, UpdateCatCatsCatIdPatchResponses } from './types.gen';
+import type { AddProcedureCatsCatIdProceduresPostData, AddProcedureCatsCatIdProceduresPostErrors, AddProcedureCatsCatIdProceduresPostResponses, CreateCatCatsPostData, CreateCatCatsPostErrors, CreateCatCatsPostResponses, CreateColonyColoniesPostData, CreateColonyColoniesPostErrors, CreateColonyColoniesPostResponses, CreateFosterHomeFosterHomesPostData, CreateFosterHomeFosterHomesPostErrors, CreateFosterHomeFosterHomesPostResponses, CreateTaskTasksPostData, CreateTaskTasksPostErrors, CreateTaskTasksPostResponses, CreateUserFullUsersFullCreatePostData, CreateUserFullUsersFullCreatePostErrors, CreateUserFullUsersFullCreatePostResponses, DeleteCatCatsCatIdDeleteData, DeleteCatCatsCatIdDeleteErrors, DeleteCatCatsCatIdDeleteResponses, DeleteUserUsersUserIdDeleteData, DeleteUserUsersUserIdDeleteErrors, DeleteUserUsersUserIdDeleteResponses, EditUserUsersUserIdPatchData, EditUserUsersUserIdPatchErrors, EditUserUsersUserIdPatchResponses, GetAllColoniesColoniesGetData, GetAllColoniesColoniesGetResponses, GetAllPermissionsPermissionsGetData, GetAllPermissionsPermissionsGetResponses, GetAllRolesRolesGetData, GetAllRolesRolesGetResponses, GetCatCatsCatIdGetData, GetCatCatsCatIdGetErrors, GetCatCatsCatIdGetResponses, GetColonyColoniesColonyIdGetData, GetColonyColoniesColonyIdGetErrors, GetColonyColoniesColonyIdGetResponses, GetImageImageObjectNameGetData, GetImageImageObjectNameGetErrors, GetImageImageObjectNameGetResponses, ListCatsCatsGetData, ListCatsCatsGetResponses, ListFosterHomesFosterHomesGetData, ListFosterHomesFosterHomesGetResponses, ListManagersManagersGetData, ListManagersManagersGetResponses, ListProceduresCatsCatIdProceduresGetData, ListProceduresCatsCatIdProceduresGetErrors, ListProceduresCatsCatIdProceduresGetResponses, ListTasksForCatCatsCatIdTasksGetData, ListTasksForCatCatsCatIdTasksGetErrors, ListTasksForCatCatsCatIdTasksGetResponses, ListTasksTasksGetData, ListTasksTasksGetResponses, ListUsersUsersGetData, ListUsersUsersGetResponses, LoginLoginPostData, LoginLoginPostErrors, LoginLoginPostResponses, ReadRootGetData, ReadRootGetResponses, UpdateCatCatsCatIdPatchData, UpdateCatCatsCatIdPatchErrors, UpdateCatCatsCatIdPatchResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -85,6 +85,13 @@ export const getAllRolesRolesGet = <ThrowOnError extends boolean = false>(option
  */
 export const getAllPermissionsPermissionsGet = <ThrowOnError extends boolean = false>(options?: Options<GetAllPermissionsPermissionsGetData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetAllPermissionsPermissionsGetResponses, unknown, ThrowOnError>({
+        security: [
+            {
+                in: 'cookie',
+                name: 'access_token',
+                type: 'apiKey'
+            }
+        ],
         url: '/permissions',
         ...options
     });
@@ -95,8 +102,70 @@ export const getAllPermissionsPermissionsGet = <ThrowOnError extends boolean = f
  */
 export const listManagersManagersGet = <ThrowOnError extends boolean = false>(options?: Options<ListManagersManagersGetData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListManagersManagersGetResponses, unknown, ThrowOnError>({
+        security: [
+            {
+                in: 'cookie',
+                name: 'access_token',
+                type: 'apiKey'
+            }
+        ],
         url: '/managers',
         ...options
+    });
+};
+
+/**
+ * List Users
+ */
+export const listUsersUsersGet = <ThrowOnError extends boolean = false>(options?: Options<ListUsersUsersGetData, ThrowOnError>) => {
+    return (options?.client ?? client).get<ListUsersUsersGetResponses, unknown, ThrowOnError>({
+        security: [
+            {
+                in: 'cookie',
+                name: 'access_token',
+                type: 'apiKey'
+            }
+        ],
+        url: '/users',
+        ...options
+    });
+};
+
+/**
+ * Delete User
+ */
+export const deleteUserUsersUserIdDelete = <ThrowOnError extends boolean = false>(options: Options<DeleteUserUsersUserIdDeleteData, ThrowOnError>) => {
+    return (options.client ?? client).delete<DeleteUserUsersUserIdDeleteResponses, DeleteUserUsersUserIdDeleteErrors, ThrowOnError>({
+        security: [
+            {
+                in: 'cookie',
+                name: 'access_token',
+                type: 'apiKey'
+            }
+        ],
+        url: '/users/{user_id}',
+        ...options
+    });
+};
+
+/**
+ * Edit User
+ */
+export const editUserUsersUserIdPatch = <ThrowOnError extends boolean = false>(options: Options<EditUserUsersUserIdPatchData, ThrowOnError>) => {
+    return (options.client ?? client).patch<EditUserUsersUserIdPatchResponses, EditUserUsersUserIdPatchErrors, ThrowOnError>({
+        security: [
+            {
+                in: 'cookie',
+                name: 'access_token',
+                type: 'apiKey'
+            }
+        ],
+        url: '/users/{user_id}',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
     });
 };
 

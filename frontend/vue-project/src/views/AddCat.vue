@@ -17,18 +17,41 @@
         <div class="grid grid-cols-12 gap-5 ">
           <div class="flex flex-col col-start-1 col-span-4 row-end-1">
             <label for="cat-name">Kassi nimi</label>
-            <input id="cat-name" name="cat-name" class="input" v-model="catData.name" required></input>
+            <input id="cat-name" name="cat-name" class="input" v-model="catData.name" required>
           </div>
 
-          <!-- todo: implement colonies -->
           <div class="flex flex-col col-start-5 col-span-4 row-end-1">
             <label for="cat-colony">Originaalne koloonia</label>
-            <input id="cat-colony" name="cat-colony" class="input" disabled></input>
+            <select id="cat-colony" name="cat-colony" class="input" @change="( e ) => {
+                if ( !e.target ) return;
+                const selIdStr: string = ( e.target as HTMLSelectElement ).value;
+
+                try {
+                  catData.colony_id = parseInt( selIdStr );
+                } catch ( e ) {
+                  console.error( `Failed to parse selected colony id '${ selIdStr }'` )
+                  return
+                }
+              }"
+            >
+              <option
+                  key="colony-unassigned"
+                  :value="-1"
+                  :selected="catData.colony_id === -1"
+              >-</option>
+
+              <option
+                  v-for="( colony, index ) in colonies"
+                  :value="colony.id"
+                  :key="index"
+                  :selected="colony.id === catData.colony_id"
+              >{{ colony.name }}</option>
+            </select>
           </div>
 
           <div class="flex flex-col col-start-9 col-span-4 row-end-1">
             <label for="cat-birth-date">Sunnikuupäev</label>
-            <input id="cat-birth-date" name="cat-birth-date" type="date" class="input" v-model="catData.birthDate"></input>
+            <input id="cat-birth-date" name="cat-birth-date" type="date" class="input" v-model="catData.birthDate">
           </div>
 
           <div class="flex flex-col col-start-1 col-span-2 row-end-2">
@@ -81,7 +104,7 @@
                   catData.status = sel as CatRead[ 'status' ];               
                 } else {
                   console.error( `'${ sel }' not in cat statuses` );
-                };
+                }
             }">
               <option
                 v-for="( visualName, value ) in catStatuses"
@@ -110,9 +133,9 @@
             <div class="col-start-1 col-span-3 flex flex-row gap-5">
               <div class="flex flex-col basis-1/3">
                 <label for="cat-home-since">Kuupäev</label>
-                <input id="cat-home-since" name="cat-home-since" type="date" class="input" v-model="catData.intakeDate"></input>
+                <input id="cat-home-since" name="cat-home-since" type="date" class="input" v-model="catData.intakeDate">
               </div>
-              <!-- todo: manager dropdown -->
+
               <div class="flex flex-col basis-2/3">
                 <label for="cat-manager">Haldur</label>
                 <select id="cat-manager" name="cat-manager"
@@ -122,11 +145,10 @@
                     const sel = ( e.target as HTMLSelectElement ).value;
 
                     try {
-                      const selNum = parseInt( sel );
-                      catData.managerId = selNum;
+                      catData.managerId = parseInt( sel );
                     } catch ( _ ) {
                       console.error( `'${ sel }' not in managers (parseInt failure or wv)` );
-                    };
+                    }
                 }">
                 >
                   <option
@@ -163,11 +185,10 @@
                 const sel = ( e.target as HTMLSelectElement ).value;
 
                 try {
-                  const selNum = parseInt( sel );
-                  catData.fosterHomeId = selNum;
+                  catData.fosterHomeId = parseInt( sel );
                 } catch ( _ ) {
                   console.error( `'${ sel }' not in cat statuses` );
-                };
+                }
             }">
             >
               <option
@@ -188,7 +209,7 @@
             class="flex flex-col col-start-1 col-span-1"
           >
             <label for="foster-home-name">Hoiukodu nimi</label>
-            <input id="foster-home-name" name="foster-home-name" class="input" v-model="newFosterHomeData.name" required></input>
+            <input id="foster-home-name" name="foster-home-name" class="input" v-model="newFosterHomeData.name" required>
           </div>
 
           <div
@@ -196,7 +217,7 @@
             class="flex flex-col col-start-2 col-span-1"
           >
             <label for="foster-home-tel">Hoiukodu telefoninumber</label>
-            <input id="foster-home-tel" name="foster-home-tel" class="input" type="tel" v-model="newFosterHomeData.phone"></input>
+            <input id="foster-home-tel" name="foster-home-tel" class="input" type="tel" v-model="newFosterHomeData.phone">
           </div>
 
           <div
@@ -204,7 +225,7 @@
             class="flex flex-col col-start-1 col-span-1"
           >
             <label for="foster-home-address">Hoiukodu aadress</label>
-            <input id="foster-home-address" name="foster-home-address" class="input" v-model="newFosterHomeData.address"></input>
+            <input id="foster-home-address" name="foster-home-address" class="input" v-model="newFosterHomeData.address">
           </div>
 
           <div
@@ -212,7 +233,7 @@
             class="flex flex-col col-start-2 col-span-1"
           >
             <label for="foster-home-email">Hoiukodu e-mail</label>
-            <input id="foster-home-email" name="foster-home-email" class="input" type="email" v-model="newFosterHomeData.email"></input>
+            <input id="foster-home-email" name="foster-home-email" class="input" type="email" v-model="newFosterHomeData.email">
           </div>
 
           <div
@@ -239,12 +260,12 @@
               <div class="grid grid-cols-2 px-4 py-4 gap-5">
                 <div class="flex flex-col col-start-1 col-span-1">
                   <label for="deworm-tablet-given-date">Andmise kuupäev</label>
-                  <input id="deworm-tablet-given-date" name="deworm-tablet-given-date" type="date" class="input"></input>
+                  <input id="deworm-tablet-given-date" name="deworm-tablet-given-date" type="date" class="input">
                 </div>
 
                 <div class="flex flex-col col-start-2 col-span-1">
                   <label for="deworm-tablet-next-date">Järgmise võtmise kuupäev</label>
-                  <input id="deworm-tablet-next-date" name="deworm-tablet-next-date" type="date" class="input"></input>
+                  <input id="deworm-tablet-next-date" name="deworm-tablet-next-date" type="date" class="input">
                 </div>
               </div>
             </template>
@@ -253,12 +274,12 @@
               <div class="grid grid-cols-2 px-4 py-4 gap-5">
                 <div class="flex flex-col col-start-1 col-span-1">
                   <label for="flea-drop-given-date">Andmise kuupäev</label>
-                  <input id="flea-drop-given-date" name="flea-drop-given-date" type="date" class="input"></input>
+                  <input id="flea-drop-given-date" name="flea-drop-given-date" type="date" class="input">
                 </div>
 
                 <div class="flex flex-col col-start-2 col-span-1">
                   <label for="flea-drop-next-date">Järgmise võtmise kuupäev</label>
-                  <input id="flea-drop-next-date" name="flea-drop-next-date" type="date" class="input"></input>
+                  <input id="flea-drop-next-date" name="flea-drop-next-date" type="date" class="input">
                 </div>
               </div>
             </template>
@@ -267,12 +288,12 @@
               <div class="grid grid-cols-2 px-4 py-4 gap-5">
                 <div class="flex flex-col col-start-1 col-span-1">
                   <label for="vaccine-given-date">Andmise kuupäev</label>
-                  <input id="vaccine-given-date" name="vaccine-given-date" type="date" class="input"></input>
+                  <input id="vaccine-given-date" name="vaccine-given-date" type="date" class="input">
                 </div>
 
                 <div class="flex flex-col col-start-2 col-span-1">
                   <label for="vaccine-next-date">Jargmise votmise kuupaev</label>
-                  <input id="vaccine-next-date" name="vaccine-next-date" type="date" class="input"></input>
+                  <input id="vaccine-next-date" name="vaccine-next-date" type="date" class="input">
                 </div>
               </div>
             </template>
@@ -291,7 +312,7 @@
                   class="col-start-1 col-span-1"
                 />
 
-                <input type="date" class="input" :disabled="!catData.isNeutered"></input>
+                <input type="date" class="input" :disabled="!catData.isNeutered">
               </div>
             </template>
           </TabSelection>
@@ -331,20 +352,22 @@ import AccordionWithTitle from '@/components/molecules/AccordionWithTitle.vue';
 import BreadCrumbs from '@/components/organisms/BreadCrumbs.vue';
 import TabSelection from '@/components/organisms/TabSelection.vue';
 import Button from '@/components/atoms/Button.vue';
-import { ref, reactive } from 'vue';
+import {reactive, ref} from 'vue';
 
-import { BiMaleSign, BiFemaleSign } from 'vue-icons-plus/bi';
-import { CgCheck, CgClose } from 'vue-icons-plus/cg';
+import {BiFemaleSign, BiMaleSign} from 'vue-icons-plus/bi';
+import {CgCheck, CgClose} from 'vue-icons-plus/cg';
 import useVuelidate from '@vuelidate/core';
-import { required, helpers } from '@vuelidate/validators';
+import {helpers, required} from '@vuelidate/validators';
 
 import api from "@/api_fetch.js"
-import {type UserRead, type CatRead, type FosterHomeRead, type ColonyRead} from '@/gen_types/types.gen';
-import { useRouter } from "vue-router";
+import {type CatRead, type ColonyRead, type FosterHomeRead, type UserRead} from '@/gen_types/types.gen';
+import {useRouter} from "vue-router";
+import {useToast} from "primevue";
 
 const router = useRouter( )
+const toast = useToast( )
 
-const catStatuses: { [ key: CatRead[ "status" ] ]: string } = {
+const catStatuses: { [ key in CatRead[ "status" ] ]: string } = {
   "ACTIVE": "Otsib kodu",
   "FOSTER": "Ajutises kodus",
   "ADOPTED": "Uues kodus",
@@ -362,19 +385,52 @@ const colonies = ref< ColonyRead[ ] >([ ]);
 // foster home creation (cat creation), foster home is created, this
 // isnt updated, next req same foster home will br created
 // invalidating foster home cache on cat add fail would solve this issue
-api.listFosterHomesFosterHomesGet( ).then( ( res ) => {
-  // todo: error handleing
+api.listFosterHomesFosterHomesGet( ).then( async ( res ) => {
+  if ( !res.data ) {
+    toast.add({
+      severity: "error",
+      summary: `Hoiukodude laadimine ebaonnestus.`,
+      detail: await res.response?.text() || null,
+      life: 3000
+    });
+    return;
+  }
+
   fosterHomes.value = res.data;
 });
 
-api.listManagersManagersGet( ).then( res => {
+api.listManagersManagersGet( ).then( async res => {
+  if ( !res.data ) {
+    toast.add({
+      severity: "error",
+      summary: `Vabatahtlike laadimine ebaonnestus.`,
+      detail: await res.response?.text() || null,
+      life: 3000
+    });
+    return;
+  }
+
   managers.value = res.data;
+})
+
+api.getAllColoniesColoniesGet( ).then( async res => {
+  if ( !res.data ) {
+    toast.add({
+      severity: "error",
+      summary: `Kolooniate laadimine ebaonnestus.`,
+      detail: await res.response?.text() || null,
+      life: 3000
+    });
+    return;
+  }
+
+  colonies.value = res.data;
 })
 
 // todo: maybe add localStorage so when page is switched, form data isnt lost
 const catData = reactive({
   name: "" as string,
-  // todo: colony_id: "",
+  colony_id: -1,
   birthDate: undefined as CatRead[ "birth_date" ],
   sex: "unknown",
   onHomepage: "true", // can't do booleans due to how HorizontalSingleSelection works
@@ -425,14 +481,25 @@ const onSubmit = async ( e: SubmitEvent ) => {
   const isFormValid = await v$.value.$validate( );
 
   console.log( v$.value )
-  if ( !isFormValid ) return;
+  if ( !isFormValid ) {
+    toast.add({
+      severity: "error",
+      summary: `Valideerimisel tekkis viga.`,
+      detail: v$.value.$errors.map( err => err.$message ).join( "\n" ),
+      life: 3000
+    });
+    return;
+  }
+
+  if ( catData.colony_id === -1 ) {
+
+  }
 
   if ( catData.fosterHomeId === -1 ) {
     // create foster 
     const newFosterHomeID = await sendFosterHomeCreate( );
 
     // no foster created, dont create cat
-    // todo: show error
     if ( !newFosterHomeID ) return;
 
     catData.fosterHomeId = newFosterHomeID;
@@ -446,7 +513,7 @@ const onSubmit = async ( e: SubmitEvent ) => {
   });
 }
 
-const sendFosterHomeCreate = async ( ): Promise< number > => {
+const sendFosterHomeCreate = async ( ): Promise< number | null > => {
   const res = await api.createFosterHomeFosterHomesPost({
     body: {
       name: newFosterHomeData.name,
@@ -457,7 +524,16 @@ const sendFosterHomeCreate = async ( ): Promise< number > => {
     }
   });
 
-  // todo error validation;
+  if ( !res.data ) {
+    toast.add({
+      severity: "error",
+      summary: `Hoiukodu loomine ebaonnestus.`,
+      detail: await res.response?.text() || null,
+      life: 3000
+    });
+    return null;
+  }
+
   return res.data.id;
 }
 
@@ -472,7 +548,7 @@ const sendCatCreate = async ( ) => {
     manager_id: catData.managerId === -1 ? null : catData.managerId,
     // set in fosterhome creation anyways, always exists
     foster_home_id: catData.fosterHomeId,
-    colony_id: null,
+    colony_id: catData.colony_id === -1 ? null : catData.colony_id,
     intake_date: catData.intakeDate,
     birth_date: catData.birthDate,
     foster_end_date: null, // backend optional, idk if we'll use it yet
@@ -487,6 +563,16 @@ const sendCatCreate = async ( ) => {
   const res = await api.createCatCatsPost({
     body: { payload: JSON.stringify( sendData ) }
   });
+
+  if ( !res.data ) {
+    toast.add({
+      severity: "error",
+      summary: `Kassi loomine ebaonnestus.`,
+      detail: await res.response?.text() || null,
+      life: 3000
+    });
+    return
+  }
 
   return res.data.id;
 }

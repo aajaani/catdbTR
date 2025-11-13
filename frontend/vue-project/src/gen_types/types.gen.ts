@@ -442,11 +442,37 @@ export type UserRead = {
     /**
      * Phone
      */
-    phone: string;
+    phone: string | null;
     /**
      * Email
      */
-    email: string;
+    email: string | null;
+};
+
+/**
+ * UserUpdate
+ */
+export type UserUpdate = {
+    /**
+     * Display Name
+     */
+    display_name: string | null;
+    /**
+     * Role Id
+     */
+    role_id: number | null;
+    /**
+     * Is Active
+     */
+    is_active?: boolean | null;
+    /**
+     * Phone
+     */
+    phone?: string | null;
+    /**
+     * Email
+     */
+    email?: string | null;
 };
 
 /**
@@ -760,6 +786,82 @@ export type ListManagersManagersGetResponses = {
 };
 
 export type ListManagersManagersGetResponse = ListManagersManagersGetResponses[keyof ListManagersManagersGetResponses];
+
+export type ListUsersUsersGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/users';
+};
+
+export type ListUsersUsersGetResponses = {
+    /**
+     * Response List Users Users Get
+     *
+     * Successful Response
+     */
+    200: Array<UserRead>;
+};
+
+export type ListUsersUsersGetResponse = ListUsersUsersGetResponses[keyof ListUsersUsersGetResponses];
+
+export type DeleteUserUsersUserIdDeleteData = {
+    body?: never;
+    path: {
+        /**
+         * User Id
+         */
+        user_id: number;
+    };
+    query?: never;
+    url: '/users/{user_id}';
+};
+
+export type DeleteUserUsersUserIdDeleteErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DeleteUserUsersUserIdDeleteError = DeleteUserUsersUserIdDeleteErrors[keyof DeleteUserUsersUserIdDeleteErrors];
+
+export type DeleteUserUsersUserIdDeleteResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type EditUserUsersUserIdPatchData = {
+    body: UserUpdate;
+    path: {
+        /**
+         * User Id
+         */
+        user_id: number;
+    };
+    query?: never;
+    url: '/users/{user_id}';
+};
+
+export type EditUserUsersUserIdPatchErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type EditUserUsersUserIdPatchError = EditUserUsersUserIdPatchErrors[keyof EditUserUsersUserIdPatchErrors];
+
+export type EditUserUsersUserIdPatchResponses = {
+    /**
+     * Successful Response
+     */
+    200: UserRead;
+};
+
+export type EditUserUsersUserIdPatchResponse = EditUserUsersUserIdPatchResponses[keyof EditUserUsersUserIdPatchResponses];
 
 export type ListCatsCatsGetData = {
     body?: never;

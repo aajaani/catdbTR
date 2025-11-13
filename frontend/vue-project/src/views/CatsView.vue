@@ -172,6 +172,25 @@ const getManagers = async ( ): Promise<{ [ display_name: string ]: number } > =>
 
   return response;
 }
+
+const getColonies = async ( ): Promise<{ [ colony_name: string ]: number }> => {
+  const coloniesFromApi = await api.getAllColoniesColoniesGet( )
+      .then( res => res.data )
+      .catch( _ => [ ])
+
+  if (!coloniesFromApi ) return { }
+
+  const coloniesData = coloniesFromApi
+                      .map( c => ({ name: c.name, id: c.id }))
+                      .reduce(
+                          ( acc, curr ) => ( { ...acc, [ curr.name ]: curr.id } ), { }
+                      ) as { [ colony_name: string ]: number }
+
+  coloniesData[ "-" ] = -1
+
+  return coloniesData
+}
+
 const tableDefinition = computed( ( ) => defineTable({
     "cat-intake-date": field({
       title: "KK alates",
@@ -206,7 +225,9 @@ const tableDefinition = computed( ( ) => defineTable({
     }),
     "cat-colony": field({
       title: "Originaalne koloonia",
-      component: TableText,
+      component: TableSelection,
+      filterMode: "unique",
+      filterInputOptions: async ( ) => api.getAllColoniesColoniesGet( ).then( res => res.data ? res.data.map( c => c.name ) : [ ] )
     }),
     "cat-details": field({
       title: "Teated",
@@ -269,7 +290,28 @@ const tableDefinition = computed( ( ) => defineTable({
       }
     } as const,
     "cat-colony": {
-      text: cat.colony ? cat.colony.name  : "-"
+      label: cat.colony ? cat.colony.name  : "-",
+      isEditing: isEditingCat( cat ),
+      options: getColonies,
+      onChange: ( colonyId: any, colonyName: string ) => {
+        if ( typeof colonyId !== "number" ) {
+          toast.add({
+            severity: 'error',
+            summary: 'Viga',
+            detail: `Koloonia valik ebaõnnestus (colony_id="${ colonyId }"${ typeof colonyId}, colony_name=${ colonyName })`,
+            life: 3000
+          });
+          return;
+        }
+        const removedManager = colonyId === -1;
+
+        if ( removedManager ) {
+          pushCatEdit( cat, { colony_id: null } )
+          return;
+        }
+
+        pushCatEdit( cat, { colony_id: colonyId } )
+      },
       // no backend route for updating colony yet
     } as const,
     "cat-details": {
