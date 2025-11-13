@@ -192,4 +192,3 @@ python -m pytest
 
 ---
 
-✅ **Backend now supports secure authentication, password hashing, JWT session management, and role-based authorization — ready for frontend integration.**
