@@ -7,7 +7,7 @@ import { FiEdit3, FiX } from "vue-icons-plus/fi";
 import { HiOutlineTrash } from "vue-icons-plus/hi";
 import { AiOutlinePlus } from "vue-icons-plus/ai";
 
-import { defineTable, field } from "@/components/FilterTable";
+import {defineTable, defineTableModel, field} from "@/components/FilterTable";
 
 import Button from "@/components/atoms/Button.vue";
 
@@ -60,11 +60,19 @@ watch(
 const searchQuery = ref("");
 
 const filteredEntries = computed(() => {
-  if (!searchQuery.value.trim()) return tableDefinition.value.entries; // if search is empty, show all cats
-
+  // only filter out if no active filter for cat status
+  const filterOutArchivedCats = !tableModel.value.filters[ "cat-status" ];
+  const useSearchQueryForFilter = !!searchQuery.value.trim();
   const search = searchQuery.value.toLowerCase();
 
   return tableDefinition.value.entries.filter(entry => { // check each row
+    if ( filterOutArchivedCats ) {
+      if ( entry[ "cat-status" ].label === status_to_readable[ "ARCHIVED" ] )
+        return false;
+    }
+
+    if ( !useSearchQueryForFilter ) return true;
+
     return Object.values(entry).some(cell => { // check for each cell in row and if at least one match, include it
       if (typeof cell === "object" && cell !== null) { //if its an object, check the values. Right now the mock data has objects
         return Object.values(cell).some(v =>
@@ -100,6 +108,7 @@ const status_to_readable: { [ key in CatStatus ]: string } = {
 } 
 
 const cats = ref< CatRead[ ] >([ ]);
+const tableModel = defineTableModel< typeof tableDefinition.value.fields >( );
 
 // todo: refactor to something similiar to tanstack query
 // todo: check if type is correct for all api calls, RequestResponse might not be the correct template type
@@ -202,7 +211,7 @@ const tableDefinition = computed( ( ) => defineTable({
       title: "Kassi nimi",
       component: TableText,
     }),
-    "cat-status": ({
+    "cat-status": field({
       title: "Staatus",
       component: TableSelection,
       fitContent: true,
@@ -384,6 +393,7 @@ const tableDefinition = computed( ( ) => defineTable({
         @per-page-change="( perPage ) => {
           tableQueryParams.perPage = perPage;
         }"
+        v-model="tableModel"
       />
     </div>
   </div>
