@@ -6,6 +6,7 @@ import { MdArrowOutward } from "vue-icons-plus/md";
 import { FiEdit3, FiX } from "vue-icons-plus/fi";
 import { HiOutlineTrash } from "vue-icons-plus/hi";
 import { AiOutlinePlus } from "vue-icons-plus/ai";
+import { GiAngelOutfit } from "vue-icons-plus/gi";
 
 import {defineTable, defineTableModel, field} from "@/components/FilterTable";
 
@@ -349,8 +350,12 @@ const tableDefinition = computed( ( ) => defineTable({
             isEditing.value = -1;
         }
       }, {
-        icon: HiOutlineTrash,
-        onClick: ( ) => { }
+        icon: cat.status === "ARCHIVED" ? GiAngelOutfit : HiOutlineTrash,
+        onClick: ( ) => {
+          pushCatEdit(cat, {
+            status: cat.status === "ARCHIVED" ? "ACTIVE" : "ARCHIVED"
+          });
+        }
       }]
     }
   }))
