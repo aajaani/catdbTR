@@ -346,7 +346,7 @@ import { setBreadcrumb } from "@/router/helpers.ts";
 
 import { FiSave, FiX } from "vue-icons-plus/fi";
 import { TfiPencil } from "vue-icons-plus/tfi";
-import InputField from "@/components/atoms/profile-edit-fields/TextField.vue";
+import InputField from "@/components/atoms/profile-edit-fields/InputField.vue";
 import SelectField from "@/components/atoms/profile-edit-fields/SelectField.vue";
 import CheckboxField from "@/components/atoms/profile-edit-fields/CheckboxField.vue";
 import TextField from "@/components/atoms/profile-edit-fields/TextField.vue";
