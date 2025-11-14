@@ -1,9 +1,7 @@
-import type { useRoute } from "vue-router";
-
 // function allows for dynamic routes like /cats/:id to return the cat's name or whatever
 // link is optional, if not provided the breadcrumb will not be a link (for the current page)
 interface Breadcrumb {
-	name: string | ( ( route: ReturnType< typeof useRoute > ) => string ),
+	name: string,
 	link?: string
 }
 
@@ -21,6 +19,21 @@ export function getBreadcrumbs( routeMeta: any ): Breadcrumb[] {
 	}
 
 	return [];
+}
+
+export function setBreadcrumb( routemeta: any, index: number, newName: string ) {
+    // aaaa if we set directly breaks everything
+    const bc = [ ...getBreadcrumbs( routemeta ) ];
+
+    if ( index < 0 )
+        index = bc.length + index;
+
+    if ( !bc[ index ] ) return bc;
+
+    // @ts-ignore we check for breadcrumb validity, why is ts unhappy?
+    bc[ index ].name = newName;
+
+    return bc;
 }
 
 export function isSidebarAvailable( routeMeta: any ): boolean {

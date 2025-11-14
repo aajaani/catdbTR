@@ -29,7 +29,7 @@ const routes: RouteRecordRaw[] = [
 			...defineBreadcrumbs(
 				{ name: "Ülevaade", link: "/" },
 				{ name: "Kassid", link: "/cats" },
-				{ name: "[nimi] Profiil" }
+				{ name: "Profiil" }
 			),
 			...defineSidebar( true )
 		}

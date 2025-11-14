@@ -4,7 +4,7 @@
 // on unauthorized, push to login page
 
 import * as sdk from "@/gen_types/sdk.gen.ts";
-import router from "@/router/index.js";
+import router from "@/router/index.ts";
 
 const onResponse = async ( res: any ) => {
 	// todo: handle other error codes too :p
