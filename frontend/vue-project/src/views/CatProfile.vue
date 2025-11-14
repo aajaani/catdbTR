@@ -162,58 +162,11 @@
                                 <p class="text-[14px]">{{ catData.notes || "markmeid pole" }}</p>
                             </div>
                         </div>
-                    </div>
-
-                    <div @click.self="showPopUp=false" class="col-start-1 2md:col-span-2 xl:col-start-2 xl:row-start-2 xl:col-span-1">
-                        <!-- Pop up for adding medical info -->
-                        <div v-if="showPopUp" class="absolute top-80 right-0 w-[40vw] h-[55vh] justify- rounded-lg bg-main-bg p-4 shadow">
-                            <div class="flex flex-col gap-6 mb-4">
-                                <h1 class="abril-fatface-regular text-[18px]">Lisa kuupäev</h1>
-                                <input class="group" type="date" v-model="newMedicalInfo.at_date"/>
-                                <h1 class="abril-fatface-regular text-[18px]">Märkmed</h1>
-                                <input class="group" type="text" v-model="newMedicalInfo.notes" placeholder="Märkmed" />
-                               <div class="flex flex-row gap-6 items-center">
-                                <h1 class="abril-fatface-regular text-[18px]">Protseduuri tüüp</h1>
-                                    <label class="flex items-center">
-                                        <input type="radio" id="vaccine" value="VACCINE" v-model="newMedicalInfo.type"
-                                            class="w-4 h-4 accent-[#50192f] mr-2">
-                                        Vaktsiin
-                                    </label>
-
-                                    <label class="flex items-center">
-                                        <input type="radio" id="spot-on" value="SPOT_ON" v-model="newMedicalInfo.type"
-                                            class="w-4 h-4 accent-[#50192f] mr-2">
-                                        Täpilahus
-                                    </label>
-
-                                    <label class="flex items-center">
-                                        <input type="radio" id="deworm" value="DEWORMER" v-model="newMedicalInfo.type"
-                                            class="w-4 h-4 accent-[#50192f] mr-2">
-                                        Ussirohi
-                                    </label>
-                                    </div>
-                                <h1 class="abril-fatface-regular text-[18px]">Lae üles PDF</h1>
-                                <input class="group" type="file" @change="(e: Event) => {
-                                    const target = e.target as HTMLInputElement;
-                                    if (target?.files?.length) {
-                                        newMedicalInfo.file = target.files[0];
-                                    } else {
-                                        newMedicalInfo.file = undefined;
-                                    }
-                                }" />
-                                <h1 class="abril-fatface-regular text-[18px]">Maksumus</h1>
-                                <div class="flex flex-row gap-40">
-                                    <input class="group w-1/8" type="number" v-model="newMedicalInfo.payment"/>
-                                    <Button class="abril-fatface-regular bg-[#E0E0E0] text-[28px]" @click="saveProcedure">Salvesta</Button>
-                                </div>
-                                </div>
-                        <!--  -->
-                        </div>
-                        
+                    </div>                        
                         <div class="flex flex-col bg-main-bg rounded-[10px] gap-4 px-3 py-3">
                             <div class="flex flex-row justify-between">
                                 <h1 class="abril-fatface-regular text-[18px]">Meditsiiniline info</h1>
-                                <h1 @click="showPopUp=true" class="abril-fatface-regular text-[24px] cursor-pointer">LISA +</h1>
+                                <Button label="LISA+" @click="visible = true" class="abril-fatface-regular text-[24px] cursor-pointer">LISA +</Button>
                             </div>
                             <h1 class="group abril-fatface-regular text-[18px] bg-[#E0E0E0] rounded-[10px]">MAKSUMUS :  {{ totalPayment }}€</h1>
                             <div v-for="(item, index) in medicalInfo" :key="item.id" :class="['flex flex-row border-[1px] border-border-group border-solid px-4 py-2 rounded-[5px] justify-between gap-4 p-2 rounded-lg transition text-sm mb-2', index % 2 === 0 ? 'bg-main-bg' : 'bg-[#EAEAEA]']">
@@ -224,12 +177,59 @@
                                 <button class="bg-[#E0E0E0] w-20 rounded-[10px]">Muuda</button>
                             </div>
                         </div>
-                    
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+
+        <Dialog v-model:visible="visible"
+                :modal="true"
+                header="Lisa meditsiiniline protseduur"
+                dismissable-mask="true"
+                :style="{ width: '40vw', backgroundColor: '#EAEAEA', borderRadius: '10px', padding: '20px', boxShadow: '0 4px 16px rgba(0, 0, 0, 0.5)' }">
+
+        <div class="flex flex-col gap-6 mb-4">
+            <h1 class="abril-fatface-regular text-[18px]">Lisa kuupäev</h1>
+            <input class="group" type="date" v-model="newMedicalInfo.at_date"/>
+
+            <h1 class="abril-fatface-regular text-[18px]">Märkmed</h1>
+            <input class="group" type="text" v-model="newMedicalInfo.notes" placeholder="Märkmed" />
+
+            <div class="flex flex-row gap-6 items-center">
+            <h1 class="abril-fatface-regular text-[18px]">Protseduuri tüüp</h1>
+            <label class="flex items-center">
+                <input type="radio" value="VACCINE" v-model="newMedicalInfo.type" class="w-4 h-4 accent-[#50192f] mr-2">
+                Vaktsiin
+            </label>
+            <label class="flex items-center">
+                <input type="radio" value="SPOT_ON" v-model="newMedicalInfo.type" class="w-4 h-4 accent-[#50192f] mr-2">
+                Täpilahus
+            </label>
+            <label class="flex items-center">
+                <input type="radio" value="DEWORMER" v-model="newMedicalInfo.type" class="w-4 h-4 accent-[#50192f] mr-2">
+                Ussirohi
+            </label>
+            </div>
+
+            <h1 class="abril-fatface-regular text-[18px]">Lae üles PDF</h1>
+            <input class="group"
+             type="file"
+              @change="(e: Event) => {
+                const target = e.target as HTMLInputElement;
+                if (target?.files?.length) {
+                    newMedicalInfo.file = target.files[0];
+                } else {
+                    newMedicalInfo.file = undefined;
+                }
+            }" />
+            <h1 class="abril-fatface-regular text-[18px]">Maksumus</h1>
+
+            <div class="flex flex-row gap-40">
+            <input class="group w-1/8" type="number" v-model="newMedicalInfo.payment"/>
+            <Button class="abril-fatface-regular bg-[#E0E0E0] text-[28px]" @click="saveProcedure(); visible=false">Salvesta</Button>
+            </div>
+        </div>
+        </Dialog>
 </template>
 
 <script setup lang="ts">
@@ -241,9 +241,10 @@ import { addProcedureCatsCatIdProceduresPost, getCatCatsCatIdGet, listProcedures
 import { type CatRead, type ProcedureRead } from '@/gen_types/types.gen';
 import { computed, reactive, ref, watch } from 'vue';
 import { useRouter } from "vue-router";
+import Dialog from 'primevue/dialog';
 
 const router = useRouter( )
-
+const visible = ref(false)
 const status_to_readable: { [ key in CatRead[ "status" ] ]: string } = {
   "ACTIVE": "Otsib kodu",
   "FOSTER": "Ajutises kodus",
@@ -264,9 +265,6 @@ const status_to_color: { [ key in CatRead[ "status" ] ]: "green" | "yellow" | "r
 
 const showPopUp = ref( false );
 const medicalInfo = ref< ProcedureRead[] | null >( null );
-const time = ref( "" );
-const notes = ref( "" );
-const cost = ref( 0 );
 
 const catData = ref< CatRead | null >( null );
 
@@ -338,8 +336,6 @@ const fetchMedicalInfo = ( id: any ) => {
         console.log( medicalInfo.value )
     })
 }
-
-
 
 async function saveProcedure() {
   console.log("saveProcedure called")
