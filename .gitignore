@@ -6,3 +6,4 @@ src/client/
 .vscode/
 node_modules/
 .idea/
+src/gen_types/

@@ -30,6 +30,8 @@ class UserService:
         # is username unique?
         if self.user_repo.get_by_username(data.username.strip()) is not None:
             raise HTTPException(status_code=409, detail="username already taken")
+        if self.user_repo.get_by_email(data.email.strip()) is not None:
+            raise HTTPException(status_code=409, detail="email already taken")
         
         # todo: could add a pw check towards haveibeenpwned, not sure how needed that is (1 fetch call)
 
@@ -119,10 +121,15 @@ class UserService:
         if not existing:
             raise HTTPException(status_code=404, detail="user not found")
 
-        if data.role_id is not None:
-            role = self.role_repo.get_by_id(data.role_id)
-            if role is None:
-                raise HTTPException(status_code=404, detail="role not found")
+        if data.role_id is not None and data.email.strip() != existing.email:
+            other = self.user_repo.get_by_email(data.email.strip())
+            if other is not None and other.id != user.id:
+                raise HTTPException(status_code= 409, detail="email already taken")
+            
+            if data.role_id is not None:
+                role = self.role_repo.get_by_id(data.role_id)
+                if role is None:
+                    raise HTTPException(status_code=404, detail="role not found")
             
         updated_user = self.user_repo.update(user_id, json)
 

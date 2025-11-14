@@ -14,7 +14,7 @@ class UserCreate(BaseModel):
     password: str | None = None # account field, can be none to autocreate pw for account
     display_name: str
     phone: str | None = None
-    email: str | None = None
+    email: str | None #cannot be null (but our right now configuration it has to be)
     role_id: int | None # role id to create with, if none supllied should default back to SocialWorker 
 
 

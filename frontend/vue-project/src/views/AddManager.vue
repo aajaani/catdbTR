@@ -18,38 +18,43 @@
         <div class="grid grid-cols-12 gap-5 ">
           <div class="flex flex-col col-start-1 col-span-6">
             <label for="volunteer-firstName">Eesnimi</label>
-            <input id="volunteer-firstName" name="volunteer-firstName" class="input" v-model="form.firstName" required />
+            <input id="volunteer-firstName" name="volunteer-firstName" class="input" v-model="form.firstName"  />
           </div>
           
 
           <div class="flex flex-col col-start-7 col-span-6">
             <label for="volunteer-lastName">Perekonnanimi</label>
-            <input id="volunteer-lastName" name="volunteer-lastName" class="input" v-model="form.lastName" required />
+            <input id="volunteer-lastName" name="volunteer-lastName" class="input" v-model="form.lastName"  />
           </div>
 
           <div class="flex flex-col col-start-1 col-span-6 ">
             <label for="volunteer-email">E-post</label>
-            <input id="volunteer-email" name="volunteer-email" type="email" class="input" v-model="form.email" required />
+            <input id="volunteer-email" name="volunteer-email" type="email" class="input" v-model="form.email"  />
           </div>
 
-          <div class="flex flex-col col-start-7 col-span-6">
+          <div class="flex flex-col col-start-7 col-span-6 ">
+            <label for="volunteer-password">Parool</label>
+            <input id="volunteer-password" name="volunteer-password" type="password" class="input" v-model="form.password"  />
+          </div>
+
+          <div class="flex flex-col col-start-1 col-span-6">
             <label for="volunteer-phone-cc">Telefon</label>
             <div class="flex gap-3">
-            <input id="phone-cc" class="input w-28" v-model="form.phoneCc" @input="sanitizeCc" placeholder="+372" required />
-            <input id="volunteer-phone" name="volunteer-phone" class="input" @input="acceptNumber" v-model="form.phoneNum" required/>
+            <input id="phone-cc" class="input w-28" v-model="form.phoneCc" @input="sanitizeCc" placeholder="+372" />
+            <input id="volunteer-phone" name="volunteer-phone" class="input" @input="acceptNumber" v-model="form.phoneNum" />
             </div>
           </div> 
 
-          <div class="flex flex-col col-start-1 col-span-5">
+          <div class="flex flex-col col-start-7 col-span-5">
             <label for="volunteer-role">Ametikoht</label>
             <HorizontalSingleSelection
             id="volunteer-role"
             group-name="volunteer-role"
             class="col-start-1 col-span-5"
-            v-model="form.role"
+            v-model="form.managerChoice"
             :items="{
-              MANAGER: volunteerRole.MANAGER,
-              NOT_MANAGER: volunteerRole.NOT_MANAGER
+              MANAGER: 'Haldur',
+              NOT_MANAGER: 'Pole haldur'
             }"required>
             </HorizontalSingleSelection>
           </div>
@@ -69,7 +74,7 @@
 
 
 <script setup lang="ts">
-import {ref, reactive} from 'vue';
+import {ref, reactive, onMounted, computed} from 'vue';
 import BreadCrumbs from '@/components/organisms/BreadCrumbs.vue';
 import Button from '@/components/atoms/Button.vue';
 import TabSelection from '@/components/organisms/TabSelection.vue';
@@ -79,21 +84,17 @@ import { required, email as isEmail, helpers } from '@vuelidate/validators';
 import { useRouter, type RouteLocation } from "vue-router";
 
 import api from "@/api_fetch.js"
-import type { ManagerRead } from '@/gen_types/types.gen';
+import type { RoleRead, UserRead } from '@/gen_types/types.gen';
 import HorizontalSingleSelection from '@/components/atoms/HorizontalSingleSelection.vue';
+import { useToast } from "primevue";
 
 
 const router = useRouter( )
+const toast = useToast( );
 
-// define the form state that v-model binds to
-const volunteerRole: Record<ManagerRead['role'], string> = {
-  MANAGER: 'Haldur',
-  NOT_MANAGER: 'Pole haldur',
-};
-const volunteerStatuses: Record<ManagerRead['status'], string> = {
-  ACTIVE: 'Aktiivne',
-  INACTIVE: 'Pole aktiivne',
-};
+// backend role code types: 'ADMIN' | 'MANAGER' | 'SOCIAL_WORKER'
+type UiManagerChoice = 'MANAGER' | 'NOT_MANAGER'
+
 
 const form = reactive({
   firstName: '',
@@ -101,25 +102,11 @@ const form = reactive({
   email: '',
   phoneCc: '+372',
   phoneNum: '',
-  role: 'MANAGER',
-  status: 'ACTIVE'
+  password: '',
+  managerChoice: 'MANAGER' as UiManagerChoice,
 
 })
 
-
-// https://vuelidate-next.netlify.app/#alternative-syntax-composition-api
-const validationRules = {
-  firstName: { required: helpers.withMessage('Eesnimi on kohustuslik.', required) },
-  lastName:  { required: helpers.withMessage('Perekonnanimi on kohustuslik.', required) },
-  email: {
-    required: helpers.withMessage('E-post on kohustuslik.', required),
-    email:    helpers.withMessage('Palun sisesta korrektne e-posti aadress.', isEmail),
-  },
-  phoneCc: { required: helpers.withMessage('Riigikood on kohustuslik.', required) },
-  phoneNum: { required: helpers.withMessage('Telefon on kohustuslik.', required) },
-  role:     { required: helpers.withMessage('Ametikoht on kohustuslik.', required) },
-}
-const v$ = useVuelidate(validationRules, form)
 
 
 //keeping digits only
@@ -147,43 +134,164 @@ function sanitizeCc(e: Event) {
 function toE164(cc: string, num: string) {
   const c = cc.split('').filter(ch => ch >= '0' && ch <= '9').join('')
   const n = num.split('').filter(ch => ch >= '0' && ch <= '9').join('')
-  return `+${c}${n}`
+  if ( !c || !n) {
+    return null
+  }
+  return `+${c} ${n}`
+  
+
 }
 
 function onCancel() {
-  router.push('/managers')
+  router.push('/users')
 }
 
+const roles = ref<RoleRead[]>([]);
+
+
+
+onMounted(async () => {
+  const {data, error} = await api.getAllRolesRolesGet({});
+  console.log("GET /roles responses", {data, error});
+  if (error) {
+    console.error("Failed to load roles", error);
+    toast.add({
+      severity: "error",
+      summary: "Viga",
+      detail: "Rollide laadimine ebaõnnestus.",
+      life: 3000,
+    });
+    return;
+  }
+  roles.value = data ?? [];
+
+});
+
+const managerRoleId = computed(() =>
+  roles.value.find(r => r.name === "MANAGER")?.id ?? null
+);
+
+const socialWorkerRoleId = computed(() =>
+  roles.value.find(r => r.name === "SOCIAL_WORKER")?.id ?? null
+);
 
 const sendVolunteerCreate = async ( ) => {
+  const isManager = form.managerChoice === 'MANAGER'
+  // I need to get the role id because i need to send for the post request the id not the name
+  const roleId = isManager ? managerRoleId.value : socialWorkerRoleId.value;
+  //not ceating ADMIN right now
+  if (!roleId) {
+    throw new Error('Rolli id puudub')
+  }
+  // usercreate contains: these fields
   const sendData = {
+    username: form.email.trim(),
     display_name: `${form.firstName.trim()} ${form.lastName.trim()}`.trim(),
     phone: toE164(form.phoneCc, form.phoneNum) || null,
-    email: form.email.trim() || null,
-    status: form.status,
-    role: form.role,
+    email: form.email.trim(),
+    password: form.password,
+    role_id: roleId,
   };
-  const data = await api.createManagerManagersPost({ body: sendData });
-  if (!data.data.id) throw new Error(`Missing id in response: ${JSON.stringify(data)}`);
-  return data.data.id
-};
+  
+  const res = await api.createUserFullUsersFullCreatePost({ body: sendData});
+  if (res.error) {
+    throw res;
+  }
+  return res.data?.id
+
+}
 
 const onSubmit = async (e: SubmitEvent) => {
-   if (!e.target) return;
-  const ok = await v$.value.$validate();
-  if (!ok) return;
+  e.preventDefault();
+
+  let hasError = false;
+
+  if (!form.firstName.trim()) {
+    toast.add({
+                   severity: 'error',
+                   summary: 'Ebaõnnestus',
+                   detail: 'Kasutaja loomine ebaõnnestus. Eesnimi on kohustuslik.',
+                   life: 3000
+                 });
+                 hasError = true;
+  }
+
+  if (!form.lastName.trim()) {
+    toast.add({
+                   severity: 'error',
+                   summary: 'Ebaõnnestus',
+                   detail: 'Kasutaja loomine ebaõnnestus. Perekonnanimi on kohustuslik.',
+                   life: 3000
+                 });
+                  hasError = true;
+
+  }
+  if (!form.email.trim()) {
+    toast.add({
+                   severity: 'error',
+                   summary: 'Ebaõnnestus',
+                   detail: 'Kasutaja loomine ebaõnnestus. E-mail on kohustuslik.',
+                   life: 3000
+                 });
+                  hasError = true;
+
+  }
+  if (!form.managerChoice.trim()) {
+    toast.add({
+                   severity: 'error',
+                   summary: 'Ebaõnnestus',
+                   detail: 'Kasutaja loomine ebaõnnestus. Rolli valimine on kohustuslik.',
+                   life: 3000
+                 });
+                  hasError = true;
+  }
+
+  if (!form.password.trim()) {
+    toast.add({
+                   severity: 'error',
+                   summary: 'Ebaõnnestus',
+                   detail: 'Kasutaja loomine ebaõnnestus. Salasõna on kohustuslik.',
+                   life: 3000
+                 });
+                  hasError = true;
+  }
+
+  if(hasError) return;
+
 
   try {
     const id = await sendVolunteerCreate();
-    await router.push('/managers');
+    await router.push('/users');
+    toast.add({ severity: 'success', summary: 'Õnnestus', detail: 'Olete edukalt loonud kasutaja!', life: 3000 });
+
   } catch (err: any) {
-    // Show the REAL server error (e.g., 403 Not authenticated)
+  
+    // Showing the error in console as well server one
     console.error(
-      "Create manager failed:",
-      err?.response?.status,
-      err?.response?.statusText,
-      err?.response?.data || err
-    );
+    "Create manager failed:",
+    err?.response?.status,
+    err?.response?.statusText,
+    err?.response?.data || err
+  );
+
+  const status = err?.response?.status;
+  
+    if (status === 409) {
+      toast.add({
+                   severity: 'error',
+                   summary: 'Ebaõnnestus',
+                   detail: 'Kasutaja loomine ebaõnnestus. Email on juba kasutatud.',
+                   life: 3000
+                 });
+                  return;
+    } else {
+    toast.add({
+      severity: 'error',
+      summary: 'Ebaõnnestus',
+      detail: 'Kasutaja loomine ebaõnnestus serveri vea tõttu.',
+      life: 3000
+    })
+  }
   }
 };
 
