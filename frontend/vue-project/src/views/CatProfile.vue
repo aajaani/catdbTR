@@ -164,12 +164,67 @@
                         </div>
                     </div>
 
-                    <div class="col-start-1 2md:col-span-2 xl:col-start-2 xl:row-start-2 xl:col-span-1">
+                    <div @click.self="showPopUp=false" class="col-start-1 2md:col-span-2 xl:col-start-2 xl:row-start-2 xl:col-span-1">
+                        <!-- Pop up for adding medical info -->
+                        <div v-if="showPopUp" class="absolute top-80 right-0 w-[40vw] h-[55vh] justify- rounded-lg bg-main-bg p-4 shadow">
+                            <div class="flex flex-col gap-6 mb-4">
+                                <h1 class="abril-fatface-regular text-[18px]">Lisa kuupäev</h1>
+                                <input class="group" type="date" v-model="newMedicalInfo.at_date"/>
+                                <h1 class="abril-fatface-regular text-[18px]">Märkmed</h1>
+                                <input class="group" type="text" v-model="newMedicalInfo.notes" placeholder="Märkmed" />
+                               <div class="flex flex-row gap-6 items-center">
+                                <h1 class="abril-fatface-regular text-[18px]">Protseduuri tüüp</h1>
+                                    <label class="flex items-center">
+                                        <input type="radio" id="vaccine" value="VACCINE" v-model="newMedicalInfo.type"
+                                            class="w-4 h-4 accent-[#50192f] mr-2">
+                                        Vaktsiin
+                                    </label>
+
+                                    <label class="flex items-center">
+                                        <input type="radio" id="spot-on" value="SPOT_ON" v-model="newMedicalInfo.type"
+                                            class="w-4 h-4 accent-[#50192f] mr-2">
+                                        Täpilahus
+                                    </label>
+
+                                    <label class="flex items-center">
+                                        <input type="radio" id="deworm" value="DEWORMER" v-model="newMedicalInfo.type"
+                                            class="w-4 h-4 accent-[#50192f] mr-2">
+                                        Ussirohi
+                                    </label>
+                                    </div>
+                                <h1 class="abril-fatface-regular text-[18px]">Lae üles PDF</h1>
+                                <input class="group" type="file" @change="(e: Event) => {
+                                    const target = e.target as HTMLInputElement;
+                                    if (target?.files?.length) {
+                                        newMedicalInfo.file = target.files[0];
+                                    } else {
+                                        newMedicalInfo.file = undefined;
+                                    }
+                                }" />
+                                <h1 class="abril-fatface-regular text-[18px]">Maksumus</h1>
+                                <div class="flex flex-row gap-40">
+                                    <input class="group w-1/8" type="number" v-model="newMedicalInfo.payment"/>
+                                    <Button class="abril-fatface-regular bg-[#E0E0E0] text-[28px]" @click="saveProcedure">Salvesta</Button>
+                                </div>
+                                </div>
+                        <!--  -->
+                        </div>
+                        
                         <div class="flex flex-col bg-main-bg rounded-[10px] gap-4 px-3 py-3">
                             <div class="flex flex-row justify-between">
                                 <h1 class="abril-fatface-regular text-[18px]">Meditsiiniline info</h1>
+                                <h1 @click="showPopUp=true" class="abril-fatface-regular text-[24px] cursor-pointer">LISA +</h1>
+                            </div>
+                            <h1 class="group abril-fatface-regular text-[18px] bg-[#E0E0E0] rounded-[10px]">MAKSUMUS :  {{ totalPayment }}€</h1>
+                            <div v-for="(item, index) in medicalInfo" :key="item.id" :class="['flex flex-row border-[1px] border-border-group border-solid px-4 py-2 rounded-[5px] justify-between gap-4 p-2 rounded-lg transition text-sm mb-2', index % 2 === 0 ? 'bg-main-bg' : 'bg-[#EAEAEA]']">
+                                <p>{{ item.at_date }}</p>
+                                <p>{{ item.type}}</p>
+                                <p>{{ item.notes }}</p>
+                                <p>{{ item.payment }}€</p>
+                                <button class="bg-[#E0E0E0] w-20 rounded-[10px]">Muuda</button>
                             </div>
                         </div>
+                    
                     </div>
                 </div>
             </div>
@@ -182,9 +237,9 @@ import Button from '@/components/atoms/Button.vue';
 import BreadCrumbs from '@/components/organisms/BreadCrumbs.vue';
 import Status from '@/components/atoms/filter-table/Status.vue';
 
-import { getCatCatsCatIdGet } from '@/gen_types/sdk.gen';
-import { type CatRead } from '@/gen_types/types.gen';
-import { ref, watch } from 'vue';
+import { addProcedureCatsCatIdProceduresPost, getCatCatsCatIdGet, listProceduresCatsCatIdProceduresGet } from '@/gen_types/sdk.gen';
+import { type CatRead, type ProcedureRead } from '@/gen_types/types.gen';
+import { computed, reactive, ref, watch } from 'vue';
 import { useRouter } from "vue-router";
 
 const router = useRouter( )
@@ -207,6 +262,12 @@ const status_to_color: { [ key in CatRead[ "status" ] ]: "green" | "yellow" | "r
   "RESERVED": "gray"
 }
 
+const showPopUp = ref( false );
+const medicalInfo = ref< ProcedureRead[] | null >( null );
+const time = ref( "" );
+const notes = ref( "" );
+const cost = ref( 0 );
+
 const catData = ref< CatRead | null >( null );
 
 type EditableFields = "status" | "main" | "care" | "notes";
@@ -216,6 +277,17 @@ const currentlyEditing = ref< EditableFields | null >( null );
 
 const isEditing = ( what: EditableFields ) => currentlyEditing.value === what;
 const formatEditButtonText = ( what: EditableFields ) => isEditing( what ) ? "Salvesta" : "Muuda";
+
+const totalPayment = computed( ( ) => {
+    if ( medicalInfo.value === null ) return 0;
+
+    let total = 0;
+    medicalInfo.value.forEach( item => {
+        total += item.payment ?? 0;
+    } )
+
+    return total;
+} )
 
 const saveField: Record< EditableFields, EditSubmit > = {
     status: ( ) => false,
@@ -238,21 +310,82 @@ const onClick = ( what: EditableFields ) => {
     }
 }
 
+const newMedicalInfo = reactive( {
+    catId: null as number | null,
+    type: "",
+    is_repeat: true,
+    at_date: "",
+    notes: "",
+    file: undefined as File | undefined,
+    payment: 0
+})
+
 const fetchCatInfo = ( id: any ) => {
     getCatCatsCatIdGet({
         path: { cat_id: Number( id ) }
     }).then( res => {
-        console.log( res )
         catData.value = res.data;
+        newMedicalInfo.catId = res.data.id;
     })
+}
+
+const fetchMedicalInfo = ( id: any ) => {
+    listProceduresCatsCatIdProceduresGet({
+        path: { cat_id: Number( id ) }
+    }).then( res => {
+        console.log( res )
+        medicalInfo.value = res.data
+        console.log( medicalInfo.value )
+    })
+}
+
+
+
+async function saveProcedure() {
+  console.log("saveProcedure called")
+
+  console.log("✅ Payload:", {
+    cat_id: newMedicalInfo.catId,
+    type: newMedicalInfo.type,
+    is_repeat: newMedicalInfo.is_repeat,
+    at_date: newMedicalInfo.at_date,
+    notes: newMedicalInfo.notes,
+    payment: newMedicalInfo.payment
+  })
+
+  try {
+    const res = await addProcedureCatsCatIdProceduresPost({
+      path: { cat_id: Number(newMedicalInfo.catId) },
+        body: {
+            payload: {
+            type: newMedicalInfo.type,
+            is_repeat: newMedicalInfo.is_repeat,
+            at_date: newMedicalInfo.at_date,
+            notes: newMedicalInfo.notes,
+            file: newMedicalInfo.file ?? null,
+            payment: newMedicalInfo.payment
+            }
+    }
+    })
+    console.log("Response:", res)
+    showPopUp.value = false
+    fetchMedicalInfo( router.currentRoute.value.params.id ); // Refresh medical info after adding new procedure
+  } catch (error: any) {
+    console.error("Error adding procedure:", error)
+    if (error.response) {
+      console.error("Response data:", error.response.data)
+      console.error("Response status:", error.response.status)
+      console.error("Response headers:", error.response.headers)
+    }
+  }
 }
 
 watch(
     ( ) => router.currentRoute.value.params.id,
     ( newId ) => fetchCatInfo( newId )
 );
-
 fetchCatInfo( router.currentRoute.value.params.id );
+fetchMedicalInfo( router.currentRoute.value.params.id );
 </script>
 
 <style lang="css" scoped>

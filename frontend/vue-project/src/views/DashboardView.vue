@@ -18,7 +18,6 @@ ChartJS.register(ArcElement, Tooltip, Legend, Title);
 const cats = ref<CatRead[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
-const date = ref(new Date());
 const showPopup = ref(false);
 
 const CatName = ref('');
@@ -26,28 +25,54 @@ const time = ref('');
 const Task = ref('');
 const taskType = ref('');
 
+const today = new Date()
+
 const attrs = ref([
   // sample event
   {
     key: 'event1',
-    dot: true,
+    dot: {
+      
+    },
     dates: new Date(2025, 10, 10, 18), //dates for some reason are 0-indexed months (10 = november)
-    popover: {label: 'Kassi kiibistamine'}
+    popover: {label: 'Kassi kiibistamine'},
   },
+  {
+    key: 'today',
+    highlight: false,
+    dates: today,
+  }
 ])
 
 function addEvent(catName: string, Date: Date, task: string, taskType: string) {
-  // add a new event to the calendar and later persist info to db
+   // add a new event to the calendar and later persist info to db
+  
+  let typeColor= "#50192f"; //default color
+  if (taskType === "VET_VISIT") {
+    typeColor = "orange"; 
+  } else if (taskType === "MEDICATION") {
+    typeColor = "green"; 
+  } else if (taskType === "PERSONAL") {
+    typeColor = "blue"; 
+  }
+  
   const newEventDate = Date;
   attrs.value.push({
     key: `event-${attrs.value.length + 1}`,
-    dot: true,
+    dot: {color: typeColor},
     dates: newEventDate,
-    popover: { label: task }
+    popover: { label: catName + ": " + task + taskType }
   });
+
+  //reset input fields
+  CatName.value = '';
+  time.value = '';
+  Task.value = '';
+  taskType = '';
 }
 
 const status_to_color: { [key in CatRead["status"]]: string } = {
+  //currently different from the CatsView.vue page, following the figma design as of now
   ACTIVE: "#50192f",     
   FOSTER: "#401B01",     
   ADOPTED: "#979797",    
@@ -65,7 +90,7 @@ const status_to_readable: { [key in CatRead["status"]]: string } = {
   RESERVED: "Broneeritud"
 }
 
-//counts per status
+//counts per status for pie chart
 const statusCounts = computed(() => {
   const m = new Map<string, number>()
   cats.value.forEach(c => {
@@ -120,6 +145,7 @@ onMounted(async () => {
   error.value = null
   try {
     const res = await api.listCatsCatsGet()
+    const tasks = await api.listTasksTasksGet()
     // handle generated SDK shape (adjust if different)
     cats.value = res?.data ?? res
   } catch (e) {
@@ -147,8 +173,26 @@ onMounted(async () => {
           <div class="popup-inputs">
             <input type="text" v-model="CatName" placeholder="Kassi nimi" />
             <input type="date" v-model="time"/>
-            <input type="text" v-model="Task" placeholder="Ülesanne" />
-            <input type="text" v-model="taskType" placeholder="Ülesande tüüp"/>
+            <input type="text" v-model="Task" placeholder="Märkmed" />
+              <div class="flex flex-col gap-2 p-4 w-full">
+                <span class="text-base font-medium mb-1">Ülesande tüüp:</span>
+                <div class="flex flex-col gap-2">
+                  <label class="flex items-center gap-2 bg-[#F3F3F3] p-2 rounded-lg hover:bg-[#EAEAEA] transition text-sm">
+                    <input type="radio" id="one" value="VET_VISIT" v-model="taskType" class="w-4 h-4 accent-[#50192f]" />
+                    <span>Visiidi külastus</span>
+                  </label>
+
+                  <label class="flex items-center gap-2 bg-[#F3F3F3] p-2 rounded-lg hover:bg-[#EAEAEA] transition text-sm">
+                    <input type="radio" id="two" value="MEDICATION" v-model="taskType" class="w-4 h-4 accent-[#50192f]" />
+                    <span>Ravimi andmine</span>
+                  </label>
+
+                  <label class="flex items-center gap-2 bg-[#F3F3F3] p-2 rounded-lg hover:bg-[#EAEAEA] transition text-sm">
+                    <input type="radio" id="three" value="PERSONAL" v-model="taskType" class="w-4 h-4 accent-[#50192f]" />
+                    <span>Personaalne</span>
+                  </label>
+                </div>
+              </div>
           </div>
           <button class="save-button" @click="addEvent(CatName, time, Task, taskType); showPopup=false">Salvesta</button>
         </div>
@@ -161,7 +205,16 @@ onMounted(async () => {
 
         <div class="kalender-body">
           <p class="kalender-item">Timeline</p>
-          <VDatePicker transparent borderless show-weeknumbers v-model="date" mode="date" :attributes="attrs"  class="kalender-item" />
+          <VDatePicker
+            transparent
+            borderless
+            show-weeknumbers
+            mode="date"
+            :attributes="attrs"
+            class="kalender-item"
+            
+          />
+
           <button class="add-event" > 
             <span class="hover-text" @click="showPopup=true">LISA +</span>
           </button>
