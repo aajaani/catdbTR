@@ -222,7 +222,7 @@ def get_image(object_name: str, request: Request, auth = Depends(require_user)):
         obj = request.app.state.minio.get_object(MINIO_BUCKET, object_name)
         # gets content-type from file extension
         content_type = mimetypes.guess_type(object_name)[0] or "application/octet-stream"
-        return StreamingResponse(obj, media_type=content_type)
+        return StreamingResponse(obj, media_type=content_type, headers={"Content-Disposition": f'attachment; filename="{object_name}"'})
     except Exception:
         raise HTTPException(status_code=404, detail="Object not found or not accessible")
     

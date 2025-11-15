@@ -174,8 +174,16 @@
                                 <p>{{ item.type}}</p>
                                 <p>{{ item.notes }}</p>
                                 <p>{{ item.payment }}€</p>
+                                <p v-if="item.file_object">
+                                    <a href="#" @click.prevent="openFile(item)" class="text-blue-500">
+                                        PDF
+                                    </a>
+                                </p>
+                                <p v-else>
+                                    -
+                                </p>
                                 <button class="bg-[#E0E0E0] w-20 rounded-[10px]" @click="openEdit(item)">Muuda</button>
-                                <button class="bg-[#E0E0E0] w-10 rounded-[10px]" @click="openDelete(item)">Kustuta</button>
+                                <button class="bg-[#E0E0E0] w-20 rounded-[10px]" @click="openDelete(item)">Kustuta</button>
                             </div>
                         </div>
                     </div>
@@ -346,6 +354,11 @@ const onClick = ( what: EditableFields ) => {
     }
 }
 
+// a bit of a primitive way to download file, but works for now
+async function openFile(p: ProcedureRead) {
+     window.open('http://localhost:8000/image/' + p.file_object, '_blank');
+}
+
 const fetchCatInfo = ( id: any ) => {
     getCatCatsCatIdGet({
         path: { cat_id: Number( id ) }
@@ -428,7 +441,8 @@ async function saveProcedure() {
         is_repeat: newMedicalInfo.is_repeat,
         at_date: newMedicalInfo.at_date,
         notes: newMedicalInfo.notes,
-        payment: newMedicalInfo.payment
+        payment: newMedicalInfo.payment,
+        file: newMedicalInfo.file ?? null
     })
     await updateProcedureCatsCatIdProceduresProcedureIdPatch({
         path: {
@@ -441,7 +455,7 @@ async function saveProcedure() {
                 is_repeat: newMedicalInfo.is_repeat,
                 at_date: newMedicalInfo.at_date,
                 notes: newMedicalInfo.notes,
-                payment: newMedicalInfo.payment
+                payment: newMedicalInfo.payment,
             }),
             file: newMedicalInfo.file ?? null
         }
@@ -468,9 +482,9 @@ async function saveProcedure() {
             is_repeat: newMedicalInfo.is_repeat,
             at_date: newMedicalInfo.at_date,
             notes: newMedicalInfo.notes,
+            payment: newMedicalInfo.payment,
+            },
             file: newMedicalInfo.file ?? null,
-            payment: newMedicalInfo.payment
-            }
     }
     })
     console.log("Response:", res)
