@@ -145,6 +145,7 @@ class UserService:
 
         if existing is None:
             raise HTTPException(status_code=404, detail="user does not exist")
+    
         
         self.user_repo.delete(existing)
 

@@ -32,6 +32,8 @@ class Permissions(str, Enum):
     TASK_EDIT = "task:update"
     TASK_REMOVE = "task:delete"
 
+    ROLE_VIEW = "role:read"
+
 
 class RolePermission(Base):
     __tablename__ = "role_permissions"
@@ -73,6 +75,7 @@ class _RolePermissionConfig:
         Permissions.USER_VIEW,
         Permissions.USER_EDIT,
         Permissions.USER_REMOVE,
+        Permissions.ROLE_VIEW,
 
         Permissions.FOSTER_ADD,
         Permissions.FOSTER_VIEW,
@@ -100,6 +103,7 @@ class _RolePermissionConfig:
         Permissions.USER_VIEW,
         Permissions.USER_EDIT,
         Permissions.USER_REMOVE,
+        Permissions.ROLE_VIEW,
 
         Permissions.FOSTER_ADD,
         Permissions.FOSTER_VIEW,
@@ -121,6 +125,7 @@ class _RolePermissionConfig:
     SOCIAL_WORKER = {
         Permissions.CAT_VIEW,
         Permissions.USER_VIEW,
+        Permissions.ROLE_VIEW,
         Permissions.FOSTER_VIEW,
         Permissions.PROCEDURE_VIEW,
         Permissions.TASK_VIEW,

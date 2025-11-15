@@ -7,13 +7,17 @@ import * as sdk from "@/gen_types/sdk.gen.ts";
 import router from "@/router/index.js";
 
 const onResponse = async ( res: any ) => {
+	const status = res?.response?.status;
 	// todo: handle other error codes too :p
 	// todo: what if we're in an auth route already, need meta for those (simple)
-	if ( [ 401, 403 ].includes( res.response.status ) ) {
+	if (  status === 401 ) {
 		const currentRoute = router.currentRoute.value;
 		await router.push({ name: "Login", query: {
 			redirect: encodeURIComponent( currentRoute.fullPath )
 		} });
+	}
+	if (status === 403) {
+		res._forbidden = true;
 	}
 
 	return res;

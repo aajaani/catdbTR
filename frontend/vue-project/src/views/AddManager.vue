@@ -32,10 +32,10 @@
             <input id="volunteer-email" name="volunteer-email" type="email" class="input" v-model="form.email"  />
           </div>
 
-          <div class="flex flex-col col-start-7 col-span-6 ">
+          <!--<div class="flex flex-col col-start-7 col-span-6 ">
             <label for="volunteer-password">Parool</label>
             <input id="volunteer-password" name="volunteer-password" type="password" class="input" v-model="form.password"  />
-          </div>
+          </div>-->
 
           <div class="flex flex-col col-start-1 col-span-6">
             <label for="volunteer-phone-cc">Telefon</label>
@@ -77,11 +77,8 @@
 import {ref, reactive, onMounted, computed} from 'vue';
 import BreadCrumbs from '@/components/organisms/BreadCrumbs.vue';
 import Button from '@/components/atoms/Button.vue';
-import TabSelection from '@/components/organisms/TabSelection.vue';
 import AccordionWithTitle from '@/components/molecules/AccordionWithTitle.vue';
-import useVuelidate from '@vuelidate/core';
-import { required, email as isEmail, helpers } from '@vuelidate/validators';
-import { useRouter, type RouteLocation } from "vue-router";
+import { useRouter } from "vue-router";
 
 import api from "@/api_fetch.js"
 import type { RoleRead, UserRead } from '@/gen_types/types.gen';
@@ -102,7 +99,7 @@ const form = reactive({
   email: '',
   phoneCc: '+372',
   phoneNum: '',
-  password: '',
+  //password: '',
   managerChoice: 'MANAGER' as UiManagerChoice,
 
 })
@@ -189,7 +186,7 @@ const sendVolunteerCreate = async ( ) => {
     display_name: `${form.firstName.trim()} ${form.lastName.trim()}`.trim(),
     phone: toE164(form.phoneCc, form.phoneNum) || null,
     email: form.email.trim(),
-    password: form.password,
+    password: '',
     role_id: roleId,
   };
   
@@ -238,23 +235,14 @@ const onSubmit = async (e: SubmitEvent) => {
   }
   if (!form.managerChoice.trim()) {
     toast.add({
-                   severity: 'error',
-                   summary: 'Ebaõnnestus',
+                 severity: 'error',
+                  summary: 'Ebaõnnestus',
                    detail: 'Kasutaja loomine ebaõnnestus. Rolli valimine on kohustuslik.',
                    life: 3000
                  });
                   hasError = true;
   }
 
-  if (!form.password.trim()) {
-    toast.add({
-                   severity: 'error',
-                   summary: 'Ebaõnnestus',
-                   detail: 'Kasutaja loomine ebaõnnestus. Salasõna on kohustuslik.',
-                   life: 3000
-                 });
-                  hasError = true;
-  }
 
   if(hasError) return;
 
