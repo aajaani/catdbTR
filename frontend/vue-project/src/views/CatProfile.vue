@@ -175,13 +175,25 @@
                                 <p>{{ item.notes }}</p>
                                 <p>{{ item.payment }}€</p>
                                 <button class="bg-[#E0E0E0] w-20 rounded-[10px]" @click="openEdit(item)">Muuda</button>
-                                <button class="bg-[#E0E0E0] w-10 rounded-[10px]" @click="deleteProcedure(item)">Kustuta</button>
+                                <button class="bg-[#E0E0E0] w-10 rounded-[10px]" @click="openDelete(item)">Kustuta</button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
+        <Dialog v-model:visible="deleteVisible"
+         header="Kustuta protseduur"
+         :modal="true"
+         dismissable-mask
+         :style="{ width: '40vw', backgroundColor: '#EAEAEA', borderRadius: '10px', padding: '20px', boxShadow: '0 4px 16px rgba(0, 0, 0, 0.5)' }">
+        <p>Oled kindel, et soovid kustutada selle protseduuri?</p>
+        <div class="flex justify-end gap-2 mt-4">
+            <Button label="Tühista" @click="deleteVisible = false" > Tühista </Button>
+            <Button label="Kustuta" severity="danger" @click="confirmDelete()" :style="{backgroundColor: '#cf142b'}" > Kustuta </Button>
+        </div>
+        </Dialog>
 
         <Dialog v-model:visible="visible"
                 :modal="true"
@@ -243,10 +255,15 @@ import { type CatRead, type ProcedureRead } from '@/gen_types/types.gen';
 import { computed, reactive, ref, watch } from 'vue';
 import { useRouter } from "vue-router";
 import Dialog from 'primevue/dialog';
+import { useToast } from 'primevue';
 
 const router = useRouter( )
+const toast = useToast()
 const visible = ref(false)
+const deleteVisible = ref(false)
 const editingProcedure = ref(<ProcedureRead | null>(null));
+const deletingProcedureItem = ref(<ProcedureRead | null>(null));
+
 const status_to_readable: { [ key in CatRead[ "status" ] ]: string } = {
   "ACTIVE": "Otsib kodu",
   "FOSTER": "Ajutises kodus",
@@ -362,13 +379,22 @@ function openEdit(item: ProcedureRead) {
     visible.value = true;
 }
 
-async function deleteProcedure(item: ProcedureRead) {
+function openDelete(item: ProcedureRead) {
+    deletingProcedureItem.value = item;
+    deleteVisible.value = true;
+}
+
+async function confirmDelete() {
     console.log("deleteProcedure called")
+    if(!deletingProcedureItem.value) {
+        console.error("No procedure selected for deletion")
+        return;
+    }
     try{
         await deleteProcedureCatsCatIdProceduresProcedureIdDelete({
             path: {
-                cat_id: item.cat_id,
-                procedure_id : item.id
+                cat_id: deletingProcedureItem.value.cat_id,
+                procedure_id : deletingProcedureItem.value.id
             },
         })
     } catch (error: any) {
@@ -379,7 +405,15 @@ async function deleteProcedure(item: ProcedureRead) {
           console.error("Response headers:", error.response.headers)
         }
       }
-    fetchMedicalInfo( router.currentRoute.value.params.id ); // Refresh medical info after adding new procedure    
+    fetchMedicalInfo( router.currentRoute.value.params.id ); // Refresh medical info after adding new procedure
+    deleteVisible.value = false; 
+
+    toast.add({
+        severity: 'success',
+        summary: 'Protseduur kustutatud',
+        detail: 'Valitud protseduur on edukalt kustutatud.',
+        life: 3000
+    })
 }
 
 async function saveProcedure() {
