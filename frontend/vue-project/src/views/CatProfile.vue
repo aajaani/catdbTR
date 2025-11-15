@@ -174,7 +174,7 @@
                                 <p>{{ item.type}}</p>
                                 <p>{{ item.notes }}</p>
                                 <p>{{ item.payment }}€</p>
-                                <button class="bg-[#E0E0E0] w-20 rounded-[10px]">Muuda</button>
+                                <button class="bg-[#E0E0E0] w-20 rounded-[10px]" @click="openEdit(item)">Muuda</button>
                             </div>
                         </div>
                     </div>
@@ -185,7 +185,7 @@
         <Dialog v-model:visible="visible"
                 :modal="true"
                 header="Lisa meditsiiniline protseduur"
-                dismissable-mask="true"
+                dismissable-mask
                 :style="{ width: '40vw', backgroundColor: '#EAEAEA', borderRadius: '10px', padding: '20px', boxShadow: '0 4px 16px rgba(0, 0, 0, 0.5)' }">
 
         <div class="flex flex-col gap-6 mb-4">
@@ -237,7 +237,7 @@ import Button from '@/components/atoms/Button.vue';
 import BreadCrumbs from '@/components/organisms/BreadCrumbs.vue';
 import Status from '@/components/atoms/filter-table/Status.vue';
 
-import { addProcedureCatsCatIdProceduresPost, getCatCatsCatIdGet, listProceduresCatsCatIdProceduresGet } from '@/gen_types/sdk.gen';
+import { addProcedureCatsCatIdProceduresPost, getCatCatsCatIdGet, listProceduresCatsCatIdProceduresGet, updateProcedureCatsCatIdProceduresProcedureIdPatch, } from '@/gen_types/sdk.gen';
 import { type CatRead, type ProcedureRead } from '@/gen_types/types.gen';
 import { computed, reactive, ref, watch } from 'vue';
 import { useRouter } from "vue-router";
@@ -245,6 +245,7 @@ import Dialog from 'primevue/dialog';
 
 const router = useRouter( )
 const visible = ref(false)
+const editingProcedure = ref(<ProcedureRead | null>(null));
 const status_to_readable: { [ key in CatRead[ "status" ] ]: string } = {
   "ACTIVE": "Otsib kodu",
   "FOSTER": "Ajutises kodus",
@@ -263,7 +264,6 @@ const status_to_color: { [ key in CatRead[ "status" ] ]: "green" | "yellow" | "r
   "RESERVED": "gray"
 }
 
-const showPopUp = ref( false );
 const medicalInfo = ref< ProcedureRead[] | null >( null );
 
 const catData = ref< CatRead | null >( null );
@@ -337,10 +337,52 @@ const fetchMedicalInfo = ( id: any ) => {
     })
 }
 
+function openEdit(item: ProcedureRead) {
+    editingProcedure.value = item;
+    newMedicalInfo.catId = item.cat_id;
+    newMedicalInfo.type = item.type;
+    newMedicalInfo.is_repeat = item.is_repeat;
+    newMedicalInfo.at_date = item.at_date;
+    newMedicalInfo.notes = item.notes;
+    newMedicalInfo.payment = item.payment ?? 0;
+    visible.value = true;
+}
+
 async function saveProcedure() {
   console.log("saveProcedure called")
-
-  console.log("✅ Payload:", {
+  if (editingProcedure.value) {
+    console.log("Editing existing procedure")
+    console.log("Editing procedure ID:", editingProcedure.value.id)
+    console.log("✅ Payload for update:", {
+        cat_id: Number(editingProcedure.value.cat_id),
+        procedure_id: Number(editingProcedure.value.id),
+        type: newMedicalInfo.type,
+        is_repeat: newMedicalInfo.is_repeat,
+        at_date: newMedicalInfo.at_date,
+        notes: newMedicalInfo.notes,
+        payment: newMedicalInfo.payment
+    })
+    await updateProcedureCatsCatIdProceduresProcedureIdPatch({
+        path: {
+            cat_id: editingProcedure.value.cat_id,
+            procedure_id: editingProcedure.value.id
+        },
+        body: {
+            payload: JSON.stringify({
+                type: newMedicalInfo.type,
+                is_repeat: newMedicalInfo.is_repeat,
+                at_date: newMedicalInfo.at_date,
+                notes: newMedicalInfo.notes,
+                payment: newMedicalInfo.payment
+            }),
+            file: newMedicalInfo.file ?? null
+        }
+    })
+    
+    
+  }else {
+    console.log("Adding new procedure")
+    console.log("✅ Payload:", {
     cat_id: newMedicalInfo.catId,
     type: newMedicalInfo.type,
     is_repeat: newMedicalInfo.is_repeat,
@@ -364,8 +406,6 @@ async function saveProcedure() {
     }
     })
     console.log("Response:", res)
-    showPopUp.value = false
-    fetchMedicalInfo( router.currentRoute.value.params.id ); // Refresh medical info after adding new procedure
   } catch (error: any) {
     console.error("Error adding procedure:", error)
     if (error.response) {
@@ -374,6 +414,8 @@ async function saveProcedure() {
       console.error("Response headers:", error.response.headers)
     }
   }
+  }
+  fetchMedicalInfo( router.currentRoute.value.params.id ); // Refresh medical info after adding new procedure
 }
 
 watch(

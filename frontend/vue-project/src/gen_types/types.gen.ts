@@ -47,6 +47,20 @@ export type BodyUpdateCatCatsCatIdPatch = {
 };
 
 /**
+ * Body_update_procedure_cats__cat_id__procedures__procedure_id__patch
+ */
+export type BodyUpdateProcedureCatsCatIdProceduresProcedureIdPatch = {
+    /**
+     * Payload
+     */
+    payload: string;
+    /**
+     * File
+     */
+    file?: Blob | File | null;
+};
+
+/**
  * CatRead
  */
 export type CatRead = {
@@ -244,15 +258,15 @@ export type ManagerCreate = {
     /**
      * Email
      */
-    email: string;
+    email?: string | null;
     /**
      * Status
      */
-    status: 'ACTIVE' | 'INACTIVE';
+    status?: 'ACTIVE' | 'INACTIVE';
     /**
      * Role
      */
-    role: "MANAGER" | "NOT_MANAGER";
+    role: 'MANAGER' | 'NOT_MANAGER';
 };
 
 /**
@@ -274,7 +288,7 @@ export type ManagerRead = {
     /**
      * Email
      */
-    email: string ;
+    email?: string | null;
     /**
      * Status
      */
@@ -282,7 +296,7 @@ export type ManagerRead = {
     /**
      * Role
      */
-    role: "MANAGER" | "NOT_MANAGER";
+    role: 'MANAGER' | 'NOT_MANAGER';
 };
 
 /**
@@ -304,15 +318,7 @@ export type ManagerRef = {
     /**
      * Email
      */
-    email: string ;
-    /**
-     * Status
-     */
-    status: 'ACTIVE' | 'INACTIVE';
-    /**
-     * Role
-     */
-    role: "MANAGER" | "NOT_MANAGER";
+    email?: string | null;
 };
 
 /**
@@ -847,6 +853,74 @@ export type AddProcedureCatsCatIdProceduresPostResponses = {
 };
 
 export type AddProcedureCatsCatIdProceduresPostResponse = AddProcedureCatsCatIdProceduresPostResponses[keyof AddProcedureCatsCatIdProceduresPostResponses];
+
+export type GetProcedureCatsCatIdProceduresProcedureIdGetData = {
+    body?: never;
+    path: {
+        /**
+         * Cat Id
+         */
+        cat_id: number;
+        /**
+         * Procedure Id
+         */
+        procedure_id: number;
+    };
+    query?: never;
+    url: '/cats/{cat_id}/procedures/{procedure_id}';
+};
+
+export type GetProcedureCatsCatIdProceduresProcedureIdGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetProcedureCatsCatIdProceduresProcedureIdGetError = GetProcedureCatsCatIdProceduresProcedureIdGetErrors[keyof GetProcedureCatsCatIdProceduresProcedureIdGetErrors];
+
+export type GetProcedureCatsCatIdProceduresProcedureIdGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: ProcedureRead;
+};
+
+export type GetProcedureCatsCatIdProceduresProcedureIdGetResponse = GetProcedureCatsCatIdProceduresProcedureIdGetResponses[keyof GetProcedureCatsCatIdProceduresProcedureIdGetResponses];
+
+export type UpdateProcedureCatsCatIdProceduresProcedureIdPatchData = {
+    body: BodyUpdateProcedureCatsCatIdProceduresProcedureIdPatch;
+    path: {
+        /**
+         * Cat Id
+         */
+        cat_id: number;
+        /**
+         * Procedure Id
+         */
+        procedure_id: number;
+    };
+    query?: never;
+    url: '/cats/{cat_id}/procedures/{procedure_id}';
+};
+
+export type UpdateProcedureCatsCatIdProceduresProcedureIdPatchErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UpdateProcedureCatsCatIdProceduresProcedureIdPatchError = UpdateProcedureCatsCatIdProceduresProcedureIdPatchErrors[keyof UpdateProcedureCatsCatIdProceduresProcedureIdPatchErrors];
+
+export type UpdateProcedureCatsCatIdProceduresProcedureIdPatchResponses = {
+    /**
+     * Successful Response
+     */
+    200: ProcedureRead;
+};
+
+export type UpdateProcedureCatsCatIdProceduresProcedureIdPatchResponse = UpdateProcedureCatsCatIdProceduresProcedureIdPatchResponses[keyof UpdateProcedureCatsCatIdProceduresProcedureIdPatchResponses];
 
 export type ListTasksTasksGetData = {
     body?: never;

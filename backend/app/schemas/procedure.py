@@ -21,3 +21,10 @@ class ProcedureRead(ORMBase):
     notes: str | None = None
     file_object: str | None = None
     payment: int | None = None
+
+class ProcedureUpdate(BaseModel):
+    type: ProcedureType | None = None
+    is_repeat: bool | None = None
+    at_date: date | None = None
+    notes: str | None = None
+    payment: int | None = None

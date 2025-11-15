@@ -1,7 +1,7 @@
 from app.models.role import Permissions
 from app.repositories.cat_procedure_repository import CatProcedureRepository
 from app.repositories.task_repository import TaskRepository
-from app.schemas.procedure import ProcedureCreate, ProcedureRead
+from app.schemas.procedure import ProcedureCreate, ProcedureRead, ProcedureUpdate
 from app.schemas.task import TaskCreate, TaskRead
 from app.services.procedure_service import ProcedureService
 from app.services.task_service import TaskService
@@ -259,6 +259,32 @@ def add_procedure(
 def list_procedures(cat_id: int, db = Depends(get_db), auth = Depends(require_permission(Permissions.PROCEDURE_VIEW))):
     svc = ProcedureService(CatProcedureRepository(db), CatRepository(db), None)
     return svc.list_for_cat(cat_id)
+
+@app.get("/cats/{cat_id}/procedures/{procedure_id}", response_model=ProcedureRead)
+def get_procedure(cat_id: int, procedure_id: int, db = Depends(get_db), auth = Depends(require_permission(Permissions.PROCEDURE_VIEW))):
+    svc = ProcedureService(CatProcedureRepository(db), CatRepository(db), None)
+    return svc.get_procedure(cat_id, procedure_id)
+
+@app.patch("/cats/{cat_id}/procedures/{procedure_id}", response_model=ProcedureRead)
+def update_procedure(
+    cat_id: int,
+    procedure_id: int,
+    request: Request,
+    db = Depends(get_db),
+    auth = Depends(require_permission(Permissions.PROCEDURE_EDIT)),
+    payload: str = Form(...),
+    file: UploadFile | None = File(None),
+):
+    try:
+        data = ProcedureUpdate.model_validate_json(payload)
+    except ValidationError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    
+    svc = ProcedureService(CatProcedureRepository(db), CatRepository(db), request.app.state.minio)
+    return svc.update_from_payload(cat_id, procedure_id, data, file)
+    
+    
+
 
 
 # TASKS (for calendar)
