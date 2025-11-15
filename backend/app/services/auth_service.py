@@ -109,7 +109,9 @@ def bootstrap_admin(db: Session):
     u = User(
         account=account,
         display_name="default admin",
-        role_id=admin_role.id
+        role_id=admin_role.id,
+        email="fix@deploy.gg"
+
     )
 
     try:
