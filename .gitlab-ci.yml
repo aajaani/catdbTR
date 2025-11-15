@@ -19,6 +19,7 @@ build-frontend:
   script:
     - cd frontend/vue-project
     - npm install
+    - export VITE_API_BASE_URL="/"
     - npm run build
   artifacts:
     expire_in: 1 hour
@@ -115,11 +116,11 @@ deploy-prod:
     - docker pull ${FRONTEND_IMAGE}:${IMAGE_TAG}
     - docker pull ${BACKEND_IMAGE}:${IMAGE_TAG}
 
-    # 3. stop old containers 
+    # 3. stop old containers
     - docker rm -f catdb-frontend || true
     - docker rm -f catdb-backend || true
 
-    # 4. start backend 
+    # 4. start backend
     - >
       docker run -d --name catdb-backend --network cat_default
       -e DATABASE_URL="postgresql+psycopg://user:password@db:5432/catdb"
@@ -134,4 +135,3 @@ deploy-prod:
     name: production
   needs:
     - image:build-push
-

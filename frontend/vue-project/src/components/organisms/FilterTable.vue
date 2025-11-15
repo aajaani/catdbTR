@@ -55,7 +55,7 @@
                                 <input
                                     class="absolute w-fit inset-0 opacity-0 cursor-pointer"
                                     type="checkbox"
-                                ></input>
+                                >
 
                                 <!-- todo: dynamic unique items -->
                                 <InputUniqueOptions
@@ -63,8 +63,14 @@
                                     v-if="field.filterMode === 'unique'"
                                     :options="field.filterInputOptions || [ 'none' ]"
                                     @select="( opts ) => {
-                                        if ( opts.length === 0 ) delete filters[ fieldName ];
-                                        else filters[ fieldName ] = opts;
+                                        if ( opts.length === 0 ) {
+                                          delete filters[ fieldName ];
+                                          delete model.filters[ fieldName ];
+                                        }
+                                        else {
+                                          filters[ fieldName ] = opts;
+                                          model.filters[ fieldName ] = opts;
+                                        }
                                     }"
                                 />
                             </div>
@@ -175,7 +181,7 @@ table has to be passed
     filtering & sorting are only available if corresponding function exists in field
 */
 import { computed, ref, watch } from 'vue';
-import type { FieldsMap, RowEntry } from '../FilterTable';
+import type { FieldsMap, RowEntry, TableFilterModelWeak } from '../FilterTable';
 import Button from '../atoms/Button.vue';
 import { BiChevronLeft, BiChevronRight } from 'vue-icons-plus/bi';
 import { TbFilter, TbFilterFilled } from 'vue-icons-plus/tb';
@@ -187,6 +193,12 @@ const emit = defineEmits<{
     "perPageChange": [ number ],
     "pageChange": [ number ]
 }>( );
+
+const model = defineModel< TableFilterModelWeak >({
+  default: {
+    filters: { }
+  }
+})
 
 // type passed from prop
 // so <FilterTable<EntryType> :fields="[...]" ... />

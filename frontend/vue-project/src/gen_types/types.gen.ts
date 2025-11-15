@@ -100,6 +100,46 @@ export type CatRead = {
 };
 
 /**
+ * ColonyCreate
+ */
+export type ColonyCreate = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Notes
+     */
+    notes?: string | null;
+    /**
+     * Cat Ids
+     */
+    cat_ids?: Array<number> | null;
+};
+
+/**
+ * ColonyRead
+ */
+export type ColonyRead = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Notes
+     */
+    notes: string | null;
+    /**
+     * Cats
+     */
+    cats: Array<CatRead>;
+};
+
+/**
  * ColonyRef
  */
 export type ColonyRef = {
@@ -454,6 +494,60 @@ export type ValidationError = {
 };
 
 /**
+ * CatCreate
+ */
+export type CatCreate = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Sex
+     */
+    sex?: 'male' | 'female' | 'unknown' | null;
+    /**
+     * Chip Number
+     */
+    chip_number?: string | null;
+    /**
+     * Status
+     */
+    status?: 'ACTIVE' | 'FOSTER' | 'ADOPTED' | 'ARCHIVED' | 'MISSING' | 'RESERVED';
+    /**
+     * Manager Id
+     */
+    manager_id?: number | null;
+    /**
+     * Foster Home Id
+     */
+    foster_home_id?: number | null;
+    /**
+     * Colony Id
+     */
+    colony_id?: number | null;
+    /**
+     * Intake Date
+     */
+    intake_date?: string | null;
+    /**
+     * Birth Date
+     */
+    birth_date?: string | null;
+    /**
+     * Foster End Date
+     */
+    foster_end_date?: string | null;
+    /**
+     * Notes
+     */
+    notes?: string | null;
+    /**
+     * Is Neutered
+     */
+    is_neutered?: boolean | null;
+};
+
+/**
  * CatUpdate
  */
 export type CatUpdate = {
@@ -527,6 +621,22 @@ export type Permissions = {
      * cat:delete
      */
     CAT_DELETE: 'cat:delete';
+    /**
+     * colony:add
+     */
+    COLONY_ADD: 'colony:add';
+    /**
+     * colony:view
+     */
+    COLONY_VIEW: 'colony:view';
+    /**
+     * colony:edit
+     */
+    COLONY_EDIT: 'colony:edit';
+    /**
+     * colony:remove
+     */
+    COLONY_REMOVE: 'colony:remove';
     /**
      * user:create
      */
@@ -939,6 +1049,79 @@ export type UpdateCatCatsCatIdPatchResponses = {
 };
 
 export type UpdateCatCatsCatIdPatchResponse = UpdateCatCatsCatIdPatchResponses[keyof UpdateCatCatsCatIdPatchResponses];
+
+export type GetAllColoniesColoniesGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/colonies';
+};
+
+export type GetAllColoniesColoniesGetResponses = {
+    /**
+     * Response Get All Colonies Colonies Get
+     *
+     * Successful Response
+     */
+    200: Array<ColonyRead>;
+};
+
+export type GetAllColoniesColoniesGetResponse = GetAllColoniesColoniesGetResponses[keyof GetAllColoniesColoniesGetResponses];
+
+export type CreateColonyColoniesPostData = {
+    body: ColonyCreate;
+    path?: never;
+    query?: never;
+    url: '/colonies';
+};
+
+export type CreateColonyColoniesPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreateColonyColoniesPostError = CreateColonyColoniesPostErrors[keyof CreateColonyColoniesPostErrors];
+
+export type CreateColonyColoniesPostResponses = {
+    /**
+     * Successful Response
+     */
+    201: ColonyRead;
+};
+
+export type CreateColonyColoniesPostResponse = CreateColonyColoniesPostResponses[keyof CreateColonyColoniesPostResponses];
+
+export type GetColonyColoniesColonyIdGetData = {
+    body?: never;
+    path: {
+        /**
+         * Colony Id
+         */
+        colony_id: number;
+    };
+    query?: never;
+    url: '/colonies/{colony_id}';
+};
+
+export type GetColonyColoniesColonyIdGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetColonyColoniesColonyIdGetError = GetColonyColoniesColonyIdGetErrors[keyof GetColonyColoniesColonyIdGetErrors];
+
+export type GetColonyColoniesColonyIdGetResponses = {
+    /**
+     * Successful Response
+     */
+    201: ColonyRead;
+};
+
+export type GetColonyColoniesColonyIdGetResponse = GetColonyColoniesColonyIdGetResponses[keyof GetColonyColoniesColonyIdGetResponses];
 
 export type ListFosterHomesFosterHomesGetData = {
     body?: never;

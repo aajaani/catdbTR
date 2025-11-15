@@ -77,7 +77,7 @@ def bootstrap_roles(db: Session):
                 db.query(RolePermission).filter(RolePermission.role_id == role.id).delete()
                 for p in permissions:
                     db.add(RolePermission(role_id=role.id, permission=p.value))
-                    print(f"  ↪[bold green]+[/bold green] {p.name} (\"{p.value}\")")
+                    print(f"    [bold green] + [/bold green] {p.name} (\"{p.value}\")")
                 db.commit()
                 log_action(db, "role", role.id, "UPDATE_PERMISSIONS")
 

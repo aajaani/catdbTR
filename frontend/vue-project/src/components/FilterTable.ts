@@ -4,7 +4,7 @@
 
 import type { ComponentProps, } from "vue-component-type-helpers";
 import type { Prettify } from "@/type_utils.ts";
-import { type Component, markRaw, type Raw } from "vue";
+import {type Component, markRaw, type Raw, type Ref, ref} from "vue";
 
 
 export interface OptionAsComponent<Component> {
@@ -56,6 +56,7 @@ export interface TableField<
 
 // field converts TableField component to raw (vue is not happy about nested reactivity)
 type FieldReturn< C extends Component > = TableField< C > & { component: Raw< C > };
+export type FieldsMap = Record< string, FieldReturn< Component > >;
 
 export type RowEntry< F extends Record< string, FieldReturn< Component > > > = {
     [ K in keyof F ]: ComponentProps< F[ K ][ "component" ] >
@@ -65,6 +66,14 @@ export type RowEntry< F extends Record< string, FieldReturn< Component > > > = {
 // intention: have defined type hints for filter and sort functions
 export const field = < C extends Component >( def: TableField< C > ) => ({ ...def, component: markRaw( def.component ) }) as FieldReturn< C >;
 
+
+type TableFilterModel< F > = {
+    filters: { [ key in keyof F ]?: string[ ] }
+}
+
+export type TableFilterModelWeak = {
+    filters: { [ key: string ]: string[ ] }
+}
 
 // explanation:
 // > F extends FieldsMap (Record<string, FieldReturn< Component >)
@@ -82,4 +91,10 @@ export function defineTable< F extends Record< string, Prettify< FieldReturn< Co
     entries: RowEntry< F >[ ]
 ) {
     return { fields, entries } as const;
+}
+
+export function defineTableModel< F extends Record< string, Prettify< FieldReturn< Component > > > >( ): Ref<TableFilterModel< F >> {
+    return ref({
+        filters: { }
+    })
 }
