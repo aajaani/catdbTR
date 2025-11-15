@@ -415,7 +415,7 @@ export type UserCreate = {
     /**
      * Email
      */
-    email?: string | null;
+    email: string | null;
     /**
      * Role Id
      */

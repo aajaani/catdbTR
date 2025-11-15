@@ -24,11 +24,11 @@ const sidebar_links = {
     title: "Lisa kass",
     icon: MdCatchingPokemon,
   },
-  "/managers": {
+  "/users": {
     title: "Vabatahtlikud",
     icon: MdPeople,
   },
-  "/add-manager": {
+  "/add-user": {
     title: "Lisa vabatahtlik",
     icon: MdPersonAdd,
   },

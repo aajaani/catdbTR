@@ -45,10 +45,13 @@ from app.services.cat_service import CatService
 from app.services.colony_service import ColonyService
 from app.services.foster_home_service import FosterHomeService
 
+from app.services.email_service import send_email
+import secrets 
 
 # Response vars
 # set to true when deployed (prob should do via env var later)
 API_HTTPS = False
+
 
 # MinIO 
 MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT", "localhost:9000")
@@ -197,7 +200,31 @@ def create_user_full(
         role_repo=RoleRepository(db),
         user_repo=UserRepository(db)
     )
+
+    raw_password = payload.password
+    if not raw_password:
+        raw_password = secrets.token_urlsafe(10)
+        payload.password = raw_password
+
     new_user = svc.create_full_user(payload)
+
+    try: 
+        send_email(
+            to=new_user.email,
+            subject="Tere tulemast Kassid Koju!",
+            body=(
+                f"Tere, {new_user.display_name}! \n\n "
+                f"Sinu konto on loodud. \n\n"
+                f"Kasutajanimi: {payload.username}\n"
+                f"Parool: {raw_password}\n\n"
+                "Esimesel sisselogimisel soovitame muuta oma parooli: {http://localhost:8081/login}"
+            )
+
+        )
+    except Exception as e: 
+        print("EMAIL ERROR", e)
+        pass
+
     return new_user
 
 
@@ -206,7 +233,7 @@ def create_user_full(
 def get_all_roles(
     request: Request,
     db: Session = Depends(get_db),
-    auth: bool = Depends(require_permission(Permissions.USER_ADD))
+    auth: bool = Depends(require_permission(Permissions.ROLE_VIEW))
 ):
     svc = RoleService(RoleRepository(db))
     return svc.list_roles()
@@ -445,3 +472,4 @@ def list_tasks(db: Session = Depends(get_db), auth: bool = Depends(require_permi
 def list_tasks_for_cat(cat_id: int, db: Session = Depends(get_db), auth: bool = Depends(require_permission([Permissions.CAT_VIEW, Permissions.PROCEDURE_VIEW]))):
     svc = TaskService(TaskRepository(db), CatRepository(db))
     return svc.list_by_cat(cat_id)
+
