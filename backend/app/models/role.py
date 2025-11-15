@@ -12,6 +12,11 @@ class Permissions(str, Enum):
     CAT_EDIT = "cat:update"  # u
     CAT_REMOVE = "cat:delete"  # d
 
+    COLONY_ADD = "colony:add"
+    COLONY_VIEW = "colony:view"
+    COLONY_EDIT = "colony:edit"
+    COLONY_REMOVE = "colony:remove"
+
     USER_ADD = "user:create"
     USER_VIEW = "user:read"
     USER_EDIT = "user:update"
@@ -69,6 +74,11 @@ class _RolePermissionConfig:
         Permissions.CAT_EDIT,
         Permissions.CAT_REMOVE,
 
+        Permissions.COLONY_ADD,
+        Permissions.COLONY_VIEW,
+        Permissions.COLONY_EDIT,
+        Permissions.COLONY_REMOVE,
+
         Permissions.USER_ADD,
         Permissions.USER_VIEW,
         Permissions.USER_EDIT,
@@ -96,6 +106,11 @@ class _RolePermissionConfig:
         Permissions.CAT_EDIT,
         Permissions.CAT_REMOVE,
 
+        Permissions.COLONY_ADD,
+        Permissions.COLONY_VIEW,
+        Permissions.COLONY_EDIT,
+        Permissions.COLONY_REMOVE,
+
         Permissions.USER_ADD,
         Permissions.USER_VIEW,
         Permissions.USER_EDIT,
@@ -120,6 +135,7 @@ class _RolePermissionConfig:
     # lowk rename this
     SOCIAL_WORKER = {
         Permissions.CAT_VIEW,
+        Permissions.COLONY_VIEW,
         Permissions.USER_VIEW,
         Permissions.FOSTER_VIEW,
         Permissions.PROCEDURE_VIEW,

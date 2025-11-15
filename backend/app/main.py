@@ -24,6 +24,7 @@ from app.repositories.user_repository import UserRepository
 from app.repositories.cat_procedure_repository import CatProcedureRepository
 from app.repositories.task_repository import TaskRepository
 from app.repositories.cat_repository import CatRepository
+from app.repositories.colony_repository import ColonyRepository
 from app.repositories.foster_home_repository import FosterHomeRepository
 
 from app.schemas.user import UserCreate, UserRead, UserUpdate, LoginRequest, LoginResponse
@@ -31,6 +32,7 @@ from app.schemas.role import RoleRead
 from app.schemas.procedure import ProcedureCreate, ProcedureRead
 from app.schemas.task import TaskCreate, TaskRead
 from app.schemas.cats import CatCreate, CatRead, CatUpdate
+from app.schemas.colony import ColonyCreate, ColonyRead
 from app.schemas.foster_home import FosterHomeCreate, FosterHomeRead
 
 from app.services.auth_checks import require_user, require_permission
@@ -40,6 +42,7 @@ from app.services.role_service import RoleService
 from app.services.procedure_service import ProcedureService
 from app.services.task_service import TaskService
 from app.services.cat_service import CatService
+from app.services.colony_service import ColonyService
 from app.services.foster_home_service import FosterHomeService
 
 
@@ -110,6 +113,7 @@ def openapi_inject():
         return app.openapi_schema
     openapi_schema = get_openapi(title="catdb-schema", version="temp_v1.0", routes=app.routes)
     default_schemas = openapi_schema.setdefault("components", {}).setdefault("schemas", {})
+    default_schemas["CatCreate"] = CatCreate.model_json_schema()
     default_schemas["CatUpdate"] = CatUpdate.model_json_schema()
 
     def _make_permission_key(permission: str):
@@ -237,7 +241,7 @@ def list_managers(
 def list_users(
     request: Request,
     db: Session = Depends(get_db),
-    # auth: bool = Depends(require_permission(Permissions.USER_VIEW))
+    auth: bool = Depends(require_permission(Permissions.USER_VIEW))
 ):
     svc = UserService(
         account_repo=AccountRepository(db),
@@ -331,6 +335,33 @@ def delete_cat(cat_id: int, db: Session = Depends(get_db), auth: bool = Depends(
         raise HTTPException(status_code=404, detail="cat not found")
     CatService(CatRepository(db), None).delete(cat)
     return 
+
+# CAT COLONIES
+@app.get("/colonies", status_code=200, response_model=list[ColonyRead])
+def get_all_colonies(
+    db: Session = Depends(get_db),
+    auth: bool = Depends(require_permission(Permissions.COLONY_VIEW))
+):
+    svc = ColonyService(ColonyRepository(db))
+    return svc.list_all()
+
+@app.get("/colonies/{colony_id}", status_code=201, response_model=ColonyRead)
+def get_colony(
+    colony_id: int,
+    db: Session = Depends(get_db),
+    auth: bool = Depends(require_permission(Permissions.COLONY_VIEW))
+):
+    svc = ColonyService(ColonyRepository(db))
+    return svc.get_by_id(colony_id)
+
+@app.post("/colonies", status_code=201, response_model=ColonyRead)
+def create_colony(
+    payload: ColonyCreate,
+    db: Session = Depends(get_db),
+    auth: bool = Depends(require_permission(Permissions.COLONY_ADD))
+):
+    svc = ColonyService(ColonyRepository(db))
+    return svc.create(payload)
 
 # FOSTER HOMES
 @app.post("/foster-homes", response_model=FosterHomeRead, status_code=201)

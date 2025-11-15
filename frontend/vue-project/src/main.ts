@@ -11,9 +11,7 @@ const app = createApp(App)
 
 client.setConfig({
     credentials: "include",
-    baseUrl: import.meta.env.DEV
-        ? "http://localhost:8000/"  // when running npm run dev
-        : "/",                      // when building img for deploy
+    baseUrl: import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000/",
 })
 
 app.use( router )

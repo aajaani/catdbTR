@@ -3,11 +3,11 @@ import BreadCrumbs from "@/components/organisms/BreadCrumbs.vue";
 import FilterTable from "@/components/organisms/FilterTable.vue";
 
 import { MdArrowOutward } from "vue-icons-plus/md";
-import { FiEdit3, FiX } from "vue-icons-plus/fi";
-import { HiOutlineTrash } from "vue-icons-plus/hi";
+import { FiEdit3, FiX, FiArchive } from "vue-icons-plus/fi";
 import { AiOutlinePlus } from "vue-icons-plus/ai";
+import { GiAngelOutfit } from "vue-icons-plus/gi";
 
-import { defineTable, field } from "@/components/FilterTable";
+import {defineTable, defineTableModel, field} from "@/components/FilterTable";
 
 import Button from "@/components/atoms/Button.vue";
 
@@ -60,11 +60,19 @@ watch(
 const searchQuery = ref("");
 
 const filteredEntries = computed(() => {
-  if (!searchQuery.value.trim()) return tableDefinition.value.entries; // if search is empty, show all cats
-
+  // only filter out if no active filter for cat status
+  const filterOutArchivedCats = !tableModel.value.filters[ "cat-status" ];
+  const useSearchQueryForFilter = !!searchQuery.value.trim();
   const search = searchQuery.value.toLowerCase();
 
   return tableDefinition.value.entries.filter(entry => { // check each row
+    if ( filterOutArchivedCats ) {
+      if ( entry[ "cat-status" ].label === status_to_readable[ "ARCHIVED" ] )
+        return false;
+    }
+
+    if ( !useSearchQueryForFilter ) return true;
+
     return Object.values(entry).some(cell => { // check for each cell in row and if at least one match, include it
       if (typeof cell === "object" && cell !== null) { //if its an object, check the values. Right now the mock data has objects
         return Object.values(cell).some(v =>
@@ -100,6 +108,7 @@ const status_to_readable: { [ key in CatStatus ]: string } = {
 } 
 
 const cats = ref< CatRead[ ] >([ ]);
+const tableModel = defineTableModel< typeof tableDefinition.value.fields >( );
 
 // todo: refactor to something similiar to tanstack query
 // todo: check if type is correct for all api calls, RequestResponse might not be the correct template type
@@ -172,6 +181,25 @@ const getManagers = async ( ): Promise<{ [ display_name: string ]: number } > =>
 
   return response;
 }
+
+const getColonies = async ( ): Promise<{ [ colony_name: string ]: number }> => {
+  const coloniesFromApi = await api.getAllColoniesColoniesGet( )
+      .then( res => res.data )
+      .catch( _ => [ ])
+
+  if (!coloniesFromApi ) return { }
+
+  const coloniesData = coloniesFromApi
+                      .map( c => ({ name: c.name, id: c.id }))
+                      .reduce(
+                          ( acc, curr ) => ( { ...acc, [ curr.name ]: curr.id } ), { }
+                      ) as { [ colony_name: string ]: number }
+
+  coloniesData[ "-" ] = -1
+
+  return coloniesData
+}
+
 const tableDefinition = computed( ( ) => defineTable({
     "cat-intake-date": field({
       title: "KK alates",
@@ -183,7 +211,7 @@ const tableDefinition = computed( ( ) => defineTable({
       title: "Kassi nimi",
       component: TableText,
     }),
-    "cat-status": ({
+    "cat-status": field({
       title: "Staatus",
       component: TableSelection,
       fitContent: true,
@@ -206,7 +234,9 @@ const tableDefinition = computed( ( ) => defineTable({
     }),
     "cat-colony": field({
       title: "Originaalne koloonia",
-      component: TableText,
+      component: TableSelection,
+      filterMode: "unique",
+      filterInputOptions: async ( ) => api.getAllColoniesColoniesGet( ).then( res => res.data ? res.data.map( c => c.name ) : [ ] )
     }),
     "cat-details": field({
       title: "Teated",
@@ -269,7 +299,28 @@ const tableDefinition = computed( ( ) => defineTable({
       }
     } as const,
     "cat-colony": {
-      text: cat.colony ? cat.colony.name  : "-"
+      label: cat.colony ? cat.colony.name  : "-",
+      isEditing: isEditingCat( cat ),
+      options: getColonies,
+      onChange: ( colonyId: any, colonyName: string ) => {
+        if ( typeof colonyId !== "number" ) {
+          toast.add({
+            severity: 'error',
+            summary: 'Viga',
+            detail: `Koloonia valik ebaõnnestus (colony_id="${ colonyId }"${ typeof colonyId}, colony_name=${ colonyName })`,
+            life: 3000
+          });
+          return;
+        }
+        const removedManager = colonyId === -1;
+
+        if ( removedManager ) {
+          pushCatEdit( cat, { colony_id: null } )
+          return;
+        }
+
+        pushCatEdit( cat, { colony_id: colonyId } )
+      },
       // no backend route for updating colony yet
     } as const,
     "cat-details": {
@@ -298,8 +349,12 @@ const tableDefinition = computed( ( ) => defineTable({
             isEditing.value = -1;
         }
       }, {
-        icon: HiOutlineTrash,
-        onClick: ( ) => { }
+        icon: cat.status === "ARCHIVED" ? GiAngelOutfit : FiArchive,
+        onClick: ( ) => {
+          pushCatEdit(cat, {
+            status: cat.status === "ARCHIVED" ? "ACTIVE" : "ARCHIVED"
+          });
+        }
       }]
     }
   }))
@@ -342,6 +397,7 @@ const tableDefinition = computed( ( ) => defineTable({
         @per-page-change="( perPage ) => {
           tableQueryParams.perPage = perPage;
         }"
+        v-model="tableModel"
       />
     </div>
   </div>
