@@ -166,7 +166,7 @@
                         <div class="flex flex-col bg-main-bg rounded-[10px] gap-4 px-3 py-3">
                             <div class="flex flex-row justify-between">
                                 <h1 class="abril-fatface-regular text-[18px]">Meditsiiniline info</h1>
-                                <Button label="LISA+" @click="visible = true" class="abril-fatface-regular text-[24px] cursor-pointer">LISA +</Button>
+                                <Button label="LISA+" @click="visible = true; Object.assign(newMedicalInfo, emptyMedicalInfo)" class="abril-fatface-regular text-[24px] cursor-pointer">LISA +</Button>
                             </div>
                             <h1 class="group abril-fatface-regular text-[18px] bg-[#E0E0E0] rounded-[10px]">MAKSUMUS :  {{ totalPayment }}€</h1>
                             <div v-for="(item, index) in medicalInfo" :key="item.id" :class="['flex flex-row border-[1px] border-border-group border-solid px-4 py-2 rounded-[5px] justify-between gap-4 p-2 rounded-lg transition text-sm mb-2', index % 2 === 0 ? 'bg-main-bg' : 'bg-[#EAEAEA]']">
@@ -175,6 +175,7 @@
                                 <p>{{ item.notes }}</p>
                                 <p>{{ item.payment }}€</p>
                                 <button class="bg-[#E0E0E0] w-20 rounded-[10px]" @click="openEdit(item)">Muuda</button>
+                                <button class="bg-[#E0E0E0] w-10 rounded-[10px]" @click="deleteProcedure(item)">Kustuta</button>
                             </div>
                         </div>
                     </div>
@@ -237,7 +238,7 @@ import Button from '@/components/atoms/Button.vue';
 import BreadCrumbs from '@/components/organisms/BreadCrumbs.vue';
 import Status from '@/components/atoms/filter-table/Status.vue';
 
-import { addProcedureCatsCatIdProceduresPost, getCatCatsCatIdGet, listProceduresCatsCatIdProceduresGet, updateProcedureCatsCatIdProceduresProcedureIdPatch, } from '@/gen_types/sdk.gen';
+import { addProcedureCatsCatIdProceduresPost, deleteProcedureCatsCatIdProceduresProcedureIdDelete, getCatCatsCatIdGet, listProceduresCatsCatIdProceduresGet, updateProcedureCatsCatIdProceduresProcedureIdPatch, } from '@/gen_types/sdk.gen';
 import { type CatRead, type ProcedureRead } from '@/gen_types/types.gen';
 import { computed, reactive, ref, watch } from 'vue';
 import { useRouter } from "vue-router";
@@ -276,6 +277,26 @@ const currentlyEditing = ref< EditableFields | null >( null );
 const isEditing = ( what: EditableFields ) => currentlyEditing.value === what;
 const formatEditButtonText = ( what: EditableFields ) => isEditing( what ) ? "Salvesta" : "Muuda";
 
+const emptyMedicalInfo = {
+    cat_id: null,
+    type: "",
+    is_repeat: true,
+    at_date: "",
+    notes: "",
+    file: undefined,
+    payment: 0
+}
+
+const newMedicalInfo = reactive({
+  catId: null,
+  type: "",
+  is_repeat: true,
+  at_date: "",
+  notes: "",
+  file: undefined,
+  payment: 0
+})
+
 const totalPayment = computed( ( ) => {
     if ( medicalInfo.value === null ) return 0;
 
@@ -308,16 +329,6 @@ const onClick = ( what: EditableFields ) => {
     }
 }
 
-const newMedicalInfo = reactive( {
-    catId: null as number | null,
-    type: "",
-    is_repeat: true,
-    at_date: "",
-    notes: "",
-    file: undefined as File | undefined,
-    payment: 0
-})
-
 const fetchCatInfo = ( id: any ) => {
     getCatCatsCatIdGet({
         path: { cat_id: Number( id ) }
@@ -339,13 +350,36 @@ const fetchMedicalInfo = ( id: any ) => {
 
 function openEdit(item: ProcedureRead) {
     editingProcedure.value = item;
-    newMedicalInfo.catId = item.cat_id;
-    newMedicalInfo.type = item.type;
-    newMedicalInfo.is_repeat = item.is_repeat;
-    newMedicalInfo.at_date = item.at_date;
-    newMedicalInfo.notes = item.notes;
-    newMedicalInfo.payment = item.payment ?? 0;
+    Object.assign(newMedicalInfo, {
+    catId: item.cat_id,
+    type: item.type,
+    is_repeat: item.is_repeat,
+    at_date: item.at_date,
+    notes: item.notes,
+    payment: item.payment ?? 0,
+    file: undefined
+  })
     visible.value = true;
+}
+
+async function deleteProcedure(item: ProcedureRead) {
+    console.log("deleteProcedure called")
+    try{
+        await deleteProcedureCatsCatIdProceduresProcedureIdDelete({
+            path: {
+                cat_id: item.cat_id,
+                procedure_id : item.id
+            },
+        })
+    } catch (error: any) {
+        console.error("Error deleting procedure:", error)
+        if (error.response) {
+          console.error("Response data:", error.response.data)
+          console.error("Response status:", error.response.status)
+          console.error("Response headers:", error.response.headers)
+        }
+      }
+    fetchMedicalInfo( router.currentRoute.value.params.id ); // Refresh medical info after adding new procedure    
 }
 
 async function saveProcedure() {
@@ -415,7 +449,8 @@ async function saveProcedure() {
     }
   }
   }
-  fetchMedicalInfo( router.currentRoute.value.params.id ); // Refresh medical info after adding new procedure
+    editingProcedure.value = null;
+    fetchMedicalInfo( router.currentRoute.value.params.id ); // Refresh medical info after adding new procedure
 }
 
 watch(

@@ -854,6 +854,40 @@ export type AddProcedureCatsCatIdProceduresPostResponses = {
 
 export type AddProcedureCatsCatIdProceduresPostResponse = AddProcedureCatsCatIdProceduresPostResponses[keyof AddProcedureCatsCatIdProceduresPostResponses];
 
+export type DeleteProcedureCatsCatIdProceduresProcedureIdDeleteData = {
+    body?: never;
+    path: {
+        /**
+         * Cat Id
+         */
+        cat_id: number;
+        /**
+         * Procedure Id
+         */
+        procedure_id: number;
+    };
+    query?: never;
+    url: '/cats/{cat_id}/procedures/{procedure_id}';
+};
+
+export type DeleteProcedureCatsCatIdProceduresProcedureIdDeleteErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DeleteProcedureCatsCatIdProceduresProcedureIdDeleteError = DeleteProcedureCatsCatIdProceduresProcedureIdDeleteErrors[keyof DeleteProcedureCatsCatIdProceduresProcedureIdDeleteErrors];
+
+export type DeleteProcedureCatsCatIdProceduresProcedureIdDeleteResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type DeleteProcedureCatsCatIdProceduresProcedureIdDeleteResponse = DeleteProcedureCatsCatIdProceduresProcedureIdDeleteResponses[keyof DeleteProcedureCatsCatIdProceduresProcedureIdDeleteResponses];
+
 export type GetProcedureCatsCatIdProceduresProcedureIdGetData = {
     body?: never;
     path: {

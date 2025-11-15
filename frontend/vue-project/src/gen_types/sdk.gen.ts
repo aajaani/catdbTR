@@ -2,7 +2,7 @@
 
 import { type Client, formDataBodySerializer, type Options as Options2, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddProcedureCatsCatIdProceduresPostData, AddProcedureCatsCatIdProceduresPostErrors, AddProcedureCatsCatIdProceduresPostResponses, CreateCatCatsPostData, CreateCatCatsPostErrors, CreateCatCatsPostResponses, CreateFosterHomeFosterHomesPostData, CreateFosterHomeFosterHomesPostErrors, CreateFosterHomeFosterHomesPostResponses, CreateManagerManagersPostData, CreateManagerManagersPostErrors, CreateManagerManagersPostResponses, CreateTaskTasksPostData, CreateTaskTasksPostErrors, CreateTaskTasksPostResponses, CreateUserFullUsersFullCreatePostData, CreateUserFullUsersFullCreatePostErrors, CreateUserFullUsersFullCreatePostResponses, DeleteCatCatsCatIdDeleteData, DeleteCatCatsCatIdDeleteErrors, DeleteCatCatsCatIdDeleteResponses, GetCatCatsCatIdGetData, GetCatCatsCatIdGetErrors, GetCatCatsCatIdGetResponses, GetImageImageObjectNameGetData, GetImageImageObjectNameGetErrors, GetImageImageObjectNameGetResponses, GetProcedureCatsCatIdProceduresProcedureIdGetData, GetProcedureCatsCatIdProceduresProcedureIdGetErrors, GetProcedureCatsCatIdProceduresProcedureIdGetResponses, ListCatsCatsGetData, ListCatsCatsGetResponses, ListFosterHomesFosterHomesGetData, ListFosterHomesFosterHomesGetResponses, ListManagersManagersGetData, ListManagersManagersGetResponses, ListProceduresCatsCatIdProceduresGetData, ListProceduresCatsCatIdProceduresGetErrors, ListProceduresCatsCatIdProceduresGetResponses, ListTasksForCatCatsCatIdTasksGetData, ListTasksForCatCatsCatIdTasksGetErrors, ListTasksForCatCatsCatIdTasksGetResponses, ListTasksTasksGetData, ListTasksTasksGetResponses, LoginLoginPostData, LoginLoginPostErrors, LoginLoginPostResponses, ReadRootGetData, ReadRootGetResponses, UpdateCatCatsCatIdPatchData, UpdateCatCatsCatIdPatchErrors, UpdateCatCatsCatIdPatchResponses, UpdateProcedureCatsCatIdProceduresProcedureIdPatchData, UpdateProcedureCatsCatIdProceduresProcedureIdPatchErrors, UpdateProcedureCatsCatIdProceduresProcedureIdPatchResponses } from './types.gen';
+import type { AddProcedureCatsCatIdProceduresPostData, AddProcedureCatsCatIdProceduresPostErrors, AddProcedureCatsCatIdProceduresPostResponses, CreateCatCatsPostData, CreateCatCatsPostErrors, CreateCatCatsPostResponses, CreateFosterHomeFosterHomesPostData, CreateFosterHomeFosterHomesPostErrors, CreateFosterHomeFosterHomesPostResponses, CreateManagerManagersPostData, CreateManagerManagersPostErrors, CreateManagerManagersPostResponses, CreateTaskTasksPostData, CreateTaskTasksPostErrors, CreateTaskTasksPostResponses, CreateUserFullUsersFullCreatePostData, CreateUserFullUsersFullCreatePostErrors, CreateUserFullUsersFullCreatePostResponses, DeleteCatCatsCatIdDeleteData, DeleteCatCatsCatIdDeleteErrors, DeleteCatCatsCatIdDeleteResponses, DeleteProcedureCatsCatIdProceduresProcedureIdDeleteData, DeleteProcedureCatsCatIdProceduresProcedureIdDeleteErrors, DeleteProcedureCatsCatIdProceduresProcedureIdDeleteResponses, GetCatCatsCatIdGetData, GetCatCatsCatIdGetErrors, GetCatCatsCatIdGetResponses, GetImageImageObjectNameGetData, GetImageImageObjectNameGetErrors, GetImageImageObjectNameGetResponses, GetProcedureCatsCatIdProceduresProcedureIdGetData, GetProcedureCatsCatIdProceduresProcedureIdGetErrors, GetProcedureCatsCatIdProceduresProcedureIdGetResponses, ListCatsCatsGetData, ListCatsCatsGetResponses, ListFosterHomesFosterHomesGetData, ListFosterHomesFosterHomesGetResponses, ListManagersManagersGetData, ListManagersManagersGetResponses, ListProceduresCatsCatIdProceduresGetData, ListProceduresCatsCatIdProceduresGetErrors, ListProceduresCatsCatIdProceduresGetResponses, ListTasksForCatCatsCatIdTasksGetData, ListTasksForCatCatsCatIdTasksGetErrors, ListTasksForCatCatsCatIdTasksGetResponses, ListTasksTasksGetData, ListTasksTasksGetResponses, LoginLoginPostData, LoginLoginPostErrors, LoginLoginPostResponses, ReadRootGetData, ReadRootGetResponses, UpdateCatCatsCatIdPatchData, UpdateCatCatsCatIdPatchErrors, UpdateCatCatsCatIdPatchResponses, UpdateProcedureCatsCatIdProceduresProcedureIdPatchData, UpdateProcedureCatsCatIdProceduresProcedureIdPatchErrors, UpdateProcedureCatsCatIdProceduresProcedureIdPatchResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -287,6 +287,23 @@ export const addProcedureCatsCatIdProceduresPost = <ThrowOnError extends boolean
             'Content-Type': null,
             ...options.headers
         }
+    });
+};
+
+/**
+ * Delete Procedure
+ */
+export const deleteProcedureCatsCatIdProceduresProcedureIdDelete = <ThrowOnError extends boolean = false>(options: Options<DeleteProcedureCatsCatIdProceduresProcedureIdDeleteData, ThrowOnError>) => {
+    return (options.client ?? client).delete<DeleteProcedureCatsCatIdProceduresProcedureIdDeleteResponses, DeleteProcedureCatsCatIdProceduresProcedureIdDeleteErrors, ThrowOnError>({
+        security: [
+            {
+                in: 'cookie',
+                name: 'access_token',
+                type: 'apiKey'
+            }
+        ],
+        url: '/cats/{cat_id}/procedures/{procedure_id}',
+        ...options
     });
 };
 

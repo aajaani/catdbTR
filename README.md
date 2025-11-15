@@ -135,6 +135,11 @@ Visit `http://localhost:8081` in your browser
 
   * payload fields: `type` (`DEWORMER`, `SPOT_ON`, `VACCINE`), `is_repeat`, `at_date`, `notes`, `payment`
 * `GET /cats/{cat_id}/procedures` – list all procedures for a cat (sorted by date desc)
+* `GET /cats/{cat_id}/procedures/{procedure_id}` – get one procedure by id
+
+* `PATCH /cats/{cat_id}/procedures/{procedure_id}` – update cat procedure fields (multipart form: `payload` JSON string + optional `file`)
+
+* `DELETE /cats/{cat_id}/procedures/{procedure_id}` – delete cat procedure
 
 ### Tasks (Calendar)
 

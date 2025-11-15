@@ -282,6 +282,14 @@ def update_procedure(
     
     svc = ProcedureService(CatProcedureRepository(db), CatRepository(db), request.app.state.minio)
     return svc.update_from_payload(cat_id, procedure_id, data, file)
+
+@app.delete("/cats/{cat_id}/procedures/{procedure_id}", status_code=204)
+def delete_procedure(cat_id: int, procedure_id: int, db = Depends(get_db), auth = Depends(require_permission(Permissions.PROCEDURE_REMOVE))):
+    svc = ProcedureService(CatProcedureRepository(db), CatRepository(db), None)
+    deleted = svc.delete(cat_id, procedure_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="procedure not found")
+    return
     
     
 

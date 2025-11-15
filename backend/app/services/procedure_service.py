@@ -58,4 +58,7 @@ class ProcedureService:
         
         log_action(self.proc_repo.db, "cat_procedure", updated.id, "UPDATE")
         return updated
+    
+    def delete(self, cat_id: int, procedure_id: int):
+        return self.proc_repo.delete(procedure_id, cat_id)
 

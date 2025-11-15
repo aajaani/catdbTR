@@ -32,4 +32,14 @@ class CatProcedureRepository(BaseRepository):
         self.db.commit()
         self.db.refresh(proc)
         return proc
+    
+    # delete procedure for a cat
+    def delete(self, procedure_id: int, cat_id: int):
+        proc = self.db.query(CatProcedure).filter_by(id=procedure_id, cat_id=cat_id).first()
+        if not proc:
+            return False
+
+        self.db.delete(proc)
+        self.db.commit()
+        return True
 
