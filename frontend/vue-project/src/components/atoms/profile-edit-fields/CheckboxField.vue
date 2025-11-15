@@ -1,7 +1,8 @@
 <script setup lang="ts">
 const props = defineProps<{
 	defaultChecked: boolean,
-	isEditing?: boolean
+	isEditing?: boolean,
+	disabled?: boolean
 }>();
 
 const model = defineModel<boolean>( {
@@ -24,6 +25,7 @@ const model = defineModel<boolean>( {
 		<input
 			type="checkbox"
 			v-model="model"
+			:disabled="props.disabled"
 		>
 	</div>
 

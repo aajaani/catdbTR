@@ -29,4 +29,10 @@ input:invalid {
 input[type=date] {
 	@apply pl-2;
 }
+
+
+input:disabled {
+	color: #888;
+	opacity: 0.4;
+}
 </style>

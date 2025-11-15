@@ -24,11 +24,8 @@ const model = defineModel<string>( {
 </template>
 
 <style scoped lang="css">
-input:invalid {
-	@apply border-red-600;
-}
-
-input[type=date] {
-	@apply pl-2;
+textarea:disabled {
+	color: #888;
+	opacity: 0.4;
 }
 </style>

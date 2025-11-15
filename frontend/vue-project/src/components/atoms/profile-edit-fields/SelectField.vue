@@ -2,7 +2,7 @@
 type SelectFieldProps = {
 	defaultSelected: number,
 	options: { [ key: number ]: string },
-	isEditing?: boolean
+	isEditing?: boolean,
 }
 
 const props = defineProps<SelectFieldProps>();
@@ -44,5 +44,8 @@ console.log( props.options, props.defaultSelected )
 </template>
 
 <style scoped lang="css">
-
+select:disabled {
+	color: #888;
+	opacity: 0.4;
+}
 </style>

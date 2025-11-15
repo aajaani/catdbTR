@@ -41,9 +41,10 @@
 								</button>
 							</div>
 
-							<div
+							<form
 								class="flex flex-col gap-2 edit-container"
-								:data-editing="editing.main"
+								:data-editing="editing.main !== EditingStatus.IDLE"
+								@submit.prevent="submitEdit( 'main' )"
 							>
 								<div class="flex flex-row justify-between items-center">
 									<h1 class="text-[18px] abril-fatface-regular">Peamine Info</h1>
@@ -52,28 +53,39 @@
 										class="flex gap-2 justify-self-end"
 									>
 										<button
-											v-if="editing.main"
+											v-if="editing.main !== EditingStatus.IDLE"
 											class="justify-self-end small"
-											@click="submitEdit( 'main' )"
+											type="submit"
 										>
-											<FiSave :size="EDIT_ICON_SIZE"/>
+											<FiSave
+												v-if="editing.main === EditingStatus.EDITING"
+												:size="EDIT_ICON_SIZE"
+											/>
+
+											<CgSpinner
+												v-else
+												:size="EDIT_ICON_SIZE"
+												class="animate-spin"
+											/>
 										</button>
 
 										<button
-											v-if="editing.main"
+											v-if="editing.main !== EditingStatus.IDLE"
 											class="justify-self-end small"
 											@click="_ => {
-												editing.main = false;
-												syncMainEditFieldsToCatData( catData );
+												editing.main = EditingStatus.IDLE;
+
+												if ( catData )
+													syncMainEditFieldsToCatData( catData );
 											}"
 										>
 											<FiX :size="EDIT_ICON_SIZE"/>
 										</button>
 
 										<button
-											v-if="!editing.main"
+											v-if="editing.main === EditingStatus.IDLE"
 											class="justify-self-end small svg-fill"
-											@click="editing.main = true"
+											@click="editing.main = EditingStatus.EDITING"
 										>
 											<TfiPencil :size="EDIT_ICON_SIZE"/>
 										</button>
@@ -85,7 +97,17 @@
 									<div class="infofield">
 										<p>Nimi</p>
 
-										<InputField pattern="[a-zA-Z](([a-zA-Z]|\s)*)" placeholder="Kassi nimi" class="placeholder-shown:border-red-600" :text="catData.name" v-model="mainEditFields.name" :isEditing="editing.main"/>
+										<InputField
+											pattern="[a-zA-Z](([a-zA-Z]|\s)*)"
+											minlength="1"
+											placeholder="Kassi nimi"
+											class="placeholder-shown:border-red-600"
+											:text="catData.name"
+											required
+											v-model="mainEditFields.name"
+											:isEditing="[ EditingStatus.EDITING, EditingStatus.SUBMITTING ].includes( editing.main )"
+											:disabled="EditingStatus.SUBMITTING === editing.main"
+										/>
 									</div>
 
 									<div class="infofield">
@@ -97,7 +119,8 @@
 												.map( ( s, i ) => ({ name: s, idx: i }) )
 												.reduce( ( acc, c ) => ({ ...acc, [ c.idx ]: c.name }), { })"
 											v-model="mainEditFields.sex_idx"
-											:isEditing="editing.main"
+											:isEditing="[ EditingStatus.EDITING, EditingStatus.SUBMITTING ].includes( editing.main )"
+											:disabled="EditingStatus.SUBMITTING === editing.main"
 										/>
 									</div>
 
@@ -107,7 +130,8 @@
 											pattern="[0-9]{0}|[0-9]{15}"
 											maxlength="15"
 											:text="catData.chip_number || '-'" v-model="mainEditFields.chip_number"
-											:isEditing="editing.main"
+											:isEditing="[ EditingStatus.EDITING, EditingStatus.SUBMITTING ].includes( editing.main )"
+											:disabled="EditingStatus.SUBMITTING == editing.main"
 										/>
 									</div>
 
@@ -117,7 +141,8 @@
 										<CheckboxField
 											:defaultChecked="!!catData.is_neutered"
 											v-model="mainEditFields.sterilized"
-											:isEditing="editing.main"
+											:isEditing="[ EditingStatus.EDITING, EditingStatus.SUBMITTING ].includes( editing.main )"
+											:disabled="EditingStatus.SUBMITTING == editing.main"
 										/>
 									</div>
 
@@ -135,7 +160,8 @@
 												)
 											}"
 											v-model="mainEditFields.colony_id"
-											:isEditing="editing.main"
+											:isEditing="[ EditingStatus.EDITING, EditingStatus.SUBMITTING ].includes( editing.main )"
+											:disabled="EditingStatus.SUBMITTING == editing.main"
 										/>
 									</div>
 
@@ -145,8 +171,9 @@
 										<InputField
 											type="date"
 											:text="catData.birth_date || '-'"
-											:isEditing="editing.main"
 											v-model="mainEditFields.birth_date"
+											:isEditing="[ EditingStatus.EDITING, EditingStatus.SUBMITTING ].includes( editing.main )"
+											:disabled="EditingStatus.SUBMITTING == editing.main"
 										/>
 
 									</div>
@@ -157,50 +184,62 @@
 										<CheckboxField
 											:defaultChecked="false"
 											v-model="mainEditFields.on_homepage"
-											:isEditing="editing.main"
+											:isEditing="[ EditingStatus.EDITING, EditingStatus.SUBMITTING ].includes( editing.main )"
+											:disabled="EditingStatus.SUBMITTING == editing.main"
 										/>
 									</div>
 								</div>
-							</div>
+							</form>
 
 							<!-- care fields -->
 							<div
 								class="flex flex-col gap-2 edit-container"
-								:data-editing="editing.care"
+								:data-editing="editing.care !== EditingStatus.IDLE"
 							>
 								<div class="flex flex-row justify-between items-center">
 									<h1 class="text-[18px] abril-fatface-regular">Praegune hooldus ja jalgimine</h1>
 
-									<div
+									<form
 										class="flex gap-2 justify-self-end"
 									>
 										<button
-											v-if="editing.care"
+											v-if="editing.care !== EditingStatus.IDLE"
 											class="justify-self-end small"
 											@click="submitEdit( 'care' )"
 										>
-											<FiSave :size="EDIT_ICON_SIZE"/>
+											<FiSave
+												v-if="editing.care === EditingStatus.EDITING"
+												:size="EDIT_ICON_SIZE"
+											/>
+
+											<CgSpinner
+												v-else
+												:size="EDIT_ICON_SIZE"
+												class="animate-spin"
+											/>
 										</button>
 
 										<button
-											v-if="editing.care"
+											v-if="editing.care !== EditingStatus.IDLE"
 											class="justify-self-end small"
 											@click="_ => {
-												editing.care = false
-												syncCatManagementFieldsToCatData( catData );
+												editing.care = EditingStatus.IDLE;
+
+												if ( catData )
+													syncCatManagementFieldsToCatData( catData );
 											}"
 										>
 											<FiX :size="EDIT_ICON_SIZE"/>
 										</button>
 
 										<button
-											v-if="!editing.care"
+											v-if="editing.care === EditingStatus.IDLE"
 											class="justify-self-end small svg-fill"
-											@click="editing.care = true"
+											@click="editing.care = EditingStatus.EDITING"
 										>
 											<TfiPencil :size="EDIT_ICON_SIZE"/>
 										</button>
-									</div>
+									</form>
 								</div>
 
 								<div class="group outfit-400">
@@ -208,7 +247,7 @@
 										<p>Haldur</p>
 
 										<SelectField
-											:defaultSelected="catData.manager.id || MANAGER_CASES.NONE"
+											:defaultSelected="catData?.manager?.id || MANAGER_CASES.NONE"
 											:options="{
 												[ -1 ]: '-',
 												...(
@@ -218,7 +257,8 @@
 												)
 											}"
 											v-model="currentCatManagementFields.manager_id"
-											:isEditing="editing.care"
+											:isEditing="[ EditingStatus.EDITING, EditingStatus.SUBMITTING ].includes( editing.care )"
+											:disabled="EditingStatus.SUBMITTING == editing.care"
 										/>
 									</div>
 
@@ -226,7 +266,7 @@
 										<p>Hoiukodu</p>
 
 										<SelectField
-											:defaultSelected="catData.foster_home.id || FOSTER_HOME_CASES.NONE"
+											:defaultSelected="catData?.foster_home?.id || FOSTER_HOME_CASES.NONE"
 											:options="{
 												[ -1 ]: '-',
 												...(
@@ -236,7 +276,8 @@
 												)
 											}"
 											v-model="currentCatManagementFields.foster_home_id"
-											:isEditing="editing.care"
+											:isEditing="[ EditingStatus.EDITING, EditingStatus.SUBMITTING ].includes( editing.care )"
+											:disabled="EditingStatus.SUBMITTING == editing.care"
 										/>
 									</div>
 
@@ -246,7 +287,8 @@
 										<InputField
 											:text="catData.foster_home?.address || '-'"
 											v-model="currentCatManagementFields.foster_home_address"
-											:isEditing="editing.care"
+											:isEditing="[ EditingStatus.EDITING, EditingStatus.SUBMITTING ].includes( editing.care )"
+											:disabled="EditingStatus.SUBMITTING == editing.care"
 										/>
 									</div>
 
@@ -256,7 +298,8 @@
 										<InputField
 											:text="catData.foster_home?.phone || '-'"
 											v-model="currentCatManagementFields.foster_home_phone_nr"
-											:isEditing="editing.care"
+											:isEditing="[ EditingStatus.EDITING, EditingStatus.SUBMITTING ].includes( editing.care )"
+											:disabled="EditingStatus.SUBMITTING == editing.care"
 										/>
 									</div>
 								</div>
@@ -267,7 +310,7 @@
 					<div class="col-start-1 2md:col-start-2 xl:row-start-1">
 						<div
 							class="flex flex-col bg-main-bg rounded-[10px] gap-4 px-3 py-3 edit-container"
-							:data-editing="editing.notes"
+							:data-editing="editing.notes !== EditingStatus.IDLE"
 						>
 							<div
 								class="flex flex-row justify-between"
@@ -278,28 +321,39 @@
 									class="flex gap-2 justify-self-end"
 								>
 									<button
-										v-if="editing.notes"
+										v-if="editing.notes !== EditingStatus.IDLE"
 										class="justify-self-end small"
 										@click="submitEdit( 'notes' )"
 									>
-										<FiSave :size="EDIT_ICON_SIZE"/>
+										<FiSave
+											v-if="editing.notes === EditingStatus.EDITING"
+											:size="EDIT_ICON_SIZE"
+										/>
+
+										<CgSpinner
+											v-else
+											:size="EDIT_ICON_SIZE"
+											class="animate-spin"
+										/>
 									</button>
 
 									<button
-										v-if="editing.notes"
+										v-if="editing.notes !== EditingStatus.IDLE"
 										class="justify-self-end small"
 										@click="_ => {
-											editing.notes = false;
-											syncCatNotesFieldsToCatData( catData );
+											editing.notes = EditingStatus.IDLE;
+
+											if ( catData )
+												syncCatNotesFieldsToCatData( catData );
 										}"
 									>
 										<FiX :size="EDIT_ICON_SIZE"/>
 									</button>
 
 									<button
-										v-if="!editing.notes"
+										v-if="editing.notes === EditingStatus.IDLE"
 										class="justify-self-end small svg-fill"
-										@click="editing.notes = true"
+										@click="editing.notes = EditingStatus.EDITING"
 									>
 										<TfiPencil :size="EDIT_ICON_SIZE"/>
 									</button>
@@ -310,7 +364,8 @@
 								<TextField
 									:text="catData.notes || 'markmeid pole'"
 									v-model="catNotes"
-									:isEditing="editing.notes"
+									:isEditing="[ EditingStatus.EDITING, EditingStatus.SUBMITTING ].includes( editing.notes )"
+									:disabled="EditingStatus.SUBMITTING == editing.notes"
 								/>
 							</div>
 						</div>
@@ -335,7 +390,7 @@ import Selection from '@/components/atoms/filter-table/Selection.vue';
 
 import api from "@/api_fetch.ts"
 import {
-	type CatRead,
+	type CatRead, type CatUpdate,
 	type ColonyRead,
 	type FosterHomeRead, type UserRead
 } from '@/gen_types/types.gen';
@@ -344,6 +399,7 @@ import { useRouter } from "vue-router";
 import { useToast } from "primevue";
 import { setBreadcrumb } from "@/router/helpers.ts";
 
+import { CgSpinner } from "vue-icons-plus/cg";
 import { FiSave, FiX } from "vue-icons-plus/fi";
 import { TfiPencil } from "vue-icons-plus/tfi";
 import InputField from "@/components/atoms/profile-edit-fields/InputField.vue";
@@ -389,13 +445,18 @@ enum FOSTER_HOME_CASES {
 const catData = ref<CatRead | null>( null );
 
 type EditableFields = "status" | "main" | "care" | "notes";
-type EditSubmit = () => boolean;
+type EditSubmit = () => Promise< boolean >;
+enum EditingStatus {
+	EDITING = 0,
+	SUBMITTING = 1,
+	IDLE = 2
+}
 
-const editing = ref<{ [key in EditableFields]: boolean }>( {
-	main: false,
-	status: false,
-	notes: false,
-	care: false,
+const editing = ref<{ [key in EditableFields]: EditingStatus }>( {
+	main:	EditingStatus.IDLE,
+	status: EditingStatus.IDLE,
+	notes:  EditingStatus.IDLE,
+	care:   EditingStatus.IDLE,
 } );
 
 
@@ -506,25 +567,66 @@ api.listFosterHomesFosterHomesGet( ).then( res => {
 
 
 const saveField: Record<EditableFields, EditSubmit> = {
-	status: () => false,
-	main: () => false,
-	care: () => false,
-	notes: () => false
+	status: async () => false,
+	main: async () => {
+		if ( !catData.value ) {
+			toast.add({
+				severity: "warn",
+				summary: "Kassi pole.",
+				life: 3000
+			});
+			return false;
+		}
+
+		const res = await api.updateCatCatsCatIdPatch({
+			body: {
+				payload: JSON.stringify({
+					name: mainEditFields.value.name,
+					sex: mainEditFieldOptions.value.sex[ mainEditFields.value.sex_idx ],
+					chip_number: mainEditFields.value.chip_number,
+					is_neutered: mainEditFields.value.sterilized,
+					colony_id: mainEditFields.value.colony_id === COLONY_CASES.NONE ? null : mainEditFields.value.colony_id,
+					birth_date: mainEditFields.value.birth_date,
+					// on_homepage: mainEditFields.value.on_homepage
+				} as CatUpdate )
+			},
+			path: {
+				cat_id: catData.value.id
+			}
+		});
+
+		if ( !res.data ) {
+			toast.add({
+				severity: "error",
+				summary: "Kassi uuendamine ebaonnestus",
+				life: 3000
+			});
+
+			return false;
+		}
+
+		catData.value = res.data;
+
+		return true;
+	},
+	care: async () => false,
+	notes: async () => false
 }
 
 
 const syncCatToSentField: Record<EditableFields, EditSubmit> = {
-	status: () => false,
-	main: () => false,
-	care: () => false,
-	notes: () => false
+	status: async () => false,
+	main: async () => false,
+	care: async () => false,
+	notes: async () => false
 }
 
-const submitEdit = ( what: EditableFields ) => {
-	if ( editing.value[ what ] ) {
+const submitEdit = async ( what: EditableFields ) => {
+	if ( editing.value[ what ] === EditingStatus.EDITING ) {
 		if ( !saveField[ what ] ) console.warn( `no save callback function for "${ what }" exists, can't save."` );
 		else {
-			const res = saveField[ what ]();
+			editing.value[ what ] = EditingStatus.SUBMITTING;
+			const res = await saveField[ what ]();
 
 			if ( !res ) console.error( `save callback for "${ what }" failed` );
 			else {
@@ -532,7 +634,7 @@ const submitEdit = ( what: EditableFields ) => {
 			}
 		}
 
-		editing.value[ what ] = false;
+		editing.value[ what ] = EditingStatus.IDLE;
 	}
 }
 
