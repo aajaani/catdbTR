@@ -11,3 +11,8 @@ export async function loginAsAdmin(page) {
 
     await expect(page).toHaveURL(`${BASE_URL}/`);
 }
+
+export async function logout(page: Page) {
+    await page.locator('button:has-text("Logi valja")').click();
+    await expect(page).toHaveURL(`${BASE_URL}/login`);
+}

@@ -58,7 +58,7 @@ class UserService:
         # make user
         u = User(
             account=account,
-            role_id=data.role_id,
+            role_id=role.id,
             display_name=data.display_name,
             phone=data.phone,
             email=data.email
