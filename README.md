@@ -1,6 +1,8 @@
 # https://catdb.wxcoy.cc/
 The app runs there and is automatically updated via pipeline. This will not be shipped to the client and is purely for demoing and ease of acess to the project. Once the project is finished, the client will provide their own hosting solution
 
+Login with admin/admin12345
+
 # Cat Database for Tartu Kassikaitse
 
 Web app to track cats, managers, foster homes, vet visits and so on
