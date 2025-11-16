@@ -92,7 +92,7 @@
 
           <!-- cat birth date -->
           <div class="flex flex-col col-start-9 col-span-4 row-end-1">
-            <label for="cat-birth-date">Sunnikuupäev</label>
+            <label for="cat-birth-date">Sünnikuupäev</label>
             <input id="cat-birth-date" name="cat-birth-date" type="date" class="input" v-model="formDataCat.birthDate">
           </div>
 
