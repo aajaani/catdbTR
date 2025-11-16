@@ -51,21 +51,21 @@ playwright-e2e:
     - name: postgres:17
       alias: db
       variables:
-        POSTGRES_DB: catdb
-        POSTGRES_USER: user
-        POSTGRES_PASSWORD: password
+        POSTGRES_DB: "catdb"
+        POSTGRES_USER: "user"
+        POSTGRES_PASSWORD: "$CATDB_POSTGRES_PASSWORD"
     # MinIO
     - name: minio/minio:latest
       alias: minio
       command: ["server", "/data", "--console-address", ":9001"]
       variables:
-        MINIO_ROOT_USER: minioadmin
-        MINIO_ROOT_PASSWORD: minioadmin
+        MINIO_ROOT_USER: "$CATDB_MINIO_ROOT_USER"
+        MINIO_ROOT_PASSWORD: "$CATDB_MINIO_ROOT_PASSWORD"
   variables:
-    DATABASE_URL: "postgresql+psycopg://user:password@db:5432/catdb"
+    DATABASE_URL: "$CATDB_DATABASE_URL"
     MINIO_ENDPOINT: "minio:9000"
-    MINIO_ACCESS_KEY: "minioadmin"
-    MINIO_SECRET_KEY: "minioadmin"
+    MINIO_ACCESS_KEY: "$CATDB_MINIO_ACCESS_KEY"
+    MINIO_SECRET_KEY: "$CATDB_MINIO_SECRET_KEY"
   needs:
     - build-frontend
     - backend-test
@@ -99,14 +99,6 @@ playwright-e2e:
   after_script:
     - kill $BACKEND_PID || true
     - kill $FRONTEND_PID || true
-  only:
-    - branches
-    - merge_requests
-
-
-  after_script:
-    # Stop all containers from docker-compose
-    - docker compose down
   only:
     - branches
     - merge_requests
@@ -191,13 +183,21 @@ deploy-prod:
     - docker rm -f catdb-frontend || true
     - docker rm -f catdb-backend || true
 
+    # decode SMTP password from base64
+    - SMTP_PASSWORD_DECODED=$(printf '%s' "$SMTP_PASSWORD" | base64 -d)
+
     # 4. start backend
     - >
       docker run -d --name catdb-backend --network cat_default
-      -e DATABASE_URL="postgresql+psycopg://user:password@db:5432/catdb"
+      -e DATABASE_URL="$CATDB_DATABASE_URL"
       -e MINIO_ENDPOINT="minio:9000"
-      -e MINIO_ACCESS_KEY="minioadmin"
-      -e MINIO_SECRET_KEY="minioadmin"
+      -e MINIO_ACCESS_KEY="$CATDB_MINIO_ACCESS_KEY"
+      -e MINIO_SECRET_KEY="$CATDB_MINIO_SECRET_KEY"
+      -e SMTP_HOST="$SMTP_HOST"
+      -e SMTP_PORT="587"
+      -e SMTP_USERNAME="$SMTP_USERNAME"
+      -e SMTP_PASSWORD="$SMTP_PASSWORD_DECODED"
+      -e SMTP_FROM="$SMTP_FROM"
       ${BACKEND_IMAGE}:${IMAGE_TAG}
 
     # 5. start frontend
