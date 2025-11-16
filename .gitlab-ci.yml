@@ -42,6 +42,76 @@ backend-test:
     - branches
     - merge_requests
 
+playwright-e2e:
+  stage: test
+  image: mcr.microsoft.com/playwright:v1.56.1-jammy
+  services: 
+  # same workflow as whipping up the entire program locally, definitely easier way to do it but idk
+    # Postgres
+    - name: postgres:17
+      alias: db
+      variables:
+        POSTGRES_DB: catdb
+        POSTGRES_USER: user
+        POSTGRES_PASSWORD: password
+    # MinIO
+    - name: minio/minio:latest
+      alias: minio
+      command: ["server", "/data", "--console-address", ":9001"]
+      variables:
+        MINIO_ROOT_USER: minioadmin
+        MINIO_ROOT_PASSWORD: minioadmin
+  variables:
+    DATABASE_URL: "postgresql+psycopg://user:password@db:5432/catdb"
+    MINIO_ENDPOINT: "minio:9000"
+    MINIO_ACCESS_KEY: "minioadmin"
+    MINIO_SECRET_KEY: "minioadmin"
+  needs:
+    - build-frontend
+    - backend-test
+  script:
+    # python for backend
+    - apt-get update
+    - apt-get install -y python3 python3-venv python3-pip
+
+    # start backend 
+    - cd backend
+    - python3 -m venv .venv
+    - . .venv/bin/activate
+    - pip install -r requirements.txt
+    - uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+    - BACKEND_PID=$!
+    - cd ..
+
+    # start frontend
+    - cd frontend/vue-project
+    - npm install
+    - npm run dev -- --host 0.0.0.0 --port 8081 &
+    - FRONTEND_PID=$!
+
+    - sleep 15
+
+    # install playwright 
+    - npx playwright install --with-deps
+
+    # run e2e
+    - BASE_URL="http://localhost:8081" npx playwright test
+  after_script:
+    - kill $BACKEND_PID || true
+    - kill $FRONTEND_PID || true
+  only:
+    - branches
+    - merge_requests
+
+
+  after_script:
+    # Stop all containers from docker-compose
+    - docker compose down
+  only:
+    - branches
+    - merge_requests
+
+
 # build + push docker images with buildkit
 image:build-push:
   image:
@@ -97,6 +167,7 @@ image:build-push:
   needs:
     - build-frontend
     - backend-test
+    - playwright-e2e
   only:
     - branches
     - merge_requests
