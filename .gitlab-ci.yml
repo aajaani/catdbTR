@@ -49,14 +49,22 @@ playwright-e2e:
     - build-frontend
     - backend-test
   script:
-    - cd frontend/vue-project
+    - cd backend
+    - python -m venv .venv
+    - . .venv/bin/activate
+    - pip install -r requirements.txt
+    - uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload &
+    # dont worry about it
+    - sleep 3
+
+    - cd ../frontend/vue-project
     - npm install
     - npx playwright install --with-deps
-    - npm run dev -- --host 0.0.0.0 --port 8081 &
+    - npm run dev -- --port 8081 --host 0.0.0.0 &
+    - sleep 3
+
+    # run tests
     - npx playwright test
-  only:
-    - branches
-    - merge_requests
 
 # build + push docker images with buildkit
 image:build-push:
