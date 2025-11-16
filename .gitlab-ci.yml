@@ -61,7 +61,7 @@ playwright-e2e:
       variables:
         MINIO_ROOT_USER: "minioadmin"
         MINIO_ROOT_PASSWORD: "minioadmin"
-  variables:
+  variables: # not sensitive since its just localized testing
     DATABASE_URL: "postgresql+psycopg://user:password@db:5432/catdb"
     MINIO_ENDPOINT: "minio:9000"
     MINIO_ACCESS_KEY: "minioadmin"
@@ -74,12 +74,15 @@ playwright-e2e:
     - apt-get update
     - apt-get install -y python3 python3-venv python3-pip
 
+    # decode SMTP password for testing
+    - SMTP_PASSWORD_DECODED=$(printf '%s' "$SMTP_PASSWORD" | base64 -d)
+
     # start backend 
     - cd backend
     - python3 -m venv .venv
     - . .venv/bin/activate
     - pip install -r requirements.txt
-    - DATABASE_URL="postgresql+psycopg://user:password@db:5432/catdb" MINIO_ENDPOINT="minio:9000" MINIO_ACCESS_KEY="minioadmin" MINIO_SECRET_KEY="minioadmin" uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+    - DATABASE_URL="postgresql+psycopg://user:password@db:5432/catdb" MINIO_ENDPOINT="minio:9000" MINIO_ACCESS_KEY="minioadmin" MINIO_SECRET_KEY="minioadmin" SMTP_HOST="$SMTP_HOST" SMTP_PORT="587" SMTP_USERNAME="$SMTP_USERNAME" SMTP_PASSWORD="$SMTP_PASSWORD_DECODED" SMTP_FROM="$SMTP_FROM" uvicorn app.main:app --host 0.0.0.0 --port 8000 &
     - BACKEND_PID=$!
     - cd ..
 
