@@ -3,11 +3,14 @@ import { MdFeed, MdOutlinePets, MdCatchingPokemon, MdPersonAdd, MdPeople, MdArro
 
 import Button from "@/components/atoms/Button.vue"
 
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { isSidebarAvailable } from "@/router/helpers.js";
+import { useToast } from "primevue";
 
 // reactive route
 const route = useRoute( );
+const router = useRouter();
+const toast = useToast();
 
 // todo: add translations, idk if i18n exists for vue3
 // links derived from router config @/sec/router/index.ts
@@ -33,6 +36,17 @@ const sidebar_links = {
     icon: MdPersonAdd,
   },
 }
+
+const onLogout = () => {
+  router.push("/login")
+
+  toast.add({
+    severity: "success",
+    summary: "Väljalogimine",
+    detail: "Logisite edukalt välja!",
+    life: 3000
+  })
+};
 </script>
 
 <template>
@@ -89,10 +103,9 @@ const sidebar_links = {
   >
     <Button
         class="destructive w-full"
-        @click="_ => {
-
-        }"
-    >
+        @click="onLogout"
+          
+  >
       <MdLogout size="24" />
       <span>Logi valja</span>
     </Button>
