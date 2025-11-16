@@ -53,19 +53,19 @@ playwright-e2e:
       variables:
         POSTGRES_DB: "catdb"
         POSTGRES_USER: "user"
-        POSTGRES_PASSWORD: "$CATDB_POSTGRES_PASSWORD"
+        POSTGRES_PASSWORD: "password"
     # MinIO
     - name: minio/minio:latest
       alias: minio
       command: ["server", "/data", "--console-address", ":9001"]
       variables:
-        MINIO_ROOT_USER: "$CATDB_MINIO_ROOT_USER"
-        MINIO_ROOT_PASSWORD: "$CATDB_MINIO_ROOT_PASSWORD"
+        MINIO_ROOT_USER: "minioadmin"
+        MINIO_ROOT_PASSWORD: "minioadmin"
   variables:
-    DATABASE_URL: "$CATDB_DATABASE_URL"
+    DATABASE_URL: "postgresql+psycopg://user:password@db:5432/catdb"
     MINIO_ENDPOINT: "minio:9000"
-    MINIO_ACCESS_KEY: "$CATDB_MINIO_ACCESS_KEY"
-    MINIO_SECRET_KEY: "$CATDB_MINIO_SECRET_KEY"
+    MINIO_ACCESS_KEY: "minioadmin"
+    MINIO_SECRET_KEY: "minioadmin"
   needs:
     - build-frontend
     - backend-test
@@ -79,7 +79,7 @@ playwright-e2e:
     - python3 -m venv .venv
     - . .venv/bin/activate
     - pip install -r requirements.txt
-    - uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+    - DATABASE_URL="postgresql+psycopg://user:password@db:5432/catdb" MINIO_ENDPOINT="minio:9000" MINIO_ACCESS_KEY="minioadmin" MINIO_SECRET_KEY="minioadmin" uvicorn app.main:app --host 0.0.0.0 --port 8000 &
     - BACKEND_PID=$!
     - cd ..
 
