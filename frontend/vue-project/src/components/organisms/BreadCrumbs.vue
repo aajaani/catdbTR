@@ -5,10 +5,28 @@ import { getBreadcrumbs } from "@/router/helpers.js";
 
 const router = useRouter();
 
-// typescript is so boss
-const entries = computed( () => {
-	// no breadcrumbs defined for this route, nothing to show
-	return getBreadcrumbs( router.currentRoute.value.meta )
+const props = defineProps<{
+	slugs?: { [ key: string ]: string }
+}>( );
+
+const entries = computed( ( ) => {
+	const bcs = getBreadcrumbs( router.currentRoute.value.meta ).map( b => ({ ...b }) );
+	console.log( "breadcroombss: ", bcs )
+
+	if ( props.slugs ) {
+		for ( let i = 0; i < bcs.length; i++ ) {
+			if ( !bcs[ i ] ) continue;
+
+			Object.entries( props.slugs ).forEach( ([ slug, value ]) => {
+				console.log( slug, value )
+				// @ts-ignore
+				bcs[ i ].name = bcs[ i ].name.replaceAll( `{${slug}}`, value );
+				console.log( bcs[ i ] )
+			} );
+		}
+	}
+
+	return bcs;
 } );
 </script>
 
@@ -24,9 +42,10 @@ const entries = computed( () => {
 				>
 					{{ entry.name }}
 				</router-link>
+
 				<span v-else>
-          {{ entry.name }}
-        </span>
+				  {{ entry.name }}
+				</span>
 			</li>
 		</ol>
 	</nav>
