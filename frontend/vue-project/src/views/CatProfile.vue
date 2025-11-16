@@ -823,7 +823,7 @@ const saveField: Record<EditableFields, EditSubmit> = {
 					chip_number: mainEditFields.value.chip_number,
 					is_neutered: mainEditFields.value.sterilized,
 					colony_id: mainEditFields.value.colony_id === COLONY_CASES.NONE ? null : mainEditFields.value.colony_id,
-					birth_date: mainEditFields.value.birth_date,
+					birth_date: mainEditFields.value.birth_date === "" ? null : mainEditFields.value.birth_date,
 					// on_homepage: mainEditFields.value.on_homepage
 				} as CatUpdate )
 			},
@@ -871,7 +871,7 @@ const saveField: Record<EditableFields, EditSubmit> = {
 			}),
 
 			// can only update foster home when we have one selected
-			currentCatManagementFields.value.foster_home_id !== FOSTER_HOME_CASES.NONE && api.updateCatFosterHomesHomeIdPatch({
+			currentCatManagementFields.value.foster_home_id !== FOSTER_HOME_CASES.NONE && api.updateFosterHomeFosterHomesHomeIdPatch({
 				body: {
 					phone: currentCatManagementFields.value.foster_home_phone_nr,
 					address: currentCatManagementFields.value.foster_home_address

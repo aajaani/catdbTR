@@ -55,7 +55,8 @@
             :items="{
               MANAGER: 'Haldur',
               NOT_MANAGER: 'Pole haldur'
-            }"required>
+            }"
+			required>
             </HorizontalSingleSelection>
           </div>
         
@@ -81,7 +82,7 @@ import AccordionWithTitle from '@/components/molecules/AccordionWithTitle.vue';
 import { useRouter } from "vue-router";
 
 import api from "@/api_fetch.js"
-import type { RoleRead, UserRead } from '@/gen_types/types.gen';
+import type { RoleRead } from '@/gen_types/types.gen';
 import HorizontalSingleSelection from '@/components/atoms/HorizontalSingleSelection.vue';
 import { useToast } from "primevue";
 

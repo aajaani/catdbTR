@@ -727,6 +727,10 @@ export type Permissions = {
      * task:delete
      */
     TASK_DELETE: 'task:delete';
+    /**
+     * role:read
+     */
+    ROLE_READ: 'role:read';
 };
 
 /**
@@ -1192,7 +1196,7 @@ export type CreateFosterHomeFosterHomesPostResponses = {
 
 export type CreateFosterHomeFosterHomesPostResponse = CreateFosterHomeFosterHomesPostResponses[keyof CreateFosterHomeFosterHomesPostResponses];
 
-export type UpdateCatFosterHomesHomeIdPatchData = {
+export type UpdateFosterHomeFosterHomesHomeIdPatchData = {
     body: FosterHomeUpdate;
     path: {
         /**
@@ -1204,23 +1208,23 @@ export type UpdateCatFosterHomesHomeIdPatchData = {
     url: '/foster-homes/{home_id}';
 };
 
-export type UpdateCatFosterHomesHomeIdPatchErrors = {
+export type UpdateFosterHomeFosterHomesHomeIdPatchErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type UpdateCatFosterHomesHomeIdPatchError = UpdateCatFosterHomesHomeIdPatchErrors[keyof UpdateCatFosterHomesHomeIdPatchErrors];
+export type UpdateFosterHomeFosterHomesHomeIdPatchError = UpdateFosterHomeFosterHomesHomeIdPatchErrors[keyof UpdateFosterHomeFosterHomesHomeIdPatchErrors];
 
-export type UpdateCatFosterHomesHomeIdPatchResponses = {
+export type UpdateFosterHomeFosterHomesHomeIdPatchResponses = {
     /**
      * Successful Response
      */
     200: FosterHomeRead;
 };
 
-export type UpdateCatFosterHomesHomeIdPatchResponse = UpdateCatFosterHomesHomeIdPatchResponses[keyof UpdateCatFosterHomesHomeIdPatchResponses];
+export type UpdateFosterHomeFosterHomesHomeIdPatchResponse = UpdateFosterHomeFosterHomesHomeIdPatchResponses[keyof UpdateFosterHomeFosterHomesHomeIdPatchResponses];
 
 export type GetImageImageObjectNameGetData = {
     body?: never;
