@@ -12,6 +12,8 @@ class User(Base):
     # link to login_user
     account_id: Mapped[int] = mapped_column(Integer, ForeignKey("accounts.id", ondelete="CASCADE"), unique=True, nullable=False)
 
+    email: Mapped[str] = mapped_column(String(100), unique= True, nullable= False)
+
     # https://docs.sqlalchemy.org/en/14/orm/basic_relationships.html#one-to-one
     account = relationship("Account", back_populates="user", uselist=False)
 
@@ -25,4 +27,3 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
     phone = mapped_column(String(16), nullable=True, default=None)
-    email = mapped_column(String(100), nullable=True, default=None)

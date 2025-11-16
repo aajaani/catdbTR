@@ -19,6 +19,10 @@ class UserRepository(BaseRepository):
     def get_by_username(self, username: str) -> User | None:
         stmt = select(User).join(User.account).where(Account.username == username)
         return self.db.execute(stmt).scalars().first()
+    
+    def get_by_email(self, email: str) -> User | None: 
+        stmt = select(User).where(User.email == email)
+        return self.db.execute(stmt).scalars().first()
 
     def get_by_id(self, user_id: int) -> User | None:
         return self.db.get(User, user_id)

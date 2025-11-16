@@ -96,12 +96,11 @@
 
 					</div>
 
-					<!-- cat birth date -->
-					<div class="flex flex-col col-start-9 col-span-4 row-end-1">
-						<label for="cat-birth-date">Sunnikuupäev</label>
-						<input id="cat-birth-date" name="cat-birth-date" type="date" class="input"
-							   v-model="formDataCat.birthDate">
-					</div>
+          <!-- cat birth date -->
+          <div class="flex flex-col col-start-9 col-span-4 row-end-1">
+            <label for="cat-birth-date">Sünnikuupäev</label>
+            <input id="cat-birth-date" name="cat-birth-date" type="date" class="input" v-model="formDataCat.birthDate">
+          </div>
 
 					<!-- cat sex -->
 					<div class="flex flex-col col-start-1 col-span-2 row-end-2">
