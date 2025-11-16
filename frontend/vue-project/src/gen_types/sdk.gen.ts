@@ -24,6 +24,9 @@ import type {
     DeleteCatCatsCatIdDeleteData,
     DeleteCatCatsCatIdDeleteErrors,
     DeleteCatCatsCatIdDeleteResponses,
+    DeleteProcedureCatsCatIdProceduresProcedureIdDeleteData,
+    DeleteProcedureCatsCatIdProceduresProcedureIdDeleteErrors,
+    DeleteProcedureCatsCatIdProceduresProcedureIdDeleteResponses,
     DeleteUserUsersUserIdDeleteData,
     DeleteUserUsersUserIdDeleteErrors,
     DeleteUserUsersUserIdDeleteResponses,
@@ -45,6 +48,9 @@ import type {
     GetImageImageObjectNameGetData,
     GetImageImageObjectNameGetErrors,
     GetImageImageObjectNameGetResponses,
+    GetProcedureCatsCatIdProceduresProcedureIdGetData,
+    GetProcedureCatsCatIdProceduresProcedureIdGetErrors,
+    GetProcedureCatsCatIdProceduresProcedureIdGetResponses,
     ListCatsCatsGetData,
     ListCatsCatsGetResponses,
     ListFosterHomesFosterHomesGetData,
@@ -69,6 +75,9 @@ import type {
     UpdateCatCatsCatIdPatchData,
     UpdateCatCatsCatIdPatchErrors,
     UpdateCatCatsCatIdPatchResponses,
+    UpdateProcedureCatsCatIdProceduresProcedureIdPatchData,
+    UpdateProcedureCatsCatIdProceduresProcedureIdPatchErrors,
+    UpdateProcedureCatsCatIdProceduresProcedureIdPatchResponses,
 } from './types.gen';
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -473,6 +482,62 @@ export const addProcedureCatsCatIdProceduresPost = <ThrowOnError extends boolean
             }
         ],
         url: '/cats/{cat_id}/procedures',
+        ...options,
+        headers: {
+            'Content-Type': null,
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Delete Procedure
+ */
+export const deleteProcedureCatsCatIdProceduresProcedureIdDelete = <ThrowOnError extends boolean = false>(options: Options<DeleteProcedureCatsCatIdProceduresProcedureIdDeleteData, ThrowOnError>) => {
+    return (options.client ?? client).delete<DeleteProcedureCatsCatIdProceduresProcedureIdDeleteResponses, DeleteProcedureCatsCatIdProceduresProcedureIdDeleteErrors, ThrowOnError>({
+        security: [
+            {
+                in: 'cookie',
+                name: 'access_token',
+                type: 'apiKey'
+            }
+        ],
+        url: '/cats/{cat_id}/procedures/{procedure_id}',
+        ...options
+    });
+};
+
+/**
+ * Get Procedure
+ */
+export const getProcedureCatsCatIdProceduresProcedureIdGet = <ThrowOnError extends boolean = false>(options: Options<GetProcedureCatsCatIdProceduresProcedureIdGetData, ThrowOnError>) => {
+    return (options.client ?? client).get<GetProcedureCatsCatIdProceduresProcedureIdGetResponses, GetProcedureCatsCatIdProceduresProcedureIdGetErrors, ThrowOnError>({
+        security: [
+            {
+                in: 'cookie',
+                name: 'access_token',
+                type: 'apiKey'
+            }
+        ],
+        url: '/cats/{cat_id}/procedures/{procedure_id}',
+        ...options
+    });
+};
+
+/**
+ * Update Procedure
+ */
+export const updateProcedureCatsCatIdProceduresProcedureIdPatch = <ThrowOnError extends boolean = false>(options: Options<UpdateProcedureCatsCatIdProceduresProcedureIdPatchData, ThrowOnError>) => {
+    return (options.client ?? client).patch<UpdateProcedureCatsCatIdProceduresProcedureIdPatchResponses, UpdateProcedureCatsCatIdProceduresProcedureIdPatchErrors, ThrowOnError>({
+        ...formDataBodySerializer,
+        security: [
+            {
+                in: 'cookie',
+                name: 'access_token',
+                type: 'apiKey'
+            }
+        ],
+        url: '/cats/{cat_id}/procedures/{procedure_id}',
         ...options,
         headers: {
             'Content-Type': null,

@@ -1,3 +1,10 @@
+from app.models.role import Permissions
+from app.repositories.cat_procedure_repository import CatProcedureRepository
+from app.repositories.task_repository import TaskRepository
+from app.schemas.procedure import ProcedureCreate, ProcedureRead, ProcedureUpdate
+from app.schemas.task import TaskCreate, TaskRead
+from app.services.procedure_service import ProcedureService
+from app.services.task_service import TaskService
 from fastapi.openapi.utils import get_openapi
 
 import os
@@ -411,7 +418,7 @@ def get_image(object_name: str, request: Request, auth: bool = Depends(require_u
         obj = request.app.state.minio.get_object(MINIO_BUCKET, object_name)
         # gets content-type from file extension
         content_type = mimetypes.guess_type(object_name)[0] or "application/octet-stream"
-        return StreamingResponse(obj, media_type=content_type)
+        return StreamingResponse(obj, media_type=content_type, headers={"Content-Disposition": f'attachment; filename="{object_name}"'})
     except Exception:
         raise HTTPException(status_code=404, detail="Object not found or not accessible")
     
@@ -448,6 +455,40 @@ def add_procedure(
 def list_procedures(cat_id: int, db: Session = Depends(get_db), auth: bool = Depends(require_permission(Permissions.PROCEDURE_VIEW))):
     svc = ProcedureService(CatProcedureRepository(db), CatRepository(db), None)
     return svc.list_for_cat(cat_id)
+
+@app.get("/cats/{cat_id}/procedures/{procedure_id}", response_model=ProcedureRead)
+def get_procedure(cat_id: int, procedure_id: int, db = Depends(get_db), auth = Depends(require_permission(Permissions.PROCEDURE_VIEW))):
+    svc = ProcedureService(CatProcedureRepository(db), CatRepository(db), None)
+    return svc.get_procedure(cat_id, procedure_id)
+
+@app.patch("/cats/{cat_id}/procedures/{procedure_id}", response_model=ProcedureRead)
+def update_procedure(
+    cat_id: int,
+    procedure_id: int,
+    request: Request,
+    db = Depends(get_db),
+    auth = Depends(require_permission(Permissions.PROCEDURE_EDIT)),
+    payload: str = Form(...),
+    file: UploadFile | None = File(None),
+):
+    try:
+        data = ProcedureUpdate.model_validate_json(payload)
+    except ValidationError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    
+    svc = ProcedureService(CatProcedureRepository(db), CatRepository(db), request.app.state.minio)
+    return svc.update_from_payload(cat_id, procedure_id, data, file)
+
+@app.delete("/cats/{cat_id}/procedures/{procedure_id}", status_code=204)
+def delete_procedure(cat_id: int, procedure_id: int, db = Depends(get_db), auth = Depends(require_permission(Permissions.PROCEDURE_REMOVE))):
+    svc = ProcedureService(CatProcedureRepository(db), CatRepository(db), None)
+    deleted = svc.delete(cat_id, procedure_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="procedure not found")
+    return
+    
+    
+
 
 
 # TASKS (for calendar)
