@@ -3,13 +3,12 @@ import { MdFeed, MdOutlinePets, MdCatchingPokemon, MdPersonAdd, MdPeople, MdArro
 
 import Button from "@/components/atoms/Button.vue"
 
-import { useRoute, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
 import { isSidebarAvailable } from "@/router/helpers.js";
 import { useToast } from "primevue";
 
 // reactive route
-const route = useRoute( );
-const router = useRouter();
+const router = useRouter( );
 const toast = useToast();
 
 // todo: add translations, idk if i18n exists for vue3
@@ -50,13 +49,13 @@ const onLogout = () => {
 </script>
 
 <template>
-<aside v-if="isSidebarAvailable( route.meta )" class="flex flex-col gap-6 pt-4">
+<aside v-if="isSidebarAvailable( router.currentRoute.value.meta )" class="flex flex-col gap-6 pt-4">
   <div class="pl-4 flex flex-row justify-between relative h-min w-full collapse-title">
     <h1 class="poppins-medium text-[18px] text-nav-li-text" id="logo-name">Kassid Koju</h1>
 
     <span id="collapse" class="absolute right-0 top-3 translate-x-[50%] w-[40px] aspect-square h-auto left-0 p-2 bg-nav-li-text self-end justify-self-end flex place-items-center justify-center rounded-[8px]">
       <MdArrowBack size="20" class="fill-nav-bg bg-main-bg transition-all transition-[300ms]"/>
-      <input type="checkbox" id="collapseCheckbox" class="absolute inset-0 opacity-0 cursor-pointer"></input>
+      <input type="checkbox" id="collapseCheckbox" class="absolute inset-0 opacity-0 cursor-pointer">
     </span>
   </div>
   <div class="profile-container flex gap-4 px-4">
@@ -76,7 +75,7 @@ const onLogout = () => {
       <li
         v-for="(link, path) in sidebar_links"
         :key="path"
-        :data-active="route.path === path ? 'true' : 'false'"
+        :data-active="router.currentRoute.value.path === path ? 'true' : 'false'"
         class="nav-item"
       >
         <router-link :to="path" class="nav-link grid pr-9 rounded-l-3xl pl-6 py-2">
@@ -104,7 +103,7 @@ const onLogout = () => {
     <Button
         class="destructive w-full"
         @click="onLogout"
-          
+
   >
       <MdLogout size="24" />
       <span>Logi valja</span>

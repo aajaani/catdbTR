@@ -46,7 +46,7 @@ import TableText from "@/components/atoms/filter-table/Text.vue"
 import TableSelection from "@/components/atoms/filter-table/Selection.vue"
 import { useRouter } from "vue-router";
 import api from '@/api_fetch';
-import { type UserRead, type UserUpdate, type RoleRead, type DeleteUserUsersUserIdDeleteData } from "@/gen_types/types.gen.ts";
+import { type UserRead, type UserUpdate, type RoleRead } from "@/gen_types/types.gen.ts";
 import Button from "@/components/atoms/Button.vue";
 import { AiOutlinePlus } from "vue-icons-plus/ai";
 import { FiEdit3, FiX } from "vue-icons-plus/fi";

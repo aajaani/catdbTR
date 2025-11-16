@@ -40,7 +40,7 @@ from app.schemas.procedure import ProcedureCreate, ProcedureRead
 from app.schemas.task import TaskCreate, TaskRead
 from app.schemas.cats import CatCreate, CatRead, CatUpdate
 from app.schemas.colony import ColonyCreate, ColonyRead
-from app.schemas.foster_home import FosterHomeCreate, FosterHomeRead
+from app.schemas.foster_home import FosterHomeCreate, FosterHomeRead, FosterHomeUpdate
 
 from app.services.auth_checks import require_user, require_permission
 from app.services.auth_service import bootstrap_admin, bootstrap_roles
@@ -407,7 +407,17 @@ def create_foster_home(payload: FosterHomeCreate, db: Session = Depends(get_db),
 def list_foster_homes(db: Session = Depends(get_db), auth: bool = Depends(require_permission(Permissions.FOSTER_VIEW))):
     svc = FosterHomeService(FosterHomeRepository(db))
     rows = svc.list_all()
-    return rows  # ORM TO FosterHomeRead 
+    return rows  # ORM TO FosterHomeRead
+
+@app.patch("/foster-homes/{home_id}", response_model=FosterHomeRead)
+def update_foster_home(
+    home_id: int,
+    data: FosterHomeUpdate,
+    db: Session = Depends(get_db),
+    auth: bool = Depends(require_permission(Permissions.FOSTER_EDIT)),
+):
+    svc = FosterHomeService(FosterHomeRepository(db))
+    return svc.update(home_id, data)
 
 
 # MINIO IMAGE/FILE

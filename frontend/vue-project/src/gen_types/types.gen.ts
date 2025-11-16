@@ -250,6 +250,32 @@ export type FosterHomeRef = {
 };
 
 /**
+ * FosterHomeUpdate
+ */
+export type FosterHomeUpdate = {
+    /**
+     * Name
+     */
+    name?: string | null;
+    /**
+     * Phone
+     */
+    phone?: string | null;
+    /**
+     * Email
+     */
+    email?: string | null;
+    /**
+     * Address
+     */
+    address?: string | null;
+    /**
+     * Comments
+     */
+    comments?: string | null;
+};
+
+/**
  * HTTPValidationError
  */
 export type HttpValidationError = {
@@ -715,6 +741,10 @@ export type Permissions = {
      * task:delete
      */
     TASK_DELETE: 'task:delete';
+    /**
+     * role:read
+     */
+    ROLE_READ: 'role:read';
 };
 
 /**
@@ -1179,6 +1209,36 @@ export type CreateFosterHomeFosterHomesPostResponses = {
 };
 
 export type CreateFosterHomeFosterHomesPostResponse = CreateFosterHomeFosterHomesPostResponses[keyof CreateFosterHomeFosterHomesPostResponses];
+
+export type UpdateFosterHomeFosterHomesHomeIdPatchData = {
+    body: FosterHomeUpdate;
+    path: {
+        /**
+         * Home Id
+         */
+        home_id: number;
+    };
+    query?: never;
+    url: '/foster-homes/{home_id}';
+};
+
+export type UpdateFosterHomeFosterHomesHomeIdPatchErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UpdateFosterHomeFosterHomesHomeIdPatchError = UpdateFosterHomeFosterHomesHomeIdPatchErrors[keyof UpdateFosterHomeFosterHomesHomeIdPatchErrors];
+
+export type UpdateFosterHomeFosterHomesHomeIdPatchResponses = {
+    /**
+     * Successful Response
+     */
+    200: FosterHomeRead;
+};
+
+export type UpdateFosterHomeFosterHomesHomeIdPatchResponse = UpdateFosterHomeFosterHomesHomeIdPatchResponses[keyof UpdateFosterHomeFosterHomesHomeIdPatchResponses];
 
 export type GetImageImageObjectNameGetData = {
     body?: never;
