@@ -7,7 +7,10 @@
 			</div>
 
 			<div class="flex flex-col px-4 pt-12 z-10 gap-2">
-				<BreadCrumbs class="light"/>
+				<BreadCrumbs
+					class="light"
+					:slugs="{ name: catData?.name || 'Kassi' }"
+				/>
 
 				<div
 					v-if="catData?.id"
@@ -454,7 +457,6 @@ import {
 import { ref, watch } from 'vue';
 import { useRouter } from "vue-router";
 import { useToast } from "primevue";
-import { setBreadcrumb } from "@/router/helpers.ts";
 
 import { CgSpinner } from "vue-icons-plus/cg";
 import { FiSave, FiX } from "vue-icons-plus/fi";
@@ -986,16 +988,6 @@ const fetchCatInfo = ( id: any ) => {
 		syncMainEditFieldsToCatData( res.data );
 		syncCatManagementFieldsToCatData( res.data );
 		syncCatNotesFieldsToCatData( res.data );
-
-		// bug: redirects break with this (on logout no redirect)
-		// HAVE to set directly, modifying meta won't update breadcrumbs (good 2h spent)
-		router.currentRoute.value = {
-			...router.currentRoute.value,
-			meta: {
-				breadcrumbs: setBreadcrumb( router.currentRoute.value.meta, -1, `${ res.data.name } profiil` ),
-				sidebar: true
-			}
-		}
 	} )
 }
 

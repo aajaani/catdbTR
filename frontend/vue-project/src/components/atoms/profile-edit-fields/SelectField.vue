@@ -13,8 +13,6 @@ const model = defineModel<number>( {
 		return props.defaultSelected
 	}
 } );
-
-console.log( props.options, props.defaultSelected )
 </script>
 
 <template>
