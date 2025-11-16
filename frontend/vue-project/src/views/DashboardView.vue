@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import api from '@/api_fetch';
-import type { CatRead } from '@/gen_types/types.gen';
+import type { CatRead, TaskRead } from '@/gen_types/types.gen';
 import { computed, onMounted, ref } from 'vue';
 import VCalendar from 'v-calendar';
 import 'v-calendar/style.css';
@@ -16,6 +16,8 @@ import {
 ChartJS.register(ArcElement, Tooltip, Legend, Title);
 
 const cats = ref<CatRead[]>([])
+const tasks = ref<TaskRead[]>([])
+console.log("tasks:", tasks);
 const loading = ref(false)
 const error = ref<string | null>(null)
 const showPopup = ref(false);
@@ -44,32 +46,86 @@ const attrs = ref([
   }
 ])
 
-function addEvent(catName: string, Date: Date, task: string, taskType: string) {
-   // add a new event to the calendar and later persist info to db
-  
-  let typeColor= "#50192f"; //default color
-  if (taskType === "VET_VISIT") {
-    typeColor = "orange"; 
-  } else if (taskType === "MEDICATION") {
-    typeColor = "green"; 
-  } else if (taskType === "PERSONAL") {
-    typeColor = "blue"; 
-  }
-  
-  const newEventDate = Date;
+const taskAttrs = computed(() => {
+  return tasks.value.map((t, idx) => {
+    let typeColor = "#50192f";
+    if (t.type === "VET_VISIT") typeColor = "orange";
+    else if (t.type === "MEDICATION") typeColor = "green";
+    else if (t.type === "PERSONAL") typeColor = "blue";
+
+
+  let visitType = "";
+    if (t.type === "VET_VISIT") visitType = "Visiidi külastus";
+    else if (t.type === "MEDICATION") visitType = "Ravimi andmine";
+    else if (t.type === "PERSONAL") visitType = "Personaalne";
+  const catName = cats.value.find(c => c.id === t.cat_id)?.name ?? "Unknown cat";
+
+    return {
+      key: `task-${idx}`,
+      dot: { color: typeColor },
+      dates: new Date(t.due_date),   // string "YYYY-MM-DD" to Date
+      popover: { label: `${catName} : ${t.notes} (${visitType})` },
+    };
+  });
+});
+
+const allAttrs = computed(() => {
+  return [
+    ...attrs.value,   // loads static attrs e.g today and manually added events (currently a sample event).
+    ...taskAttrs.value  // tasks from backend
+  ];
+});
+
+const nextThreeTasks = computed(() => {
+  const today = new Date();
+  return [...tasks.value]
+    // filter out tasks with due_date before today
+    .filter(t => new Date(t.due_date).getTime() >= today.setHours(0,0,0,0))
+    // sort ascending
+    .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
+    // take first three
+    .slice(0, 3);
+});
+
+
+function addEvent(catName: string, dueDateStr: string, task: string, taskType: string) {
+
+  const dueDate = new Date(dueDateStr);
+
+  let typeColor = "#50192f";
+  if (taskType === "VET_VISIT") typeColor = "orange";
+  else if (taskType === "MEDICATION") typeColor = "green";
+  else if (taskType === "PERSONAL") typeColor = "blue";
+  console.log("Resolved typeColor:", typeColor);
+
   attrs.value.push({
     key: `event-${attrs.value.length + 1}`,
-    dot: {color: typeColor},
-    dates: newEventDate,
-    popover: { label: catName + ": " + task + taskType }
+    dot: { color: typeColor },
+    dates: dueDate,
+    popover: { label: `${catName}: ${task} (${taskType})` }
   });
 
-  //reset input fields
+  const catId = cats.value.find(cat => cat.name === catName)?.id;
+  console.log("Resolved catId:", catId);
+
+api.createTaskTasksPost({
+  body: {
+    cat_id: catId,
+    due_date: dueDateStr,   // "YYYY-MM-DD"
+    type: taskType,
+    notes: task
+  }
+  
+}).then(res => console.log("API response:", res))
+    .catch(err => console.error("API error:", err));
+    
   CatName.value = '';
   time.value = '';
   Task.value = '';
-  taskType = '';
+  taskType= '';
 }
+
+
 
 const status_to_color: { [key in CatRead["status"]]: string } = {
   //currently different from the CatsView.vue page, following the figma design as of now
@@ -145,9 +201,10 @@ onMounted(async () => {
   error.value = null
   try {
     const res = await api.listCatsCatsGet()
-    const tasks = await api.listTasksTasksGet()
+    const res2 = await api.listTasksTasksGet()
     // handle generated SDK shape (adjust if different)
     cats.value = res?.data ?? res
+    tasks.value = res2?.data ?? res2
   } catch (e) {
     error.value = 'Failed to load cats data.'
   }
@@ -204,15 +261,36 @@ onMounted(async () => {
         </div>
 
         <div class="kalender-body">
-          <p class="kalender-item">Timeline</p>
+          <div class="kalender-item mb-4 w-[100px]">
+            <div class="kalender-item font-normal text-left">Tulevased ülesanded
+            <ul class="space-y-2 mt-2">
+              <li v-for="t in nextThreeTasks" :key="t.id" class="text-left">
+                <p class="font-medium">
+                  {{ cats.find(c => c.id === t.cat_id)?.name ?? 'Unknown cat' }}
+                </p>
+                <span class="block text-gray-700 whitespace-normal break-words">
+                  — {{ t.notes }} <!-- definitely a prettier way to do this, too sick n tired rn -->
+                  ({{   t.type === 'VET_VISIT'
+                        ? 'Visiidi külastus'
+                        : t.type === 'MEDICATION'
+                        ? 'Ravimi andmine'
+                        : t.type === 'PERSONAL'
+                        ? 'Personaalne'
+                        : t.type}} )
+                     {{ t.due_date}}
+                </span>
+              </li>
+            </ul>
+          </div>
+          </div>
+
           <VDatePicker
             transparent
             borderless
             show-weeknumbers
             mode="date"
-            :attributes="attrs"
+            :attributes="allAttrs"
             class="kalender-item"
-            
           />
 
           <button class="add-event" > 
