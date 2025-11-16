@@ -431,6 +431,7 @@ import TabSelection from '@/components/organisms/TabSelection.vue';
 import Button from '@/components/atoms/Button.vue';
 import { reactive, ref } from 'vue';
 
+// used, IDE says theyre not, they're used
 import { BiFemaleSign, BiMaleSign } from 'vue-icons-plus/bi';
 import { CgCheck, CgClose } from 'vue-icons-plus/cg';
 import { FiX, FiPlus } from 'vue-icons-plus/fi';
@@ -706,56 +707,56 @@ const sendCatCreate = async ( sendData: CatCreate ) => {
 <style lang="css" scoped>
 #cat-sex:deep( .item-container ) {
 	&:first-child:has( input:checked ) {
-		@apply bg-sex-male border-sex-male border-[color-mix(in_srgb,theme(colors.sex.male)_90%, black)];
+		@apply bg-sex-male border-sex-male border-[color-mix(in_srgb,theme(colors.sex.male)_90%,black)];
 	}
 
 	/* female selected */
 
 	&:last-child:has( input:checked ) {
-		@apply bg-sex-female border-[color-mix(in_srgb,theme(colors.sex.female)_90%, black)];
+		@apply bg-sex-female border-[color-mix(in_srgb,theme(colors.sex.female)_90%,black)];
 	}
 
 	/* need to apply right border for male and set it as it is above */
 
 	&:first-child:has( + & input:checked ) {
-		@apply border-r-[color-mix(in_srgb,theme(colors.sex.female)_90%, black)];
+		@apply border-r-[color-mix(in_srgb,theme(colors.sex.female)_90%,black)];
 	}
 }
 
 
 #cat-on-homepage:deep( .item-container ) {
 	&:first-child:has( input:checked ) {
-		@apply bg-[#66e16660] border-sex-male border-[color-mix(in_srgb,#66e166_90%, black)];
+		@apply bg-[#66e16660] border-sex-male border-[color-mix(in_srgb,#66e166_90%,black)];
 	}
 
 	/* female selected */
 
 	&:last-child:has( input:checked ) {
-		@apply bg-[#fd35357e] border-[color-mix(in_srgb,#fd3535_90%, black)];
+		@apply bg-[#fd35357e] border-[color-mix(in_srgb,#fd3535_90%,black)];
 	}
 
 	/* need to apply right border for male and set it as it is above */
 
 	&:first-child:has( + & input:checked ) {
-		@apply border-r-[color-mix(in_srgb,#fd3535_90%, black)]
+		@apply border-r-[color-mix(in_srgb,#fd3535_90%,black)]
 	}
 }
 
 #cat-sterilized:deep( .item-container ) {
 	&:first-child:has( input:checked ) {
-		@apply bg-[#66e16660] border-sex-male border-[color-mix(in_srgb,#66e166_90%, black)];
+		@apply bg-[#66e16660] border-sex-male border-[color-mix(in_srgb,#66e166_90%,black)];
 	}
 
 	/* female selected */
 
 	&:last-child:has( input:checked ) {
-		@apply bg-[#fd35357e] border-[color-mix(in_srgb,#fd3535_90%, black)];
+		@apply bg-[#fd35357e] border-[color-mix(in_srgb,#fd3535_90%,black)];
 	}
 
 	/* need to apply right border for male and set it as it is above */
 
 	&:first-child:has( + & input:checked ) {
-		@apply border-r-[color-mix(in_srgb,#e16666_90%, black)]
+		@apply border-r-[color-mix(in_srgb,#e16666_90%,black)]
 	}
 }
 </style>

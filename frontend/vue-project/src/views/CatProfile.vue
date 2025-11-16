@@ -16,29 +16,85 @@
 				>
 					<div class="col-start-1 xl:row-start-1 xl:row-span-2">
 						<div class="flex flex-col w-full bg-main-bg rounded-[10px] gap-4 px-3 py-3">
-							<div class="flex justify-center items-center">
+							<form
+								class="flex justify-center items-center gap-2"
+								@submit.prevent="submitEdit( 'status' )"
+							>
 								<Selection
 									:color="status_to_color[ catData.status ]"
-									:label="status_to_readable[ catData.status ]"
 									:disableEditWithAlt="true"
 								/>
-							</div>
+
+								<SelectField
+									:defaultSelected="selectableStatuses[ catData.status ]"
+									:options="selectableStatusesIndex"
+									v-model="catStatusIndex"
+									:isEditing="editing.status === EditingStatus.EDITING || editing.status === EditingStatus.SUBMITTING"
+									:disabled="editing.status === EditingStatus.SUBMITTING"
+									@update:modelValue="submitEdit( 'status' )"
+								/>
+
+								<button
+									v-if="editing.status === EditingStatus.SUBMITTING"
+									class="justify-self-end small"
+									type="submit"
+								>
+									<CgSpinner
+										:size="EDIT_ICON_SIZE"
+										class="animate-spin"
+									/>
+								</button>
+
+								<button
+									v-if="editing.status !== EditingStatus.IDLE"
+									class="justify-self-end small"
+									@click="_ => {
+										editing.status = EditingStatus.IDLE;
+
+										if ( catData ) syncCatStatusToCatData( catData );
+									}"
+								>
+									<FiX :size="EDIT_ICON_SIZE"/>
+								</button>
+
+								<button
+									v-if="editing.status === EditingStatus.IDLE"
+									class="justify-self-end small svg-fill"
+									@click="editing.status = EditingStatus.EDITING"
+								>
+									<TfiPencil :size="EDIT_ICON_SIZE"/>
+								</button>
+							</form>
 
 							<!-- cat heading info -->
 							<div
 								class="flex flex-row items-center gap-5"
 							>
-								<img
+								<div
 									class="w-[72px] h-[72px] rounded-full"
-									src="https://picsum.photos/100/100"
-									alt="cat-img"
 								>
+									<img
+										v-if="catData.primary_photo_object"
+										class="w-[72px] h-[72px] rounded-full"
+										src=""
+										alt=""
+										ref="catPfpImgRef"
+									/>
+
+									<div
+										v-else
+										class="w-[72px] h-[72px] bg-gray-200 rounded-full"
+									>
+
+									</div>
+								</div>
 
 								<h1 class="uppercase text-[18px] abril-fatface-regular">{{ catData.name }}</h1>
 
-								<button class="mr-0 ml-auto small">
-									Lae pilt ules
-								</button>
+								<ImageUploadButton
+									v-model="catProfilePicture"
+									class="mr-0 ml-auto small"
+								/>
 							</div>
 
 							<form
@@ -407,6 +463,7 @@ import InputField from "@/components/atoms/profile-edit-fields/InputField.vue";
 import SelectField from "@/components/atoms/profile-edit-fields/SelectField.vue";
 import CheckboxField from "@/components/atoms/profile-edit-fields/CheckboxField.vue";
 import TextField from "@/components/atoms/profile-edit-fields/TextField.vue";
+import ImageUploadButton from "@/components/atoms/profile-edit-fields/ImageUploadButton.vue";
 
 const router = useRouter();
 const toast = useToast();
@@ -431,6 +488,20 @@ const status_to_color: { [key in CatRead[ "status" ]]: "green" | "yellow" | "red
 	"RESERVED": "gray"
 }
 
+// SelectField expects { index: name } dict
+// map each status key to an index ({ name: index }), easier to look up with cat status
+const selectableStatuses =
+	Object.entries( status_to_readable )
+	.map( ([ key, value ], index ) => ({ index, name: key }) )
+	.reduce( ( acc, curr ) => ({ ...acc, [ curr.name ]: curr.index }), { } ) as { [ key in CatRead[ "status" ] ]: number };
+// for SelectField we need a ""reverse"" table of above
+const selectableStatusesIndex: { [ key: number ]: ( typeof status_to_readable )[ keyof typeof status_to_readable ] } =
+	Object.entries( selectableStatuses )
+		// losing strictness for a sec
+		.map( ([ key, value ]: [ string, number ]) => ({ key, value }) )
+		// @ts-ignore
+		.reduce( ( acc, curr: { key: CatRead[ "status" ], value: number } ) => ({ ...acc, [ curr.value ]: status_to_readable[ curr.key ] }), { } );
+
 // special cases for selecting "null" entries for
 // colonies, managers and foster homes
 // enums are made just to make readability better
@@ -447,8 +518,9 @@ enum FOSTER_HOME_CASES {
 }
 
 const catData = ref<CatRead | null>( null );
+const catPfpImgRef = ref< HTMLImageElement | null >( null );
 
-type EditableFields = "status" | "main" | "care" | "notes";
+type EditableFields = "pfp" | "status" | "main" | "care" | "notes";
 type EditSubmit = () => Promise< boolean >;
 enum EditingStatus {
 	EDITING = 0,
@@ -457,6 +529,7 @@ enum EditingStatus {
 }
 
 const editing = ref<{ [key in EditableFields]: EditingStatus }>( {
+	pfp: 	EditingStatus.IDLE,
 	main:	EditingStatus.IDLE,
 	status: EditingStatus.IDLE,
 	notes:  EditingStatus.IDLE,
@@ -483,6 +556,9 @@ const catManagementFieldOptions = ref<{
 
 // ive genuinely went over this in 3 different ways
 // staying on this variant of handling data as of now
+const catStatusIndex = ref< number >( 0 );
+const catProfilePicture = ref< null | File >( null );
+
 const mainEditFields = ref<{
 	name: string, sex_idx: number, chip_number: string,
 	sterilized: boolean, colony_id: number | COLONY_CASES,
@@ -512,6 +588,9 @@ const currentCatManagementFields = ref<{
 const catNotes = ref< string >( "" );
 
 // syncing editable data to cats, called on cat load
+const syncCatStatusToCatData = ( cat: CatRead ) => {
+	catStatusIndex.value = selectableStatuses[ cat.status ];
+}
 const syncMainEditFieldsToCatData = ( cat: CatRead ) => {
 	mainEditFields.value.name = cat.name // Sten
 	mainEditFields.value.sex_idx = mainEditFieldOptions.value.sex.indexOf( cat.sex ?? "unknown" ) // male
@@ -570,6 +649,28 @@ api.listFosterHomesFosterHomesGet( ).then( res => {
 })
 
 
+const updateCatProfileImage = async ( ) => {
+	if ( !catData.value?.primary_photo_object || !catPfpImgRef.value ) return;
+
+	const res = await api.getImageImageObjectNameGet({
+		path: {
+			object_name: catData.value.primary_photo_object
+		}
+	});
+
+	if ( !res.data ) {
+		toast.add( {
+			severity: "error",
+			summary: "Kassi pildi laadimine ebaonnestus",
+			life: 3000
+		} );
+		return;
+	}
+
+	const blob = res.data as Blob;
+	catPfpImgRef.value.src = URL.createObjectURL( blob );
+}
+
 // when foster home selection changes we also have to update its corresponding
 // fields in the form, address & phonenr atm
 watch(
@@ -606,8 +707,103 @@ watch(
 // save field callbacks
 // each is used when their corresponding group gets saved
 const saveField: Record<EditableFields, EditSubmit> = {
-	status: async () => false,
-	main: async () => {
+	status: async ( ) => {
+		if ( !catData.value ) {
+			toast.add({
+				severity: "warn",
+				summary: "Kassi pole.",
+				life: 3000
+			});
+			return false;
+		}
+
+		const readableStatusName = selectableStatusesIndex[ catStatusIndex.value ];
+
+		if ( !readableStatusName ) {
+			console.error( `couldn't find readable status for index ${ catStatusIndex.value } in ${ selectableStatusesIndex }` );
+			return false;
+		}
+
+		const backendStatusName = Object.entries( status_to_readable ).map( ([ dbName, prettyName ]) => ({ dbName, prettyName }) ).find( t => t.prettyName === readableStatusName );
+
+		if ( !backendStatusName ) {
+			console.error( `couldn't find backend status name for ${ readableStatusName } in ${ status_to_readable }` );
+			return false;
+		}
+
+		const res = await api.updateCatCatsCatIdPatch({
+			body: {
+				payload: JSON.stringify({
+					status: backendStatusName.dbName
+				} as CatUpdate )
+			},
+			path: {
+				cat_id: catData.value.id
+			}
+		});
+
+		if ( !res.data ) {
+			toast.add({
+				severity: "error",
+				summary: "Kassi staatuse uuendamine ebaonnestus.",
+				life: 3000
+			});
+
+			return false;
+		}
+
+		catData.value = res.data;
+
+		return true;
+	},
+	pfp: async ( ) => {
+		if ( !catData.value ) {
+			toast.add({
+				severity: "warn",
+				summary: "Kassi pole.",
+				life: 3000
+			});
+			return false;
+		}
+
+		if ( !catProfilePicture.value ) {
+			toast.add({
+				severity: "warn",
+				summary: "Kassi pilti pole.",
+				life: 3000
+			});
+			return false;
+		}
+
+		const res = await api.updateCatCatsCatIdPatch({
+			body: {
+				primary_image: catProfilePicture.value,
+				payload: JSON.stringify({ })
+			},
+			path: {
+				cat_id: catData.value.id
+			}
+		});
+
+		if ( !res.data ) {
+			toast.add({
+				severity: "error",
+				summary: "Kassi pildi uuendamine ebaonnestus.",
+				life: 3000
+			});
+
+			return false;
+		}
+
+		catData.value = res.data;
+
+		if ( catPfpImgRef.value ) {
+			catPfpImgRef.value.src = URL.createObjectURL( catProfilePicture.value );
+		}
+
+		return true;
+	},
+	main: async ( ) => {
 		if ( !catData.value ) {
 			toast.add({
 				severity: "warn",
@@ -648,7 +844,7 @@ const saveField: Record<EditableFields, EditSubmit> = {
 
 		return true;
 	},
-	care: async () => {
+	care: async ( ) => {
 		if ( !catData.value ) {
 			toast.add({
 				severity: "warn",
@@ -720,7 +916,7 @@ const saveField: Record<EditableFields, EditSubmit> = {
 
 		return !failedAny;
 	},
-	notes: async () => {
+	notes: async ( ) => {
 		if ( !catData.value ) {
 			toast.add({
 				severity: "warn",
@@ -780,12 +976,13 @@ const fetchCatInfo = ( id: any ) => {
 				severity: "error",
 				summary: "Kassi laadimine ebaonnestus",
 				life: 3000
-			} )
-			return
+			} );
+			return;
 		}
 
 		catData.value = res.data;
 
+		syncCatStatusToCatData( res.data );
 		syncMainEditFieldsToCatData( res.data );
 		syncCatManagementFieldsToCatData( res.data );
 		syncCatNotesFieldsToCatData( res.data );
@@ -806,6 +1003,25 @@ watch(
 	() => router.currentRoute.value.params.id,
 	( newId ) => fetchCatInfo( newId )
 );
+
+watch(
+	( ) => catProfilePicture.value,
+	async ( newPfp ) => {
+		if ( !newPfp ) return;
+
+		if ( editing.value.pfp === EditingStatus.IDLE ) {
+			editing.value.pfp = EditingStatus.EDITING;
+			await submitEdit( "pfp" );
+		}
+	}
+);
+
+watch(
+	( ) => catPfpImgRef.value,
+	async ( ) => {
+		await updateCatProfileImage( );
+	}
+)
 
 fetchCatInfo( router.currentRoute.value.params.id );
 </script>

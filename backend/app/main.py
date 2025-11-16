@@ -376,7 +376,7 @@ def list_foster_homes(db: Session = Depends(get_db), auth: bool = Depends(requir
     return rows  # ORM TO FosterHomeRead
 
 @app.patch("/foster-homes/{home_id}", response_model=FosterHomeRead)
-def update_cat(
+def update_foster_home(
     home_id: int,
     data: FosterHomeUpdate,
     db: Session = Depends(get_db),
