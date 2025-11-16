@@ -2,7 +2,7 @@
 
 import { type Client, formDataBodySerializer, type Options as Options2, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddProcedureCatsCatIdProceduresPostData, AddProcedureCatsCatIdProceduresPostErrors, AddProcedureCatsCatIdProceduresPostResponses, CreateCatCatsPostData, CreateCatCatsPostErrors, CreateCatCatsPostResponses, CreateColonyColoniesPostData, CreateColonyColoniesPostErrors, CreateColonyColoniesPostResponses, CreateFosterHomeFosterHomesPostData, CreateFosterHomeFosterHomesPostErrors, CreateFosterHomeFosterHomesPostResponses, CreateTaskTasksPostData, CreateTaskTasksPostErrors, CreateTaskTasksPostResponses, CreateUserFullUsersFullCreatePostData, CreateUserFullUsersFullCreatePostErrors, CreateUserFullUsersFullCreatePostResponses, DeleteCatCatsCatIdDeleteData, DeleteCatCatsCatIdDeleteErrors, DeleteCatCatsCatIdDeleteResponses, DeleteUserUsersUserIdDeleteData, DeleteUserUsersUserIdDeleteErrors, DeleteUserUsersUserIdDeleteResponses, EditUserUsersUserIdPatchData, EditUserUsersUserIdPatchErrors, EditUserUsersUserIdPatchResponses, GetAllColoniesColoniesGetData, GetAllColoniesColoniesGetResponses, GetAllPermissionsPermissionsGetData, GetAllPermissionsPermissionsGetResponses, GetAllRolesRolesGetData, GetAllRolesRolesGetResponses, GetCatCatsCatIdGetData, GetCatCatsCatIdGetErrors, GetCatCatsCatIdGetResponses, GetColonyColoniesColonyIdGetData, GetColonyColoniesColonyIdGetErrors, GetColonyColoniesColonyIdGetResponses, GetImageImageObjectNameGetData, GetImageImageObjectNameGetErrors, GetImageImageObjectNameGetResponses, ListCatsCatsGetData, ListCatsCatsGetResponses, ListFosterHomesFosterHomesGetData, ListFosterHomesFosterHomesGetResponses, ListManagersManagersGetData, ListManagersManagersGetResponses, ListProceduresCatsCatIdProceduresGetData, ListProceduresCatsCatIdProceduresGetErrors, ListProceduresCatsCatIdProceduresGetResponses, ListTasksForCatCatsCatIdTasksGetData, ListTasksForCatCatsCatIdTasksGetErrors, ListTasksForCatCatsCatIdTasksGetResponses, ListTasksTasksGetData, ListTasksTasksGetResponses, ListUsersUsersGetData, ListUsersUsersGetResponses, LoginLoginPostData, LoginLoginPostErrors, LoginLoginPostResponses, ReadRootGetData, ReadRootGetResponses, UpdateCatCatsCatIdPatchData, UpdateCatCatsCatIdPatchErrors, UpdateCatCatsCatIdPatchResponses } from './types.gen';
+import type { AddProcedureCatsCatIdProceduresPostData, AddProcedureCatsCatIdProceduresPostErrors, AddProcedureCatsCatIdProceduresPostResponses, CreateCatCatsPostData, CreateCatCatsPostErrors, CreateCatCatsPostResponses, CreateColonyColoniesPostData, CreateColonyColoniesPostErrors, CreateColonyColoniesPostResponses, CreateFosterHomeFosterHomesPostData, CreateFosterHomeFosterHomesPostErrors, CreateFosterHomeFosterHomesPostResponses, CreateTaskTasksPostData, CreateTaskTasksPostErrors, CreateTaskTasksPostResponses, CreateUserFullUsersFullCreatePostData, CreateUserFullUsersFullCreatePostErrors, CreateUserFullUsersFullCreatePostResponses, DeleteCatCatsCatIdDeleteData, DeleteCatCatsCatIdDeleteErrors, DeleteCatCatsCatIdDeleteResponses, DeleteUserUsersUserIdDeleteData, DeleteUserUsersUserIdDeleteErrors, DeleteUserUsersUserIdDeleteResponses, EditUserUsersUserIdPatchData, EditUserUsersUserIdPatchErrors, EditUserUsersUserIdPatchResponses, GetAllColoniesColoniesGetData, GetAllColoniesColoniesGetResponses, GetAllPermissionsPermissionsGetData, GetAllPermissionsPermissionsGetResponses, GetAllRolesRolesGetData, GetAllRolesRolesGetResponses, GetCatCatsCatIdGetData, GetCatCatsCatIdGetErrors, GetCatCatsCatIdGetResponses, GetColonyColoniesColonyIdGetData, GetColonyColoniesColonyIdGetErrors, GetColonyColoniesColonyIdGetResponses, GetImageImageObjectNameGetData, GetImageImageObjectNameGetErrors, GetImageImageObjectNameGetResponses, ListCatsCatsGetData, ListCatsCatsGetResponses, ListFosterHomesFosterHomesGetData, ListFosterHomesFosterHomesGetResponses, ListManagersManagersGetData, ListManagersManagersGetResponses, ListProceduresCatsCatIdProceduresGetData, ListProceduresCatsCatIdProceduresGetErrors, ListProceduresCatsCatIdProceduresGetResponses, ListTasksForCatCatsCatIdTasksGetData, ListTasksForCatCatsCatIdTasksGetErrors, ListTasksForCatCatsCatIdTasksGetResponses, ListTasksTasksGetData, ListTasksTasksGetResponses, ListUsersUsersGetData, ListUsersUsersGetResponses, LoginLoginPostData, LoginLoginPostErrors, LoginLoginPostResponses, ReadRootGetData, ReadRootGetResponses, UpdateCatCatsCatIdPatchData, UpdateCatCatsCatIdPatchErrors, UpdateCatCatsCatIdPatchResponses, UpdateCatFosterHomesHomeIdPatchData, UpdateCatFosterHomesHomeIdPatchErrors, UpdateCatFosterHomesHomeIdPatchResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -349,6 +349,27 @@ export const createFosterHomeFosterHomesPost = <ThrowOnError extends boolean = f
             }
         ],
         url: '/foster-homes',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * Update Cat
+ */
+export const updateCatFosterHomesHomeIdPatch = <ThrowOnError extends boolean = false>(options: Options<UpdateCatFosterHomesHomeIdPatchData, ThrowOnError>) => {
+    return (options.client ?? client).patch<UpdateCatFosterHomesHomeIdPatchResponses, UpdateCatFosterHomesHomeIdPatchErrors, ThrowOnError>({
+        security: [
+            {
+                in: 'cookie',
+                name: 'access_token',
+                type: 'apiKey'
+            }
+        ],
+        url: '/foster-homes/{home_id}',
         ...options,
         headers: {
             'Content-Type': 'application/json',

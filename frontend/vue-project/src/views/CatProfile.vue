@@ -131,7 +131,7 @@
 											maxlength="15"
 											:text="catData.chip_number || '-'" v-model="mainEditFields.chip_number"
 											:isEditing="[ EditingStatus.EDITING, EditingStatus.SUBMITTING ].includes( editing.main )"
-											:disabled="EditingStatus.SUBMITTING == editing.main"
+											:disabled="EditingStatus.SUBMITTING === editing.main"
 										/>
 									</div>
 
@@ -142,7 +142,7 @@
 											:defaultChecked="!!catData.is_neutered"
 											v-model="mainEditFields.sterilized"
 											:isEditing="[ EditingStatus.EDITING, EditingStatus.SUBMITTING ].includes( editing.main )"
-											:disabled="EditingStatus.SUBMITTING == editing.main"
+											:disabled="EditingStatus.SUBMITTING === editing.main"
 										/>
 									</div>
 
@@ -161,7 +161,7 @@
 											}"
 											v-model="mainEditFields.colony_id"
 											:isEditing="[ EditingStatus.EDITING, EditingStatus.SUBMITTING ].includes( editing.main )"
-											:disabled="EditingStatus.SUBMITTING == editing.main"
+											:disabled="EditingStatus.SUBMITTING === editing.main"
 										/>
 									</div>
 
@@ -173,7 +173,7 @@
 											:text="catData.birth_date || '-'"
 											v-model="mainEditFields.birth_date"
 											:isEditing="[ EditingStatus.EDITING, EditingStatus.SUBMITTING ].includes( editing.main )"
-											:disabled="EditingStatus.SUBMITTING == editing.main"
+											:disabled="EditingStatus.SUBMITTING === editing.main"
 										/>
 
 									</div>
@@ -185,27 +185,28 @@
 											:defaultChecked="false"
 											v-model="mainEditFields.on_homepage"
 											:isEditing="[ EditingStatus.EDITING, EditingStatus.SUBMITTING ].includes( editing.main )"
-											:disabled="EditingStatus.SUBMITTING == editing.main"
+											:disabled="EditingStatus.SUBMITTING === editing.main"
 										/>
 									</div>
 								</div>
 							</form>
 
 							<!-- care fields -->
-							<div
+							<form
 								class="flex flex-col gap-2 edit-container"
 								:data-editing="editing.care !== EditingStatus.IDLE"
+								@submit.prevent="submitEdit( 'care' )"
 							>
 								<div class="flex flex-row justify-between items-center">
 									<h1 class="text-[18px] abril-fatface-regular">Praegune hooldus ja jalgimine</h1>
 
-									<form
+									<div
 										class="flex gap-2 justify-self-end"
 									>
 										<button
 											v-if="editing.care !== EditingStatus.IDLE"
 											class="justify-self-end small"
-											@click="submitEdit( 'care' )"
+											type="submit"
 										>
 											<FiSave
 												v-if="editing.care === EditingStatus.EDITING"
@@ -239,7 +240,7 @@
 										>
 											<TfiPencil :size="EDIT_ICON_SIZE"/>
 										</button>
-									</form>
+									</div>
 								</div>
 
 								<div class="group outfit-400">
@@ -258,7 +259,7 @@
 											}"
 											v-model="currentCatManagementFields.manager_id"
 											:isEditing="[ EditingStatus.EDITING, EditingStatus.SUBMITTING ].includes( editing.care )"
-											:disabled="EditingStatus.SUBMITTING == editing.care"
+											:disabled="EditingStatus.SUBMITTING === editing.care"
 										/>
 									</div>
 
@@ -277,7 +278,7 @@
 											}"
 											v-model="currentCatManagementFields.foster_home_id"
 											:isEditing="[ EditingStatus.EDITING, EditingStatus.SUBMITTING ].includes( editing.care )"
-											:disabled="EditingStatus.SUBMITTING == editing.care"
+											:disabled="EditingStatus.SUBMITTING === editing.care"
 										/>
 									</div>
 
@@ -288,7 +289,7 @@
 											:text="catData.foster_home?.address || '-'"
 											v-model="currentCatManagementFields.foster_home_address"
 											:isEditing="[ EditingStatus.EDITING, EditingStatus.SUBMITTING ].includes( editing.care )"
-											:disabled="EditingStatus.SUBMITTING == editing.care"
+											:disabled="EditingStatus.SUBMITTING === editing.care || currentCatManagementFields.foster_home_id === FOSTER_HOME_CASES.NONE"
 										/>
 									</div>
 
@@ -299,11 +300,11 @@
 											:text="catData.foster_home?.phone || '-'"
 											v-model="currentCatManagementFields.foster_home_phone_nr"
 											:isEditing="[ EditingStatus.EDITING, EditingStatus.SUBMITTING ].includes( editing.care )"
-											:disabled="EditingStatus.SUBMITTING == editing.care"
+											:disabled="EditingStatus.SUBMITTING === editing.care || currentCatManagementFields.foster_home_id === FOSTER_HOME_CASES.NONE"
 										/>
 									</div>
 								</div>
-							</div>
+							</form>
 						</div>
 					</div>
 
@@ -430,6 +431,9 @@ const status_to_color: { [key in CatRead[ "status" ]]: "green" | "yellow" | "red
 	"RESERVED": "gray"
 }
 
+// special cases for selecting "null" entries for
+// colonies, managers and foster homes
+// enums are made just to make readability better
 enum COLONY_CASES {
 	NONE = -1
 }
@@ -476,7 +480,6 @@ const catManagementFieldOptions = ref<{
 	foster_homes: [ ]
 });
 
-const catNotes = ref< string >( "" );
 
 // ive genuinely went over this in 3 different ways
 // staying on this variant of handling data as of now
@@ -506,6 +509,9 @@ const currentCatManagementFields = ref<{
 	foster_home_phone_nr: ""
 });
 
+const catNotes = ref< string >( "" );
+
+// syncing editable data to cats, called on cat load
 const syncMainEditFieldsToCatData = ( cat: CatRead ) => {
 	mainEditFields.value.name = cat.name // Sten
 	mainEditFields.value.sex_idx = mainEditFieldOptions.value.sex.indexOf( cat.sex ?? "unknown" ) // male
@@ -514,14 +520,12 @@ const syncMainEditFieldsToCatData = ( cat: CatRead ) => {
 	mainEditFields.value.colony_id = cat.colony ? cat.colony.id : COLONY_CASES.NONE // [object Object]
 	mainEditFields.value.birth_date = cat.birth_date ?? "" // 2025-11-04
 }
-
 const syncCatManagementFieldsToCatData = ( cat: CatRead ) => {
 	currentCatManagementFields.value.manager_id = cat.manager ? cat.manager.id : MANAGER_CASES.NONE;
 	currentCatManagementFields.value.foster_home_id = cat.foster_home ? cat.foster_home.id : FOSTER_HOME_CASES.NONE;
 	currentCatManagementFields.value.foster_home_address = cat.foster_home?.address || "";
 	currentCatManagementFields.value.foster_home_phone_nr = cat.foster_home?.phone || "";
 }
-
 const syncCatNotesFieldsToCatData = ( cat: CatRead ) => {
 	catNotes.value = cat.notes || "";
 }
@@ -566,6 +570,41 @@ api.listFosterHomesFosterHomesGet( ).then( res => {
 })
 
 
+// when foster home selection changes we also have to update its corresponding
+// fields in the form, address & phonenr atm
+watch(
+	( ) => currentCatManagementFields.value.foster_home_id,
+	( newFosterHomeId ) => {
+		// no foster home selected, clear address and phonenr
+		if ( newFosterHomeId === FOSTER_HOME_CASES.NONE ) {
+			currentCatManagementFields.value.foster_home_phone_nr = "";
+			currentCatManagementFields.value.foster_home_address = "";
+			return;
+		}
+
+		if (catManagementFieldOptions.value.foster_homes.length === 0) {
+			console.warn( `Foster home id changed but we don't have any fetched foster homes` );
+			return;
+		}
+
+		const fosterHome = catManagementFieldOptions.value.foster_homes.find( fh => fh.id === newFosterHomeId );
+
+		if ( !fosterHome ) {
+			toast.add({
+				severity: "error",
+				life: 3000,
+				summary: "Hoiukodu detailide laadminie ebaonnestus."
+			});
+			return;
+		}
+
+		currentCatManagementFields.value.foster_home_phone_nr = fosterHome.phone || "";
+		currentCatManagementFields.value.foster_home_address = fosterHome.address || "";
+	}
+)
+
+// save field callbacks
+// each is used when their corresponding group gets saved
 const saveField: Record<EditableFields, EditSubmit> = {
 	status: async () => false,
 	main: async () => {
@@ -609,16 +648,113 @@ const saveField: Record<EditableFields, EditSubmit> = {
 
 		return true;
 	},
-	care: async () => false,
-	notes: async () => false
-}
+	care: async () => {
+		if ( !catData.value ) {
+			toast.add({
+				severity: "warn",
+				summary: "Kassi pole.",
+				life: 3000
+			});
+			return false;
+		}
 
+		// we can have a cat edit and foster home edit at the same time
+		const [ catEditRes, fosterHomeEditRes ] = await Promise.all([
+			api.updateCatCatsCatIdPatch({
+				body: {
+					payload: JSON.stringify({
+						manager_id: currentCatManagementFields.value.manager_id === MANAGER_CASES.NONE ? null : currentCatManagementFields.value.manager_id,
+						foster_home_id: currentCatManagementFields.value.foster_home_id === FOSTER_HOME_CASES.NONE ? null : currentCatManagementFields.value.foster_home_id
+					} )
+				},
+				path: {
+					cat_id: catData.value.id
+				}
+			}),
 
-const syncCatToSentField: Record<EditableFields, EditSubmit> = {
-	status: async () => false,
-	main: async () => false,
-	care: async () => false,
-	notes: async () => false
+			// can only update foster home when we have one selected
+			currentCatManagementFields.value.foster_home_id !== FOSTER_HOME_CASES.NONE && api.updateCatFosterHomesHomeIdPatch({
+				body: {
+					phone: currentCatManagementFields.value.foster_home_phone_nr,
+					address: currentCatManagementFields.value.foster_home_address
+				},
+				path: {
+					home_id: currentCatManagementFields.value.foster_home_id
+				}
+			})
+		]);
+
+		let failedAny = false;
+
+		if ( !catEditRes.data ) {
+			toast.add({
+				severity: "error",
+				summary: "Kassi uuendamine ebaonnestus",
+				life: 3000
+			});
+			failedAny = true;
+		} else {
+			catData.value = catEditRes.data;
+		}
+
+		// can be undefined, foster home could be selected as none -> nothing updated
+		if ( fosterHomeEditRes ) {
+			if ( !fosterHomeEditRes.data ) {
+				toast.add({
+					severity: "error",
+					summary: "Hoiukodu uuendamine ebaonnestus",
+					life: 3000
+				});
+				failedAny = true;
+			} else {
+				// update foster home fields in options
+				const fosterHomeUpdatedIdx = catManagementFieldOptions.value.foster_homes.findIndex( fh => fh.id === fosterHomeEditRes.data.id );
+
+				if ( fosterHomeUpdatedIdx === -1 ) {
+					console.error( "failed to update foster home options" )
+				} else {
+					catManagementFieldOptions.value.foster_homes[ fosterHomeUpdatedIdx ] = fosterHomeEditRes.data;
+				}
+			}
+		}
+
+		return !failedAny;
+	},
+	notes: async () => {
+		if ( !catData.value ) {
+			toast.add({
+				severity: "warn",
+				summary: "Kassi pole.",
+				life: 3000
+			});
+			return false;
+		}
+
+		const res = await api.updateCatCatsCatIdPatch({
+			body: {
+				payload: JSON.stringify({
+					notes: catNotes.value
+				} as CatUpdate )
+			},
+			path: {
+				cat_id: catData.value.id
+			}
+		});
+
+		if ( !res.data ) {
+			toast.add({
+				severity: "error",
+				summary: "Kassi uuendamine ebaonnestus",
+				life: 3000
+			});
+
+			return false;
+		}
+
+		catData.value = res.data;
+
+		return true;
+	}
 }
 
 const submitEdit = async ( what: EditableFields ) => {
@@ -629,9 +765,6 @@ const submitEdit = async ( what: EditableFields ) => {
 			const res = await saveField[ what ]();
 
 			if ( !res ) console.error( `save callback for "${ what }" failed` );
-			else {
-				if ( !syncCatToSentField[ what ] ) console.warn( `no save callback function for "${ what }" exists, can't save."` );
-			}
 		}
 
 		editing.value[ what ] = EditingStatus.IDLE;

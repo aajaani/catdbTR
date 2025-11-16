@@ -236,6 +236,32 @@ export type FosterHomeRef = {
 };
 
 /**
+ * FosterHomeUpdate
+ */
+export type FosterHomeUpdate = {
+    /**
+     * Name
+     */
+    name?: string | null;
+    /**
+     * Phone
+     */
+    phone?: string | null;
+    /**
+     * Email
+     */
+    email?: string | null;
+    /**
+     * Address
+     */
+    address?: string | null;
+    /**
+     * Comments
+     */
+    comments?: string | null;
+};
+
+/**
  * HTTPValidationError
  */
 export type HttpValidationError = {
@@ -1165,6 +1191,36 @@ export type CreateFosterHomeFosterHomesPostResponses = {
 };
 
 export type CreateFosterHomeFosterHomesPostResponse = CreateFosterHomeFosterHomesPostResponses[keyof CreateFosterHomeFosterHomesPostResponses];
+
+export type UpdateCatFosterHomesHomeIdPatchData = {
+    body: FosterHomeUpdate;
+    path: {
+        /**
+         * Home Id
+         */
+        home_id: number;
+    };
+    query?: never;
+    url: '/foster-homes/{home_id}';
+};
+
+export type UpdateCatFosterHomesHomeIdPatchErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UpdateCatFosterHomesHomeIdPatchError = UpdateCatFosterHomesHomeIdPatchErrors[keyof UpdateCatFosterHomesHomeIdPatchErrors];
+
+export type UpdateCatFosterHomesHomeIdPatchResponses = {
+    /**
+     * Successful Response
+     */
+    200: FosterHomeRead;
+};
+
+export type UpdateCatFosterHomesHomeIdPatchResponse = UpdateCatFosterHomesHomeIdPatchResponses[keyof UpdateCatFosterHomesHomeIdPatchResponses];
 
 export type GetImageImageObjectNameGetData = {
     body?: never;
