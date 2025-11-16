@@ -5,12 +5,17 @@ from sqlalchemy import Integer, String, ForeignKey
 
 
 # NB: not a model
-class Permissions(Enum):
+class Permissions(str, Enum):
     # cat create read update delete
     CAT_ADD = "cat:create"  # c
     CAT_VIEW = "cat:read"  # r
     CAT_EDIT = "cat:update"  # u
     CAT_REMOVE = "cat:delete"  # d
+
+    COLONY_ADD = "colony:add"
+    COLONY_VIEW = "colony:view"
+    COLONY_EDIT = "colony:edit"
+    COLONY_REMOVE = "colony:remove"
 
     USER_ADD = "user:create"
     USER_VIEW = "user:read"
@@ -32,6 +37,8 @@ class Permissions(Enum):
     TASK_EDIT = "task:update"
     TASK_REMOVE = "task:delete"
 
+    ROLE_VIEW = "role:read"
+
 
 class RolePermission(Base):
     __tablename__ = "role_permissions"
@@ -40,18 +47,28 @@ class RolePermission(Base):
     permission: Mapped[str] = mapped_column(String(50), nullable=False)
     role: Mapped["Role"] = relationship("Role", back_populates="role_permissions")
 
+
 class Role(Base):
     __tablename__ = "roles"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     role_permissions: Mapped[list["RolePermission"]] = relationship("RolePermission", back_populates="role")
 
+    # used in UserRead converting, could have "role_permissions" instead
+    # of "permissions" in UserRead
+    @property
+    def permissions(self) -> list[str]:
+        return [ rp.permission for rp in self.role_permissions]
+
 # created/updated in run
 # I kind of see an issue with this approach
 # if we want to change permissions (rare, client didn't want aswell)
 # we have to edit this file and redeploy to update the db
 class _RolePermissionConfig:
-    _roles = [ "ADMIN", "MANAGER", "SOCIAL_WORKER" ]
+    class Roles(str, Enum):
+        ADMIN = "ADMIN"
+        MANAGER = "MANAGER"
+        SOCIAL_WORKER = "SOCIAL_WORKER"
 
     ADMIN = {
         Permissions.CAT_ADD,
@@ -59,10 +76,16 @@ class _RolePermissionConfig:
         Permissions.CAT_EDIT,
         Permissions.CAT_REMOVE,
 
+        Permissions.COLONY_ADD,
+        Permissions.COLONY_VIEW,
+        Permissions.COLONY_EDIT,
+        Permissions.COLONY_REMOVE,
+
         Permissions.USER_ADD,
         Permissions.USER_VIEW,
         Permissions.USER_EDIT,
         Permissions.USER_REMOVE,
+        Permissions.ROLE_VIEW,
 
         Permissions.FOSTER_ADD,
         Permissions.FOSTER_VIEW,
@@ -86,10 +109,16 @@ class _RolePermissionConfig:
         Permissions.CAT_EDIT,
         Permissions.CAT_REMOVE,
 
+        Permissions.COLONY_ADD,
+        Permissions.COLONY_VIEW,
+        Permissions.COLONY_EDIT,
+        Permissions.COLONY_REMOVE,
+
         Permissions.USER_ADD,
         Permissions.USER_VIEW,
         Permissions.USER_EDIT,
         Permissions.USER_REMOVE,
+        Permissions.ROLE_VIEW,
 
         Permissions.FOSTER_ADD,
         Permissions.FOSTER_VIEW,
@@ -110,7 +139,9 @@ class _RolePermissionConfig:
     # lowk rename this
     SOCIAL_WORKER = {
         Permissions.CAT_VIEW,
+        Permissions.COLONY_VIEW,
         Permissions.USER_VIEW,
+        Permissions.ROLE_VIEW,
         Permissions.FOSTER_VIEW,
         Permissions.PROCEDURE_VIEW,
         Permissions.TASK_VIEW,
@@ -120,4 +151,4 @@ class _RolePermissionConfig:
         return getattr(self, role_name, None)
 
 # singleton for inner class (i like c syntax)
-RolePermissionConfig = _RolePermissionConfig()
+RolePermissionConfig = _RolePermissionConfig

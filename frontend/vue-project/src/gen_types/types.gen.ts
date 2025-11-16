@@ -114,6 +114,46 @@ export type CatRead = {
 };
 
 /**
+ * ColonyCreate
+ */
+export type ColonyCreate = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Notes
+     */
+    notes?: string | null;
+    /**
+     * Cat Ids
+     */
+    cat_ids?: Array<number> | null;
+};
+
+/**
+ * ColonyRead
+ */
+export type ColonyRead = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Notes
+     */
+    notes: string | null;
+    /**
+     * Cats
+     */
+    cats: Array<CatRead>;
+};
+
+/**
  * ColonyRef
  */
 export type ColonyRef = {
@@ -237,66 +277,7 @@ export type LoginRequest = {
  * LoginResponse
  */
 export type LoginResponse = {
-    /**
-     * Success
-     */
-    success: boolean;
-};
-
-/**
- * ManagerCreate
- */
-export type ManagerCreate = {
-    /**
-     * Display Name
-     */
-    display_name: string;
-    /**
-     * Phone
-     */
-    phone?: string | null;
-    /**
-     * Email
-     */
-    email?: string | null;
-    /**
-     * Status
-     */
-    status?: 'ACTIVE' | 'INACTIVE';
-    /**
-     * Role
-     */
-    role: 'MANAGER' | 'NOT_MANAGER';
-};
-
-/**
- * ManagerRead
- */
-export type ManagerRead = {
-    /**
-     * Id
-     */
-    id: number;
-    /**
-     * Display Name
-     */
-    display_name: string;
-    /**
-     * Phone
-     */
-    phone?: string | null;
-    /**
-     * Email
-     */
-    email?: string | null;
-    /**
-     * Status
-     */
-    status: 'ACTIVE' | 'INACTIVE';
-    /**
-     * Role
-     */
-    role: 'MANAGER' | 'NOT_MANAGER';
+    [key: string]: unknown;
 };
 
 /**
@@ -360,6 +341,24 @@ export type ProcedureRead = {
 };
 
 /**
+ * RoleRead
+ */
+export type RoleRead = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Permissions
+     */
+    permissions: Array<string>;
+};
+
+/**
  * TaskCreate
  */
 export type TaskCreate = {
@@ -418,7 +417,7 @@ export type UserCreate = {
     /**
      * Password
      */
-    password: string;
+    password?: string | null;
     /**
      * Display Name
      */
@@ -430,11 +429,11 @@ export type UserCreate = {
     /**
      * Email
      */
-    email?: string | null;
+    email: string | null;
     /**
-     * Is Manager
+     * Role Id
      */
-    is_manager?: boolean;
+    role_id: number | null;
 };
 
 /**
@@ -446,21 +445,48 @@ export type UserRead = {
      */
     id: number;
     /**
-     * Username
+     * Display Name
      */
-    username: string;
-    /**
-     * Is Manager
-     */
-    is_manager: boolean;
+    display_name: string;
+    role: RoleRead;
     /**
      * Is Active
      */
     is_active: boolean;
     /**
-     * Manager Id
+     * Phone
      */
-    manager_id?: number | null;
+    phone: string | null;
+    /**
+     * Email
+     */
+    email: string | null;
+};
+
+/**
+ * UserUpdate
+ */
+export type UserUpdate = {
+    /**
+     * Display Name
+     */
+    display_name: string | null;
+    /**
+     * Role Id
+     */
+    role_id: number | null;
+    /**
+     * Is Active
+     */
+    is_active?: boolean | null;
+    /**
+     * Phone
+     */
+    phone?: string | null;
+    /**
+     * Email
+     */
+    email?: string | null;
 };
 
 /**
@@ -479,6 +505,234 @@ export type ValidationError = {
      * Error Type
      */
     type: string;
+};
+
+/**
+ * CatCreate
+ */
+export type CatCreate = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Sex
+     */
+    sex?: 'male' | 'female' | 'unknown' | null;
+    /**
+     * Chip Number
+     */
+    chip_number?: string | null;
+    /**
+     * Status
+     */
+    status?: 'ACTIVE' | 'FOSTER' | 'ADOPTED' | 'ARCHIVED' | 'MISSING' | 'RESERVED';
+    /**
+     * Manager Id
+     */
+    manager_id?: number | null;
+    /**
+     * Foster Home Id
+     */
+    foster_home_id?: number | null;
+    /**
+     * Colony Id
+     */
+    colony_id?: number | null;
+    /**
+     * Intake Date
+     */
+    intake_date?: string | null;
+    /**
+     * Birth Date
+     */
+    birth_date?: string | null;
+    /**
+     * Foster End Date
+     */
+    foster_end_date?: string | null;
+    /**
+     * Notes
+     */
+    notes?: string | null;
+    /**
+     * Is Neutered
+     */
+    is_neutered?: boolean | null;
+};
+
+/**
+ * CatUpdate
+ */
+export type CatUpdate = {
+    /**
+     * Name
+     */
+    name?: string | null;
+    /**
+     * Sex
+     */
+    sex?: 'male' | 'female' | 'unknown' | null;
+    /**
+     * Chip Number
+     */
+    chip_number?: string | null;
+    /**
+     * Status
+     */
+    status?: 'ACTIVE' | 'FOSTER' | 'ADOPTED' | 'ARCHIVED' | 'MISSING' | 'RESERVED' | null;
+    /**
+     * Manager Id
+     */
+    manager_id?: number | null;
+    /**
+     * Foster Home Id
+     */
+    foster_home_id?: number | null;
+    /**
+     * Colony Id
+     */
+    colony_id?: number | null;
+    /**
+     * Intake Date
+     */
+    intake_date?: string | null;
+    /**
+     * Birth Date
+     */
+    birth_date?: string | null;
+    /**
+     * Foster End Date
+     */
+    foster_end_date?: string | null;
+    /**
+     * Notes
+     */
+    notes?: string | null;
+    /**
+     * Is Neutered
+     */
+    is_neutered?: boolean | null;
+};
+
+/**
+ * Permissions
+ */
+export type Permissions = {
+    /**
+     * cat:create
+     */
+    CAT_CREATE: 'cat:create';
+    /**
+     * cat:read
+     */
+    CAT_READ: 'cat:read';
+    /**
+     * cat:update
+     */
+    CAT_UPDATE: 'cat:update';
+    /**
+     * cat:delete
+     */
+    CAT_DELETE: 'cat:delete';
+    /**
+     * colony:add
+     */
+    COLONY_ADD: 'colony:add';
+    /**
+     * colony:view
+     */
+    COLONY_VIEW: 'colony:view';
+    /**
+     * colony:edit
+     */
+    COLONY_EDIT: 'colony:edit';
+    /**
+     * colony:remove
+     */
+    COLONY_REMOVE: 'colony:remove';
+    /**
+     * user:create
+     */
+    USER_CREATE: 'user:create';
+    /**
+     * user:read
+     */
+    USER_READ: 'user:read';
+    /**
+     * user:update
+     */
+    USER_UPDATE: 'user:update';
+    /**
+     * user:delete
+     */
+    USER_DELETE: 'user:delete';
+    /**
+     * foster:create
+     */
+    FOSTER_CREATE: 'foster:create';
+    /**
+     * foster:read
+     */
+    FOSTER_READ: 'foster:read';
+    /**
+     * foster:update
+     */
+    FOSTER_UPDATE: 'foster:update';
+    /**
+     * foster:delete
+     */
+    FOSTER_DELETE: 'foster:delete';
+    /**
+     * procedures:create
+     */
+    PROCEDURES_CREATE: 'procedures:create';
+    /**
+     * procedures:read
+     */
+    PROCEDURES_READ: 'procedures:read';
+    /**
+     * procedures:update
+     */
+    PROCEDURES_UPDATE: 'procedures:update';
+    /**
+     * procedures:delete
+     */
+    PROCEDURES_DELETE: 'procedures:delete';
+    /**
+     * task:create
+     */
+    TASK_CREATE: 'task:create';
+    /**
+     * task:read
+     */
+    TASK_READ: 'task:read';
+    /**
+     * task:update
+     */
+    TASK_UPDATE: 'task:update';
+    /**
+     * task:delete
+     */
+    TASK_DELETE: 'task:delete';
+};
+
+/**
+ * Roles
+ */
+export type Roles = {
+    /**
+     * ADMIN
+     */
+    ADMIN: 'ADMIN';
+    /**
+     * MANAGER
+     */
+    MANAGER: 'MANAGER';
+    /**
+     * SOCIAL_WORKER
+     */
+    SOCIAL_WORKER: 'SOCIAL_WORKER';
 };
 
 export type ReadRootGetData = {
@@ -544,6 +798,138 @@ export type CreateUserFullUsersFullCreatePostResponses = {
 };
 
 export type CreateUserFullUsersFullCreatePostResponse = CreateUserFullUsersFullCreatePostResponses[keyof CreateUserFullUsersFullCreatePostResponses];
+
+export type GetAllRolesRolesGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/roles';
+};
+
+export type GetAllRolesRolesGetResponses = {
+    /**
+     * Response Get All Roles Roles Get
+     *
+     * Successful Response
+     */
+    201: Array<RoleRead>;
+};
+
+export type GetAllRolesRolesGetResponse = GetAllRolesRolesGetResponses[keyof GetAllRolesRolesGetResponses];
+
+export type GetAllPermissionsPermissionsGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/permissions';
+};
+
+export type GetAllPermissionsPermissionsGetResponses = {
+    /**
+     * Response Get All Permissions Permissions Get
+     *
+     * Successful Response
+     */
+    200: {
+        [key: string]: string;
+    };
+};
+
+export type GetAllPermissionsPermissionsGetResponse = GetAllPermissionsPermissionsGetResponses[keyof GetAllPermissionsPermissionsGetResponses];
+
+export type ListManagersManagersGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/managers';
+};
+
+export type ListManagersManagersGetResponses = {
+    /**
+     * Response List Managers Managers Get
+     *
+     * Successful Response
+     */
+    200: Array<UserRead>;
+};
+
+export type ListManagersManagersGetResponse = ListManagersManagersGetResponses[keyof ListManagersManagersGetResponses];
+
+export type ListUsersUsersGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/users';
+};
+
+export type ListUsersUsersGetResponses = {
+    /**
+     * Response List Users Users Get
+     *
+     * Successful Response
+     */
+    200: Array<UserRead>;
+};
+
+export type ListUsersUsersGetResponse = ListUsersUsersGetResponses[keyof ListUsersUsersGetResponses];
+
+export type DeleteUserUsersUserIdDeleteData = {
+    body?: never;
+    path: {
+        /**
+         * User Id
+         */
+        user_id: number;
+    };
+    query?: never;
+    url: '/users/{user_id}';
+};
+
+export type DeleteUserUsersUserIdDeleteErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DeleteUserUsersUserIdDeleteError = DeleteUserUsersUserIdDeleteErrors[keyof DeleteUserUsersUserIdDeleteErrors];
+
+export type DeleteUserUsersUserIdDeleteResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type EditUserUsersUserIdPatchData = {
+    body: UserUpdate;
+    path: {
+        /**
+         * User Id
+         */
+        user_id: number;
+    };
+    query?: never;
+    url: '/users/{user_id}';
+};
+
+export type EditUserUsersUserIdPatchErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type EditUserUsersUserIdPatchError = EditUserUsersUserIdPatchErrors[keyof EditUserUsersUserIdPatchErrors];
+
+export type EditUserUsersUserIdPatchResponses = {
+    /**
+     * Successful Response
+     */
+    200: UserRead;
+};
+
+export type EditUserUsersUserIdPatchResponse = EditUserUsersUserIdPatchResponses[keyof EditUserUsersUserIdPatchResponses];
 
 export type ListCatsCatsGetData = {
     body?: never;
@@ -678,48 +1064,78 @@ export type UpdateCatCatsCatIdPatchResponses = {
 
 export type UpdateCatCatsCatIdPatchResponse = UpdateCatCatsCatIdPatchResponses[keyof UpdateCatCatsCatIdPatchResponses];
 
-export type ListManagersManagersGetData = {
+export type GetAllColoniesColoniesGetData = {
     body?: never;
     path?: never;
     query?: never;
-    url: '/managers';
+    url: '/colonies';
 };
 
-export type ListManagersManagersGetResponses = {
+export type GetAllColoniesColoniesGetResponses = {
     /**
-     * Response List Managers Managers Get
+     * Response Get All Colonies Colonies Get
      *
      * Successful Response
      */
-    200: Array<ManagerRead>;
+    200: Array<ColonyRead>;
 };
 
-export type ListManagersManagersGetResponse = ListManagersManagersGetResponses[keyof ListManagersManagersGetResponses];
+export type GetAllColoniesColoniesGetResponse = GetAllColoniesColoniesGetResponses[keyof GetAllColoniesColoniesGetResponses];
 
-export type CreateManagerManagersPostData = {
-    body: ManagerCreate;
+export type CreateColonyColoniesPostData = {
+    body: ColonyCreate;
     path?: never;
     query?: never;
-    url: '/managers';
+    url: '/colonies';
 };
 
-export type CreateManagerManagersPostErrors = {
+export type CreateColonyColoniesPostErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type CreateManagerManagersPostError = CreateManagerManagersPostErrors[keyof CreateManagerManagersPostErrors];
+export type CreateColonyColoniesPostError = CreateColonyColoniesPostErrors[keyof CreateColonyColoniesPostErrors];
 
-export type CreateManagerManagersPostResponses = {
+export type CreateColonyColoniesPostResponses = {
     /**
      * Successful Response
      */
-    201: ManagerRead;
+    201: ColonyRead;
 };
 
-export type CreateManagerManagersPostResponse = CreateManagerManagersPostResponses[keyof CreateManagerManagersPostResponses];
+export type CreateColonyColoniesPostResponse = CreateColonyColoniesPostResponses[keyof CreateColonyColoniesPostResponses];
+
+export type GetColonyColoniesColonyIdGetData = {
+    body?: never;
+    path: {
+        /**
+         * Colony Id
+         */
+        colony_id: number;
+    };
+    query?: never;
+    url: '/colonies/{colony_id}';
+};
+
+export type GetColonyColoniesColonyIdGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetColonyColoniesColonyIdGetError = GetColonyColoniesColonyIdGetErrors[keyof GetColonyColoniesColonyIdGetErrors];
+
+export type GetColonyColoniesColonyIdGetResponses = {
+    /**
+     * Successful Response
+     */
+    201: ColonyRead;
+};
+
+export type GetColonyColoniesColonyIdGetResponse = GetColonyColoniesColonyIdGetResponses[keyof GetColonyColoniesColonyIdGetResponses];
 
 export type ListFosterHomesFosterHomesGetData = {
     body?: never;

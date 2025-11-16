@@ -1,12 +1,17 @@
 from fastapi import HTTPException
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import jwt
+from typing import Optional, Literal
 
 from app.models.user import User
-from app.models.manager import Manager
+from app.models.account import Account
+from app.models.role import RolePermissionConfig
+
+from app.repositories.account_repository import AccountRepository
 from app.repositories.user_repository import UserRepository
-from app.repositories.manager_repository import ManagerRepository
-from app.schemas.user import UserCreate
+from app.repositories.role_repository import RoleRepository
+
+from app.schemas.user import UserCreate, UserUpdate
 from app.services.auth_service import hash_password, verify_password
 from app.utils.audit import log_action
 
@@ -16,46 +21,59 @@ ALGO = "HS256"
 TOKEN_EXPIRE_MIN = 60 * 8       
 
 class UserService:
-    def __init__(self, user_repo: UserRepository, manager_repo: ManagerRepository):
+    def __init__(self, account_repo: AccountRepository, user_repo: UserRepository, role_repo: RoleRepository):
+        self.account_repo = account_repo
         self.user_repo = user_repo
-        self.manager_repo = manager_repo
+        self.role_repo = role_repo
 
     def create_full_user(self, data: UserCreate) -> User:
         # is username unique?
         if self.user_repo.get_by_username(data.username.strip()) is not None:
             raise HTTPException(status_code=409, detail="username already taken")
+        if self.user_repo.get_by_email(data.email.strip()) is not None:
+            raise HTTPException(status_code=409, detail="email already taken")
+        
+        # todo: could add a pw check towards haveibeenpwned, not sure how needed that is (1 fetch call)
 
-        # if this new person will manage cats / edit stuff,
-        # we ALSO create a manager row for them for contact/assignment
-        manager_id = None
-        if data.is_manager:
-            m = Manager(
-                display_name=data.display_name.strip(),
-                phone=data.phone,
-                email=data.email,
-            )
-            self.manager_repo.db.add(m)
-            self.manager_repo.db.commit()
-            self.manager_repo.db.refresh(m)
-            manager_id = m.id
+        # todo: send email with login details if pw isnt sent
+        if data.password is None:
+            raise HTTPException(status_code=400, detail="account needs a password")
 
-            log_action(self.manager_repo.db, "manager", m.id, "CREATE")
+        if data.role_id is not None:
+            # do we have a role with given id?
+            role = self.role_repo.get_by_id(data.role_id)
+            if role is None:
+                raise HTTPException(status_code=400, detail=f"role with id {data.role_id} does not exist")
+        else:
+            role = self.role_repo.get_by_name("SOCIAL_WORKER")
+            if role is None:
+                raise HTTPException(status_code=410, detail=f"server couldn't find social worker role")
 
-        # now create the actual login user
-        u = User(
+        # make account
+        account = Account(
             username=data.username.strip(),
-            password_hash=hash_password(data.password),
-            is_manager=data.is_manager,
-            is_active=True,
-            manager_id=manager_id,
+            password_hash=hash_password(data.password)
         )
-        u = self.user_repo.create(u)
+    
+        # make user
+        u = User(
+            account=account,
+            role_id=data.role_id,
+            display_name=data.display_name,
+            phone=data.phone,
+            email=data.email
+        )
 
-        # audit log for user
-        log_action(self.user_repo.db, "user", u.id, "CREATE")
+        try:
+            created_account = self.account_repo.create(account)
+            created_user = self.user_repo.create(u)
+        except Exception as e:
+            raise HTTPException(status_code=409, detail=f"something went wrong during user creation: {e}")
 
-        return u
+        log_action(self.account_repo.db, "account", created_account.id, "CREATE")
+        log_action(self.user_repo.db, "user", created_user.id, "CREATE")
 
+        return created_user
 
     def authenticate_user(self, username: str, password: str) -> User:
         user = self.user_repo.get_by_username(username.strip())
@@ -65,17 +83,69 @@ class UserService:
         if not user.is_active:
             raise HTTPException(status_code=403, detail="account disabled")
 
-        if not verify_password(password, user.password_hash):
+        if not verify_password(password, user.account.password_hash):
             raise HTTPException(status_code=401, detail="invalid credentials")
 
         return user
 
     def create_access_token(self, user: User) -> str:
-        expire_at = datetime.utcnow() + timedelta(minutes=TOKEN_EXPIRE_MIN)
-        payload = {
+        expire_at = datetime.now(timezone.utc) + timedelta(minutes=TOKEN_EXPIRE_MIN)
+
+        payload = { # type: ignore
             "sub": str(user.id),            
-            "is_manager": user.is_manager,  # used for permission checks
+            "role": user.role.id,  # used for permission checks
             "exp": expire_at,
         }
-        token = jwt.encode(payload, SECRET_KEY, algorithm=ALGO)
+
+        token = jwt.encode(payload, SECRET_KEY, algorithm=ALGO) # type: ignore
         return token
+
+    def list_users_by_role(
+        self,
+        role: Optional[Literal[
+            RolePermissionConfig.Roles.ADMIN,
+            RolePermissionConfig.Roles.MANAGER,
+            RolePermissionConfig.Roles.SOCIAL_WORKER,
+        ]] | None = None
+    ) -> list[User]:
+        return list(self.user_repo.get_by_role_name(role=role.value if role is not None else None))
+    
+    def update(self, user_id: int, data: UserUpdate) -> User:
+        try:
+            json = data.model_dump(exclude_unset=True)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"{e}")
+        
+        existing = self.user_repo.get_by_id(user_id)
+
+        if not existing:
+            raise HTTPException(status_code=404, detail="user not found")
+
+        if data.role_id is not None and data.email.strip() != existing.email:
+            other = self.user_repo.get_by_email(data.email.strip())
+            if other is not None and other.id != user.id:
+                raise HTTPException(status_code= 409, detail="email already taken")
+            
+            if data.role_id is not None:
+                role = self.role_repo.get_by_id(data.role_id)
+                if role is None:
+                    raise HTTPException(status_code=404, detail="role not found")
+            
+        updated_user = self.user_repo.update(user_id, json)
+
+        if updated_user is None:
+            raise HTTPException(status_code=500, detail="failed to update user")
+
+        log_action( self.user_repo.db, "user", updated_user.id, "UPDATE" )
+
+        return updated_user
+    
+    def delete_user(self, user_id: int) -> None:
+        existing = self.user_repo.get_by_id(user_id)
+
+        if existing is None:
+            raise HTTPException(status_code=404, detail="user does not exist")
+    
+        
+        self.user_repo.delete(existing)
+

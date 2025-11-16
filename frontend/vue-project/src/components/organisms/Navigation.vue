@@ -1,10 +1,16 @@
 <script setup lang="ts">
-import { MdFeed, MdOutlinePets, MdCatchingPokemon, MdPersonAdd, MdPeople, MdArrowBack } from 'vue-icons-plus/md'
-import { useRoute } from 'vue-router';
+import { MdFeed, MdOutlinePets, MdCatchingPokemon, MdPersonAdd, MdPeople, MdArrowBack, MdLogout } from 'vue-icons-plus/md'
+
+import Button from "@/components/atoms/Button.vue"
+
+import { useRoute, useRouter } from 'vue-router';
 import { isSidebarAvailable } from "@/router/helpers.js";
+import { useToast } from "primevue";
 
 // reactive route
 const route = useRoute( );
+const router = useRouter();
+const toast = useToast();
 
 // todo: add translations, idk if i18n exists for vue3
 // links derived from router config @/sec/router/index.ts
@@ -21,24 +27,33 @@ const sidebar_links = {
     title: "Lisa kass",
     icon: MdCatchingPokemon,
   },
-  "/managers": {
+  "/users": {
     title: "Vabatahtlikud",
     icon: MdPeople,
   },
-  "/add-manager": {
+  "/add-user": {
     title: "Lisa vabatahtlik",
     icon: MdPersonAdd,
   },
-
 }
+
+const onLogout = () => {
+  router.push("/login")
+
+  toast.add({
+    severity: "success",
+    summary: "Väljalogimine",
+    detail: "Logisite edukalt välja!",
+    life: 3000
+  })
+};
 </script>
 
 <template>
 <aside v-if="isSidebarAvailable( route.meta )" class="flex flex-col gap-6 pt-4">
-  <div class="pl-4 flex flex-row justify-between relative h-min w-full">
+  <div class="pl-4 flex flex-row justify-between relative h-min w-full collapse-title">
     <h1 class="poppins-medium text-[18px] text-nav-li-text" id="logo-name">Kassid Koju</h1>
 
-    <!-- todo: figure out if this is back or collapse -->
     <span id="collapse" class="absolute right-0 top-3 translate-x-[50%] w-[40px] aspect-square h-auto left-0 p-2 bg-nav-li-text self-end justify-self-end flex place-items-center justify-center rounded-[8px]">
       <MdArrowBack size="20" class="fill-nav-bg bg-main-bg transition-all transition-[300ms]"/>
       <input type="checkbox" id="collapseCheckbox" class="absolute inset-0 opacity-0 cursor-pointer"></input>
@@ -78,6 +93,23 @@ const sidebar_links = {
       </li>
     </ul>
   </nav>
+
+  <div
+    class="flex-1 spacer"
+  ></div>
+
+  <div
+      id="logout-container"
+  >
+    <Button
+        class="destructive w-full"
+        @click="onLogout"
+          
+  >
+      <MdLogout size="24" />
+      <span>Logi valja</span>
+    </Button>
+  </div>
 </aside>
 </template>
 
@@ -217,9 +249,21 @@ aside:has( [data-active=true] ) li.nav-item {
   background-color: var( --status-color );
 }
 
+#logout-container {
+  @apply w-full h-fit px-5 pb-5;
+}
+
 /* collapsed styles */
 
 aside:has( #collapseCheckbox:checked ) {
+  /* order first */
+  .collapse-title { order: 1; }
+  nav { order: 2; }
+  .spacer { order: 3; }
+  .profile-container { order: 4; }
+  #logout-container { order: 5; }
+
+
   nav > ul {
     padding: 0 0 0 5px;
 
@@ -242,12 +286,23 @@ aside:has( #collapseCheckbox:checked ) {
   }
 
   .profile-container {
-    margin-bottom: 8px;
-    margin-top: auto;
-    order: 10;
-    padding: 0 8px;
+    @apply px-2;
     & > div {
       display: none;
+    }
+  }
+
+  #logout-container {
+    @apply px-2 pb-2;
+
+    /* hide logout text */
+    & > button > span {
+      display: none;
+    }
+
+    /* icon isnt optically aligned */
+    & > button > svg {
+      transform: translateX(2px);
     }
   }
 }

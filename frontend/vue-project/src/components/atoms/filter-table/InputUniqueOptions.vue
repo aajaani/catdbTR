@@ -3,23 +3,31 @@
     <div class="flex flex-row flex-wrap gap-1 empty:hidden max-h-32 overflow-y-scroll bg-gray-100 rounded-[4px] border-solid border-[1px] border-text-disabled p-1">
         <!-- have to loop over all props options, otherwise ugly inline checks -->
         <span
-            v-for="option in selectedOptions"
+            v-for="selectableOption in selectedOptions"
             class="flex-1 py-1 px-2 rounded-sm hover:bg-gray-200 bg-gray-200 bg-opacity-70 text-center select-none cursor-pointer"
             @click="( ) => {
-                selected = selected.filter( opt => opt != getOptName( option ) );
-                $emit( 'select', selected );
+                // filter out pressed item index
+                selected = selected.filter( idx => idx !== selectableOption.arrIdx );
+                $emit(
+                    'select',
+                    // update selected values callback
+                    selectableOptions
+                      // only let selected options stay
+                      .filter( (_, idx) => selected.includes( idx ) )
+                      // then map selected options to string, based if options are strings or components
+                      .map( opt => typeof opt.option === 'string' ? opt.option : opt.option.searchName ) );
             }"
         >
             <span
-                v-if="typeof option === 'string'"
+                v-if="typeof selectableOption.option === 'string'"
             >
-                {{ option }}
+                {{ selectableOption.option }}
             </span>
             <component
                 v-else
                 class="flex-1"
-                :is="option.component"
-                v-bind="option.props"
+                :is="selectableOption.option.component"
+                v-bind="selectableOption.option.props as Object"
             ></component>
         </span>
     </div>
@@ -31,33 +39,38 @@
         type="text"
         class="w-full px-2 py-1 bg-gray-100 rounded-[4px] border-solid border-[1px] border-text-disabled"
         placeholder="Otsi"
-    ></input>
+    >
 
     <div
         class="flex flex-col gap-1 max-h-32 overflow-y-scroll bg-gray-100 rounded-[4px] border-solid border-[1px] border-text-disabled p-1 select-none"
     >
         <span
-            v-for="selectableFilterName in filteredOptions.filter( opt => !arrIncludesOpt( selected, opt ) )"
+            v-for="selectableFiltereredOption in selectableOptions.filter( selectableOpt => filteredOptions.includes( selectableOpt.arrIdx ) && !selected.includes( selectableOpt.arrIdx ) )"
             class="p-1 hover:bg-gray-200 rounded-sm"
             @click="( ) => {
-                selected.push( getOptName( selectableFilterName ) );
-                $emit( 'select', selected );
+                selected.push( selectableFiltereredOption.arrIdx );
+                $emit(
+                    'select',
+                    // same as for selecting
+                    selectableOptions.filter( ( _, idx ) => selected.includes( idx ) ).map( selectedOpt => typeof selectedOpt.option === 'string' ? selectedOpt.option : selectedOpt.option.searchName )
+                );
             }"
         >
             <span
-                v-if="typeof selectableFilterName === 'string'"
+                v-if="typeof selectableFiltereredOption.option === 'string'"
             >
-                {{ selectableFilterName }}
+                {{ selectableFiltereredOption.option }}
             </span>
+
             <component
                 v-else
-                :is="selectableFilterName.component"
-                v-bind="selectableFilterName.props"
+                :is="selectableFiltereredOption.option.component"
+                v-bind="selectableFiltereredOption.option.props as Object"
             ></component>
         </span>
 
         <span
-            v-if="filteredOptions.filter( opt => !arrIncludesOpt( selected, opt ) ).length === 0"
+            v-if="filteredOptions.filter( ( _, idx ) => !selected.includes( idx ) ).length === 0"
             class="p-1 rounded-sm"
         >
             Otsingutulemusi pole
@@ -67,61 +80,65 @@
 </template>
 
 <script setup lang="ts" generic="Component">
-import { ref, computed, VueElement } from 'vue';
-import type { ComponentProps, } from "vue-component-type-helpers";
-import TableStatus from "@/components/atoms/filter-table/Status.vue"
+import { ref, computed } from 'vue';
+import type { filterInputOptionsType, filterInputOptionType } from "@/components/FilterTable.ts";
 
 const emit = defineEmits<{
     "select": [ selectedOptions: string[ ] ]
 }>( );
 
-// im not going to think of a jank solution to filter by Component props
-// component could have innerText or child items inside it & I don't think
-// its possible to filter by that
-interface OptionAsComponent {
-    component: Component,
-    props: ComponentProps< Component >,
-    searchName: string
-}
-
-// would be telling typescript that we have a list of either string or custom type
-// but should be fine if we handle everything in "middleware" functions
-//
-// current solutions allows each entry to have a different component (kinda like ImGUI)
-// if in the future (iteration 4 aka cleanup) we figure we don't need different components
-// for each entry, we can pass the component from table header 
-type OptionType = string | OptionAsComponent; 
+type OptionType = filterInputOptionType< Component >
 
 const props = defineProps<{
-    options: OptionType[ ],
+  // can be asynchronous
+  options: filterInputOptionsType< Component >,
+  isLoading?: boolean
 }>( );
+
+type SelectableOption = {
+  option: OptionType,
+  // we need the array index for showing filtered results
+  // why? we only store the index for filtered results
+  arrIdx: number
+}
+
+// wrap options from component props to selectable options
+// need arrIdx to show filtered results and append them to selected
+// options
+const make_option_selectable = ( ( opt: OptionType, arrIdx: number ) => {
+    if ( typeof opt === "string" ) return { option: opt, arrIdx }
+    return { option: { ...opt }, arrIdx }
+} );
+
+// we want to wait for oprions once
+const selectableOptions = ref< SelectableOption[ ] >([ ]);
+
+if ( typeof props.options === "function" ) {
+    props.options( ).then( res => {
+      selectableOptions.value = res.map( make_option_selectable );
+    })
+} else {
+    selectableOptions.value = props.options.map( make_option_selectable );
+}
 
 const searchQuery = ref( "" );
 
 // todo: could set selected by index
-const selected = ref< string[ ] >([ ]);
+const selected = ref< number[ ] >([ ]);
 
 const selectedOptions = computed( ( ) => {
-    return props.options.filter( opt => arrIncludesOpt( selected.value, opt) )
+    return selectableOptions.value.filter( ( _, idx ) => selected.value.includes( idx ) );
 });
 
-const optionIncludes = ( opt: OptionType, substr : string ) => {
-    if ( typeof opt === "string" ) return opt.includes( substr );
-    return opt.searchName.includes( substr );
-}
-
-// could be fancy and pass method but for readability sake separate funcs
-// would maybe be useful if we have more than 2 methods
-const arrIncludesOpt = ( arr: string[ ], opt: OptionType ) => {
-    if ( typeof opt === "string" ) return arr.includes( opt );
-    return arr.some( o => o === opt.searchName );
-}
-
-const getOptName = ( opt: OptionType ) => typeof opt === "string" ? opt : opt.searchName;
-
-const filteredOptions = computed( ( ) => props.options.filter( ( opt ) => optionIncludes( opt, searchQuery.value ) ) );
-
-
+const filteredOptions = computed( ( ) =>
+    selectableOptions.value.filter(
+        ( selectableOption ) => (
+            typeof selectableOption.option === "string"
+                      ? selectableOption.option
+                      : selectableOption.option.searchName
+        ).includes( searchQuery.value )
+    ).map( opt => opt.arrIdx )
+);
 </script>
 
 <style lang="css" scoped>

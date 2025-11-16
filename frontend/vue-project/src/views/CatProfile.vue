@@ -17,7 +17,8 @@
                     <div class="col-start-1 xl:row-start-1 xl:row-span-2">
                         <div class="flex flex-col w-full bg-main-bg rounded-[10px] gap-4 px-3 py-3">
                             <div class="flex justify-center items-center">
-                                <Status
+<!--                                todo: separate component, rn alt click opens selection -->
+                                <Selection
                                     :color="status_to_color[ catData.status ]"
                                     :label="status_to_readable[ catData.status ]"
                                 />
@@ -256,7 +257,7 @@
 <script setup lang="ts">
 import Button from '@/components/atoms/Button.vue';
 import BreadCrumbs from '@/components/organisms/BreadCrumbs.vue';
-import Status from '@/components/atoms/filter-table/Status.vue';
+import Selection from '@/components/atoms/filter-table/Selection.vue';
 
 import { addProcedureCatsCatIdProceduresPost, deleteProcedureCatsCatIdProceduresProcedureIdDelete, getCatCatsCatIdGet, listProceduresCatsCatIdProceduresGet, updateProcedureCatsCatIdProceduresProcedureIdPatch, } from '@/gen_types/sdk.gen';
 import { type CatRead, type ProcedureRead } from '@/gen_types/types.gen';

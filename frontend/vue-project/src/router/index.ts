@@ -47,21 +47,21 @@ const routes: RouteRecordRaw[] = [
 		}
 	},
 	{
-		path: "/add-manager",
-		name: "AddManager",
+		path: "/add-user",
+		name: "AddUser",
 		component: ( ) => import( "@/views/AddManager.vue" ),
 		meta: {
 			...defineBreadcrumbs(
 				{ name: "Ülevaade", link: "/" },
-				{ name: "Vabatahtlikud", link: "/managers" },
+				{ name: "Vabatahtlikud", link: "/users" },
 				{ name: "Lisa Vabatahtlik" }
 			),
 			...defineSidebar( true )
 		}
 	},
 		{
-		path: "/managers",
-		name: "ManagerLsist",
+		path: "/users",
+		name: "UserList",
 		component: ( ) => import( "@/views/Managers.vue" ),
 		meta: {
 			...defineBreadcrumbs(

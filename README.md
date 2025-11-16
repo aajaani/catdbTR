@@ -151,8 +151,10 @@ Visit `http://localhost:8081` in your browser
 
 ### Managers
 
-* `POST /managers` – create manager
+* `POST /users/full-create` – create an user account
 * `GET /managers` – list all managers
+* `GET /users` – list all users
+* `PATCH /users/{user_id}` – update an user
 
 ### Foster Homes
 
@@ -184,7 +186,7 @@ Visit `http://localhost:8081` in your browser
 
 ## 7) Tests
 
-To run tests
+To run tests (backend)
 
 ```
 cd backend
@@ -193,6 +195,43 @@ python -m pytest
 
 <img src="https://media.tenor.com/BuImo5Z739UAAAAM/cat.gif" width="100">
 
+Frontend (Playwright) tests
+
+First-time setup
+Inside /frontend/vue-project:
+
+```
+npm install
+npm init playwright@latest
+```
+
+Choose no GitHub workflow (optional).
+
+Install browsers:
+```
+npx playwright install
+```
+
+Running the tests
+Headless mode (default, used in CI)
+
+Runs fast, browser UI not shown:
+```
+npx playwright test
+```
+
+Headed mode (browser UI visible)
+
+Useful for development/debugging:
+```
+npx playwright test --headed
+```
+Playwright UI mode (best for local debugging)
+
+Opens Playwright's test runner interface:
+```
+npx playwright test --ui
+```
+
 ---
 
-✅ **Backend now supports secure authentication, password hashing, JWT session management, and role-based authorization — ready for frontend integration.**

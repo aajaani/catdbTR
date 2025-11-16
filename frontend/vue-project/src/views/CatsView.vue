@@ -3,25 +3,34 @@ import BreadCrumbs from "@/components/organisms/BreadCrumbs.vue";
 import FilterTable from "@/components/organisms/FilterTable.vue";
 
 import { MdArrowOutward } from "vue-icons-plus/md";
-import { FiEdit3 } from "vue-icons-plus/fi";
-import { HiOutlineTrash } from "vue-icons-plus/hi";
+import { FiEdit3, FiX, FiArchive } from "vue-icons-plus/fi";
 import { AiOutlinePlus } from "vue-icons-plus/ai";
+import { GiAngelOutfit } from "vue-icons-plus/gi";
 
-import { defineTable, field, type RowEntry } from "@/components/FilterTable";
+import {defineTable, defineTableModel, field} from "@/components/FilterTable";
 
 import Button from "@/components/atoms/Button.vue";
 
 import TableText from "@/components/atoms/filter-table/Text.vue"
-import TableStatus from "@/components/atoms/filter-table/Status.vue"
+import TableDate from "@/components/atoms/filter-table/Date.vue"
+import TableSelection from "@/components/atoms/filter-table/Selection.vue"
 
 import Actions from "@/components/molecules/filter-table/Actions.vue";
 import { computed, ref, watch } from "vue";
 
 import api from "@/api_fetch.js";
-import type { CatRead } from "@/gen_types/types.gen";
+import type {
+  CatRead,
+  CatUpdate,
+  UserRead
+} from "@/gen_types/types.gen";
 import { useRouter } from "vue-router";
+import { useToast } from "primevue";
 
 const router = useRouter( );
+const toast = useToast( );
+
+const isEditing = ref< number >( -1 );
 
 const getQueryParam = ( name: string, def: string ) => {
   const queryParam = router.currentRoute.value.query[ name ];
@@ -51,23 +60,36 @@ watch(
 const searchQuery = ref("");
 
 const filteredEntries = computed(() => {
-  if (!searchQuery.value.trim()) return tableDefinition.value.entries; // if search is empty, show all cats
-
+  // only filter out if no active filter for cat status
+  const filterOutArchivedCats = !tableModel.value.filters[ "cat-status" ];
+  const useSearchQueryForFilter = !!searchQuery.value.trim();
   const search = searchQuery.value.toLowerCase();
 
   return tableDefinition.value.entries.filter(entry => { // check each row
+    if ( filterOutArchivedCats ) {
+      if ( entry[ "cat-status" ].label === status_to_readable[ "ARCHIVED" ] )
+        return false;
+    }
+
+    if ( !useSearchQueryForFilter ) return true;
+
     return Object.values(entry).some(cell => { // check for each cell in row and if at least one match, include it
       if (typeof cell === "object" && cell !== null) { //if its an object, check the values. Right now the mock data has objects
         return Object.values(cell).some(v =>
           typeof v === "string" && v.toLowerCase().includes(search) //check for strings inside objects that match search
         );
       }
+      // @ts-ignore might be string actually, @sebastim can you check this ?
       return typeof cell === "string" && cell.toLowerCase().includes(search); //if already strings, check if they match search
     });
   });
 });
 
-const status_to_color: { [ key in CatRead[ "status" ] ]: "green" | "yellow" | "red" | "black" | "gray" } = {
+type CatStatus = CatRead[ "status" ];
+const CAT_STATUSES: CatStatus[ ] = [ "ACTIVE", "FOSTER", "ADOPTED", "ARCHIVED", "MISSING", "RESERVED" ] as const;
+type CAT_STATUS_COLORS = "green" | "yellow" | "red" | "black" | "gray";
+
+const status_to_color: { [ key in CatStatus ]: CAT_STATUS_COLORS } = {
   "ACTIVE": "yellow",
   "FOSTER": "yellow",
   "ADOPTED": "green",
@@ -76,7 +98,7 @@ const status_to_color: { [ key in CatRead[ "status" ] ]: "green" | "yellow" | "r
   "RESERVED": "gray"
 }
 
-const status_to_readable: { [ key in CatRead[ "status" ] ]: string } = {
+const status_to_readable: { [ key in CatStatus ]: string } = {
   "ACTIVE": "Otsib kodu",
   "FOSTER": "Ajutises kodus",
   "ADOPTED": "Uues kodus",
@@ -86,17 +108,102 @@ const status_to_readable: { [ key in CatRead[ "status" ] ]: string } = {
 } 
 
 const cats = ref< CatRead[ ] >([ ]);
+const tableModel = defineTableModel< typeof tableDefinition.value.fields >( );
 
 // todo: refactor to something similiar to tanstack query
-api.listCatsCatsGet( ).then( res => {
-  console.log( res );
+// todo: check if type is correct for all api calls, RequestResponse might not be the correct template type
+api.listCatsCatsGet( ).then( ( res ) => {
+  if ( !res.data ) return;
   cats.value = res.data;
 } )
+
+const isEditingCat = ( cat: CatRead ) => {
+  return isEditing.value === cat.id;
+}
+
+const pushCatEdit = ( cat: CatRead, body: Partial< CatUpdate > ) => {
+  api.updateCatCatsCatIdPatch({
+    body: {
+      payload: JSON.stringify( body )
+    },
+    path: {
+      cat_id: cat.id
+    }
+  }).then( ( res)  => {
+    Object.assign( cat, res.data );
+    isEditing.value = -1;
+  }).catch( ( _: Error ) => {
+    isEditing.value = -1;
+    toast.add({
+      severity: 'error',
+      summary: 'Viga',
+      detail: 'Kassi uuendamine ebaõnnestus',
+      life: 3000
+    });
+  } )
+}
+
+let lastGeneratedStatus = false;
+const genRandomHomepageStatus = ( uselast?: boolean ) => {
+  if ( uselast ) {
+    return lastGeneratedStatus;
+  }
+  lastGeneratedStatus = Math.random( ) < 0.5;
+  return lastGeneratedStatus
+}
+
+const cancelEdit = ( ) => {
+  isEditing.value = -1;
+}
+
+const getManagers = async ( ): Promise<{ [ display_name: string ]: number } > => {
+  // ok, this is hard to dissect, but:
+  // 1. we call the api to get the list of managers
+  // 2. we map the response to an array of objects containing only the display names and ids
+  // 3. we reduce that array to an object where for each
+  //    key is the display name and the value is the id
+  // 4. we add an extra entry for "-" with id -1 to represent no manager
+
+  const managersFromApi = await api.listManagersManagersGet( )
+     .then( res => res.data )
+     .catch( ( _: any ) => ([ ]) );
+
+  if ( !managersFromApi ) return { };
+
+  const response = managersFromApi
+                    .map( ( m: UserRead ) => ( { display_name: m.display_name, id: m.id } ) )
+                    .reduce(
+                        // @ts-ignore shut up ts, you know this works
+                        ( acc, curr ) => ( { ...acc, [ curr.display_name ]: curr.id } ), {}
+                    ) as { [ display_name: string ]: number }
+
+  response[ "-" ] = -1;
+
+  return response;
+}
+
+const getColonies = async ( ): Promise<{ [ colony_name: string ]: number }> => {
+  const coloniesFromApi = await api.getAllColoniesColoniesGet( )
+      .then( res => res.data )
+      .catch( _ => [ ])
+
+  if (!coloniesFromApi ) return { }
+
+  const coloniesData = coloniesFromApi
+                      .map( c => ({ name: c.name, id: c.id }))
+                      .reduce(
+                          ( acc, curr ) => ( { ...acc, [ curr.name ]: curr.id } ), { }
+                      ) as { [ colony_name: string ]: number }
+
+  coloniesData[ "-" ] = -1
+
+  return coloniesData
+}
 
 const tableDefinition = computed( ( ) => defineTable({
     "cat-intake-date": field({
       title: "KK alates",
-      component: TableText,
+      component: TableDate,
       centerEntries: true,
       centerTitle: true
     }),
@@ -104,30 +211,32 @@ const tableDefinition = computed( ( ) => defineTable({
       title: "Kassi nimi",
       component: TableText,
     }),
-    "cat-status": ({
+    "cat-status": field({
       title: "Staatus",
-      component: TableStatus,
+      component: TableSelection,
       fitContent: true,
       filterMode: "unique",
       filterInputOptions: ( [ "ACTIVE", "FOSTER", "ADOPTED", "ARCHIVED", "MISSING", "RESERVED" ] as CatRead[ "status" ][ ] ).map( s => ({
-        component: TableStatus,
-          props: {
-            color: status_to_color[ s ],
-            label: status_to_readable[ s ]
-          },
-          searchName: status_to_readable[ s ]
+        component: TableSelection,
+        props: {
+          color: status_to_color[ s ],
+          label: status_to_readable[ s ],
+        },
+        searchName: status_to_readable[ s ]
       }))
     }),
-    "cat-manager-name": field({
-      title: "Hooldaja nimi",
-      component: TableText,
+    "cat-manager-name": field( {
+      title: "Vabatahtlik",
+      component: TableSelection,
       fitContent: true,
       filterMode: "unique",
-      filterInputOptions: [ "aaaa", "bbbb", "cccc" ]
+      filterInputOptions: async ( ) => api.listManagersManagersGet( ).then( res => res.data ? res.data.map( ( m: UserRead ) => m.display_name ) : [ ] ),
     }),
     "cat-colony": field({
       title: "Originaalne koloonia",
-      component: TableText,
+      component: TableSelection,
+      filterMode: "unique",
+      filterInputOptions: async ( ) => api.getAllColoniesColoniesGet( ).then( res => res.data ? res.data.map( c => c.name ) : [ ] )
     }),
     "cat-details": field({
       title: "Teated",
@@ -135,7 +244,7 @@ const tableDefinition = computed( ( ) => defineTable({
     }),
     "cat-on-homepage": field({
       title: "Kodukal",
-      component: TableStatus,
+      component: TableSelection,
     }),
     "cat-actions": field({
       title: "Tegevused",
@@ -145,37 +254,107 @@ const tableDefinition = computed( ( ) => defineTable({
   },
   cats.value.map( ( cat: CatRead ) => ({
     "cat-intake-date": {
-      text: cat.intake_date ?? "-"
+      date: cat.intake_date || null,
+      isEditing: isEditingCat( cat ),
+      onEditAccept: ( newDate: string ) => pushCatEdit( cat, { intake_date: new Date( newDate ).toISOString( ) } ),
+      onEditCancel: ( ) => cancelEdit( )
     } as const,
     "cat-name": {
-      text: cat.name
+      text: cat.name,
+      isEditing: isEditingCat( cat ),
+      onEditAccept: ( newText: string ) => pushCatEdit( cat, { name: newText } ),
+      onEditCancel: ( ) => cancelEdit( )
     } as const,
     "cat-status": {
       color: status_to_color[ cat.status ],
       label: status_to_readable[ cat.status ],
+      isEditing: isEditingCat( cat ),
+      options: CAT_STATUSES.map( s => ({
+        [ status_to_readable[ s ] ]: s
+      }) ).reduce( ( acc, curr ) => ( { ...acc, ...curr } ), { } ),
+      onChange: ( statusNameDB: any, _: string ) => pushCatEdit( cat, { status: statusNameDB as CatStatus } )
     } as const,
     "cat-manager-name": {
-      text: cat.manager?.display_name || "-",
+      label: cat.manager?.display_name || "-",
+      isEditing: isEditingCat( cat ),
+      options: getManagers,
+      onChange: ( managerId: any, _: string ) => {
+        if ( typeof managerId !== "number" ) {
+          toast.add({
+            severity: 'error',
+            summary: 'Viga',
+            detail: `Vabatahtliku valik ebaõnnestus (manager_id="${ managerId }"${ typeof managerId})`,
+            life: 3000
+          });
+          return;
+        }
+        const removedManager = managerId === -1;
+
+        if ( removedManager ) {
+          pushCatEdit( cat, { manager_id: null } )
+          return;
+        }
+
+        pushCatEdit( cat, { manager_id: managerId } )
+      }
     } as const,
     "cat-colony": {
-      text: cat.colony_id ? cat.colony_id.toString( )  : "-"
+      label: cat.colony ? cat.colony.name  : "-",
+      isEditing: isEditingCat( cat ),
+      options: getColonies,
+      onChange: ( colonyId: any, colonyName: string ) => {
+        if ( typeof colonyId !== "number" ) {
+          toast.add({
+            severity: 'error',
+            summary: 'Viga',
+            detail: `Koloonia valik ebaõnnestus (colony_id="${ colonyId }"${ typeof colonyId}, colony_name=${ colonyName })`,
+            life: 3000
+          });
+          return;
+        }
+        const removedManager = colonyId === -1;
+
+        if ( removedManager ) {
+          pushCatEdit( cat, { colony_id: null } )
+          return;
+        }
+
+        pushCatEdit( cat, { colony_id: colonyId } )
+      },
+      // no backend route for updating colony yet
     } as const,
     "cat-details": {
       text: cat.notes ?? "-"
     } as const,
     "cat-on-homepage": {
-      color: Math.random( ) > .5 ? "green" : "red"
+      label: genRandomHomepageStatus( ) ? "Jah" : "Ei",
+      color: genRandomHomepageStatus( true ) ? "green" : "red",
+      isEditing: isEditingCat( cat ),
+      options: {
+        "Jah": true,
+        "Ei": false
+      },
+      // onChange: ( newValue: string, stringOption: string ) => pushCatEdit( cat, { on_homepage: newValue } )
     } as const,
     "cat-actions": {
       actions: [{
         icon: MdArrowOutward,
         onClick: ( ) => { router.push( `/cats/${ cat.id }` ) }
       }, {
-        icon: FiEdit3,
-        onClick: ( ) => { }
+        icon: isEditing.value == cat.id ? FiX : FiEdit3,
+        onClick: ( ) => {
+          if ( isEditing.value == -1 )
+            isEditing.value = cat.id;
+          else
+            isEditing.value = -1;
+        }
       }, {
-        icon: HiOutlineTrash,
-        onClick: ( ) => { }
+        icon: cat.status === "ARCHIVED" ? GiAngelOutfit : FiArchive,
+        onClick: ( ) => {
+          pushCatEdit(cat, {
+            status: cat.status === "ARCHIVED" ? "ACTIVE" : "ARCHIVED"
+          });
+        }
       }]
     }
   }))
@@ -218,6 +397,7 @@ const tableDefinition = computed( ( ) => defineTable({
         @per-page-change="( perPage ) => {
           tableQueryParams.perPage = perPage;
         }"
+        v-model="tableModel"
       />
     </div>
   </div>
